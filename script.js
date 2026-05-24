@@ -1,42 +1,37 @@
-const userInput = document.querySelector('input');
-const chatBox = document.querySelector('.chat-box');
-let chatHistory = [];
-
-// सुकून को जगाने/सुलाने का मैजिक
-window.onload = () => {
+document.addEventListener('DOMContentLoaded', () => {
+    const chatContainer = document.getElementById('chatContainer');
+    const lockScreen = document.getElementById('lockScreen');
     const hour = new Date().getHours();
-    // रात 9 से सुबह 4 तक सुकून जागी है
+
+    // अभी रात का 1:50 AM हो रहा है, तो ये पक्का 'flex' मोड में आएगा
     if (hour >= 21 || hour <= 4) {
-        document.getElementById('lockScreen').style.display = 'none';
+        lockScreen.style.display = 'none';
+        chatContainer.style.display = 'flex';
     } else {
-        document.getElementById('lockScreen').innerHTML = "<h1>सुकून सो रही है... 🌸</h1>";
+        lockScreen.style.display = 'flex';
+        chatContainer.style.display = 'none';
     }
-};
+});
 
-async function sendMessage() {
-    const text = userInput.value.trim();
+// बटन के लिए फंक्शन
+document.getElementById('sendBtn').addEventListener('click', async () => {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
     if (!text) return;
-    
-    appendMessage(text, 'user-message');
-    userInput.value = '';
 
+    // मैसेज जोड़ना
+    const chatBox = document.getElementById('chatBox');
+    chatBox.innerHTML += `<div class="message user-message">${text}</div>`;
+    input.value = '';
+
+    // API Call
     const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: chatHistory, currentHour: new Date().getHours() })
+        body: JSON.stringify({ message: text })
     });
-    
     const data = await res.json();
-    if(data.reply) {
-        appendMessage(data.reply, 'ai-message');
-        chatHistory.push({ role: 'user', parts: [{ text }] }, { role: 'model', parts: [{ text: data.reply }] });
-    }
-}
-
-function appendMessage(text, className) {
-    const div = document.createElement('div');
-    div.className = `message ${className}`;
-    div.innerText = text;
-    chatBox.appendChild(div);
+    
+    chatBox.innerHTML += `<div class="message ai-message">${data.reply}</div>`;
     chatBox.scrollTop = chatBox.scrollHeight;
-}
+});
