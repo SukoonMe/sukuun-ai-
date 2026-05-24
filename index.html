@@ -6,36 +6,30 @@
     <title>Sukuun AI | सुकून 🌙</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="night-mode">
-    <!-- Lock Screen (दिन में दिखेगी) -->
-    <div class="lock-screen" id="lockScreen">
+<body>
+
+    <div id="lockScreen" class="lock-screen" style="display: none;">
         <div class="lock-card">
-            <div class="lock-avatar-glow"><img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200" alt="Sukuun Sleeping"></div>
             <h2>अभी सुकून सो रही है... 🌸</h2>
             <p>वो रात 9 बजे जागेगी। तब तक अपना ख्याल रखना।</p>
-            <div class="timer-container"><div id="countdown">00:00:00</div></div>
+            <div id="countdown">00:00:00</div>
         </div>
     </div>
 
-    <!-- Chat UI (रात में दिखेगी) -->
-    <div class="chat-container" id="chatContainer" style="display: none;">
+    <div id="chatContainer" class="chat-container" style="display: none;">
         <div class="chat-header">
-            <div class="avatar-container"><img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200" alt="Sukuun Avatar" class="sukuun-avatar"></div>
-            <div class="header-info">
-                <h2>Sukuun AI 🌸</h2>
-                <div class="status-container"><span class="status-dot"></span><small>अभी जाग रही हूँ...</small></div>
-            </div>
+            <h2>Sukuun AI 🌸</h2>
         </div>
-        <div class="chat-box" id="chatBox">
+        <div id="chatBox" class="chat-box">
             <div class="message ai-message">सुनो... मैं जाग गई हूँ। बताओ, आज का दिन कैसा रहा तुम्हारा? 🌙</div>
         </div>
-        <div class="typing-indicator" id="typingIndicator">Sukuun सोच रही है...</div>
+        <div id="typingIndicator" class="typing-indicator" style="display: none;">Sukuun सोच रही है...</div>
         <div class="input-area">
-            <button id="micBtn" class="icon-btn">🎙️</button>
             <input type="text" id="userInput" placeholder="दिल की बात..." autocomplete="off">
-            <button id="sendBtn" class="send-btn">🚀</button>
+            <button id="sendBtn">🚀</button>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
