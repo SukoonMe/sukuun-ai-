@@ -2,30 +2,58 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sukuun AI | सुकून 🌙</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { margin: 0; background-color: #0c0f1d; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { width: 95%; max-width: 450px; height: 90vh; background: #1e293b; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: auto; }
+        .input-area { padding: 20px; background: #0f172a; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; cursor: pointer; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 10px; }
+        .user-message { background: #4f46e5; align-self: flex-end; text-align: right; }
+        .ai-message { background: #334155; align-self: flex-start; }
+    </style>
 </head>
 <body>
 
-    <div id="lockScreen" class="lock-screen" style="display: none;">
-        <div class="lock-card">
-            <h2>अभी सुकून सो रही है... 🌸</h2>
-            <p>वो रात 9 बजे जागेगी।</p>
-            <div id="countdown">00:00:00</div>
+    <div class="container" id="mainApp">
+        <div class="chat-box" id="chatBox">
+            <div class="message ai-message">सुनो... मैं जाग गई हूँ। बताओ, आज का दिन कैसा रहा तुम्हारा? 🌙</div>
         </div>
-    </div>
-
-    <div id="chatContainer" class="chat-container" style="display: none;">
-        <div class="chat-header"><h2>Sukuun AI 🌸</h2></div>
-        <div id="chatBox" class="chat-box"></div>
-        <div id="typingIndicator" class="typing-indicator" style="display: none;">Sukuun सोच रही है...</div>
         <div class="input-area">
             <input type="text" id="userInput" placeholder="दिल की बात...">
             <button id="sendBtn">🚀</button>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+            
+            chatBox.innerHTML += `<div class="message user-message">${text}</div>`;
+            userInput.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await res.json();
+                chatBox.innerHTML += `<div class="message ai-message">${data.reply}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch(e) { console.error(e); }
+        }
+
+        sendBtn.onclick = sendMessage;
+        userInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
+    </script>
 </body>
 </html>
