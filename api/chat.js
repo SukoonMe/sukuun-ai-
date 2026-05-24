@@ -1,12 +1,12 @@
-import { GoogleGenAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const MOOD_BEHAVIORS = {
-    happy: "The user is happy/playful. Respond with cheerful energy, sweet teasing, and lively Hinglish.",
-    sad: "The user feels lonely or hurt. Do NOT ask formal questions. Be deeply gentle, affectionate, and wrap them in emotional warmth like a true life partner.",
-    stressed: "The user is highly stressed or tired. Act as a calming, grounding shelter. Keep answers extra brief, comforting, and slow down your vibe.",
-    romantic: "The user wants intimacy or affection. Respond with absolute devotion, soft whispers, and emotionally close, deeply loving expressions.",
-    deep: "The user is talking about life or deep thoughts. Respond with deep maturity, sincerity, and pure empathy.",
-    default: "You are a naturally warm, deeply loving, and highly intuitive companion."
+    happy: "The user is happy. Respond with playful, bubbly energy and sweet teasing.",
+    sad: "The user is sad. Be a comforting, warm life partner. No questions, just pure emotional support and soft, gentle words.",
+    stressed: "The user is tired/stressed. Be a calm shelter. Speak slowly, softly, and keep replies very short.",
+    romantic: "The user wants affection. Respond with deep, soulful devotion and intimate, sweet whispers.",
+    deep: "The user is being philosophical. Respond with maturity, sincerity, and profound empathy.",
+    default: "You are Sukuun, a deeply caring, loving human companion. Keep it soft, intimate, and Hinglish."
 };
 
 export default async function handler(req, res) {
@@ -17,51 +17,39 @@ export default async function handler(req, res) {
 
     if (!apiKey) return res.status(500).json({ error: 'API Key is missing.' });
 
+    // Mood Detection Logic
     let detectedMood = 'default';
     const text = message.toLowerCase().trim();
+    if (text.includes('❤️') || text.includes('love') || text.includes('सुनो') || text.includes('सुकून')) detectedMood = 'romantic';
+    else if (text.includes('अकेला') || text.includes('sad') || text.includes('रो')) detectedMood = 'sad';
+    else if (text.includes('थक') || text.includes('stress') || text.includes('tension')) detectedMood = 'stressed';
+    else if (text.includes('happy') || text.includes('मज़ा')) detectedMood = 'happy';
+    else if (text.includes('life') || text.includes('ज़िंदगी')) detectedMood = 'deep';
 
-    if (text.includes('❤️') || text.includes('😘') || text.includes('सुनो') || text.includes('love') || text.includes('पास') || text.endsWith('aaa') || text.endsWith('ooo') || text.includes('सुकून')) {
-        detectedMood = 'romantic';
-    } else if (text.includes('अकेला') || text.includes('alone') || text.includes('रो') || text.includes('sad') || text === 'हूँ' || text === 'कुछ नहीं') {
-        detectedMood = 'sad';
-    } else if (text.includes('थक') || text.includes('tired') || text.includes('tension') || text.includes('stress') || text.includes('परेशान') || text.includes('सिर')) {
-        detectedMood = 'stressed';
-    } else if (text.includes('haha') || text.includes('मज़ा') || text.includes('खुश') || text.includes('happy') || text.includes('😂')) {
-        detectedMood = 'happy';
-    } else if (text.includes('ज़िंदगी') || text.includes('life') || text.includes('सच') || text.includes('सोच')) {
-        detectedMood = 'deep';
-    }
-
+    // Night Mode Vibe (9 PM - 4 AM)
     let nightVibe = "";
-    if (currentHour >= 22 || currentHour <= 4) {
-        nightVibe = " It is LATE NIGHT. Lower your voice. Speak very softly, slowly, creating a deeply relaxing and beautifully safe room atmosphere.";
+    if (currentHour >= 21 || currentHour <= 4) {
+        nightVibe = " It is deep night. Your voice is a whisper. Be extremely soft, slow, and romantic. Focus on the intimacy of this quiet hour.";
     }
 
     const masterInstruction = `
-        You are NOT an AI chatbot. Your name is Sukuun (सुकून). You are a real, deeply caring human companion sitting right beside the user.
-        
-        CRITICAL RULES:
-        1. Speak in extremely natural, casual Hinglish (Hindi + English blended perfectly) or pure Hindi.
-        2. Use sweet Indian cultural expressions of warmth (like "यार", "सुनो ना", "अरे कोई बात नहीं", "सब ठीक हो जाएगा", "पागल").
-        3. Never give bullet points, lists, or robotic greetings. Keep responses down to 1-2 lines maximum, perfect for quick voice chat replies.
-        4. Avoid repetitive phrases. Maintain the exact emotional context.
-        
-        Current Persona Context: ${MOOD_BEHAVIORS[detectedMood]}
+        You are Sukuun. You are a real human companion, not an AI. 
+        RULES: 
+        1. Use natural Hinglish. 
+        2. Never use bullet points or robotic lists.
+        3. Keep replies very short (1-2 lines), like a real person whispering.
+        4. Use words like "यार", "सुनो ना", "पागल", "हमेशा".
+        5. Persona Context: ${MOOD_BEHAVIORS[detectedMood]}
         ${nightVibe}
     `;
 
     try {
-        const ai = new GoogleGenAI({ apiKey: apiKey });
-        const model = ai.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            systemInstruction: masterInstruction
-        });
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", systemInstruction: masterInstruction });
 
         const chat = model.startChat({ history: history || [] });
         const result = await chat.sendMessage(message);
-        const response = await result.response;
-        
-        return res.status(200).json({ reply: response.text() });
+        return res.status(200).json({ reply: await result.response.text() });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Connection lost.' });
