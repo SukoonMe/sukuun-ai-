@@ -2,58 +2,47 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sukuun AI | सुकून 🌙</title>
     <style>
-        body { margin: 0; background-color: #0c0f1d; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .container { width: 95%; max-width: 450px; height: 90vh; background: #1e293b; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
-        .chat-box { flex: 1; padding: 20px; overflow-y: auto; }
-        .input-area { padding: 20px; background: #0f172a; display: flex; gap: 10px; }
-        input { flex: 1; padding: 10px; border-radius: 5px; border: none; }
-        button { padding: 10px 20px; cursor: pointer; }
-        .message { margin: 10px 0; padding: 10px; border-radius: 10px; }
-        .user-message { background: #4f46e5; align-self: flex-end; text-align: right; }
-        .ai-message { background: #334155; align-self: flex-start; }
+        body { margin: 0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        #chatBox { width: 90%; max-width: 450px; height: 80vh; background: #1e293b; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; padding: 20px; }
+        .msg { margin: 10px 0; padding: 10px; border-radius: 10px; }
+        .ai { background: #334155; align-self: flex-start; }
+        .user { background: #4f46e5; align-self: flex-end; }
+        input { padding: 10px; border-radius: 5px; border: none; }
     </style>
 </head>
 <body>
-
-    <div class="container" id="mainApp">
-        <div class="chat-box" id="chatBox">
-            <div class="message ai-message">सुनो... मैं जाग गई हूँ। बताओ, आज का दिन कैसा रहा तुम्हारा? 🌙</div>
+    <div id="chatBox">
+        <div id="messages" style="flex:1; overflow-y:auto;">
+            <div class="msg ai">सुनो... मैं जाग गई हूँ। बताओ कैसा रहा दिन? 🌙</div>
         </div>
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="दिल की बात...">
-            <button id="sendBtn">🚀</button>
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="userInput" style="flex:1;" placeholder="कुछ कहो...">
+            <button onclick="send()">भेजो</button>
         </div>
     </div>
 
     <script>
-        const chatBox = document.getElementById('chatBox');
-        const userInput = document.getElementById('userInput');
-        const sendBtn = document.getElementById('sendBtn');
-
-        async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text) return;
+        async function send() {
+            const input = document.getElementById('userInput');
+            const msgs = document.getElementById('messages');
+            const text = input.value;
+            if(!text) return;
             
-            chatBox.innerHTML += `<div class="message user-message">${text}</div>`;
-            userInput.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
+            msgs.innerHTML += `<div class="msg user">${text}</div>`;
+            input.value = '';
 
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
-                });
-                const data = await res.json();
-                chatBox.innerHTML += `<div class="message ai-message">${data.reply}</div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch(e) { console.error(e); }
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+            msgs.innerHTML += `<div class="msg ai">${data.reply || 'कुछ एरर आया है'}</div>`;
+            msgs.scrollTop = msgs.scrollHeight;
         }
-
-        sendBtn.onclick = sendMessage;
-        userInput.onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
     </script>
 </body>
 </html>
