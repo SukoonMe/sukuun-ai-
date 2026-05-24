@@ -1,9 +1,7 @@
 {
-  "name": "sukoon-ai",
+  "name": "sukuun-ai",
   "version": "1.0.0",
-  "description": "Sukuun AI - Emotional Human-Like Companion",
-  "main": "api/chat.js",
   "dependencies": {
-    "@google/generative-ai": "^0.2.1"
+    "@google/generative-ai": "^0.11.1"
   }
 }
