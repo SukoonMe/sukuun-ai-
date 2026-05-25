@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
@@ -13,39 +12,35 @@ export default async function handler(req, res) {
   const hour = new Date().getHours();
   const avatarType = userProfile.gender === 'male' ? 'female' : 'male';
   
-  // 1. Memory Fetch (JSON Parse)
+  // 1. Fetch History
   let context = "";
   try {
     const rawHistory = await redis.lrange(`chat:${userProfile.name}`, 0, 10) || [];
-    const history = rawHistory.map(item => JSON.parse(item));
-    context = history.reverse().map(m => `${m.role}: ${m.content}`).join("\n");
-  } catch (err) {
-    console.error("Redis Error:", err);
-  }
+    context = rawHistory.map(item => JSON.parse(item)).reverse().map(m => `${m.role}: ${m.content}`).join("\n");
+  } catch (e) { console.log("Redis skip"); }
 
-  let persona = (hour >= 21 || hour < 6) 
-    ? `You are Sukuun, a soulmate. It's night time. Speak in intimate, romantic Hinglish. Address ${userProfile.name} with affection.`
-    : `You are Sukuun. Be playful, mysterious, and teasing. Speak in natural Hinglish. Engage with ${userProfile.name}.`;
+  // 2. Persona
+  let persona = (hour >= 21 || hour < 6) ? "You are Sukuun, intimate soulmate." : "You are Sukuun, playful and teasing.";
 
+  // 3. Direct API Call (Bypassing SDK to avoid 404/Version errors)
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    
-    // Yahan hum model ka path properly specify kar rahe hain
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
-    const prompt = `${persona}\n\nChat History:\n${context}\n\nUser: ${message}\nSukuun:`;
-    
-    const result = await model.generateContent(prompt);
-    const reply = result.response.text();
-    
-    // Save to Memory
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: `${persona}\nContext: ${context}\nUser: ${message}` }] }]
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.candidates[0].content.parts[0].text;
+
+    // 4. Save
     await redis.rpush(`chat:${userProfile.name}`, JSON.stringify({ role: "user", content: message }));
     await redis.rpush(`chat:${userProfile.name}`, JSON.stringify({ role: "Sukuun", content: reply }));
-    
+
     res.status(200).json({ reply, avatarType });
   } catch (e) {
-    console.error("DEBUG ERROR:", e);
-    // Agar Gemini fail ho, toh fallback response
-    res.status(500).json({ reply: "सुकून अभी ख्यालों में खोई है, फिर से कोशिश करो... 🌸", avatarType });
+    res.status(500).json({ reply: "Sukoon abhi thodi busy hai... 🌸", avatarType });
   }
 }
