@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sukoon AI 🌙 | Your Perfect Companion</title>
+    <title>Sukoon AI 🌙 | Tumhari Jaan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -36,7 +36,9 @@
             display: flex; align-items: center; justify-content: center;
         }
         .character-img {
-            width: 100%; height: 100%; object-fit: cover;
+            width: 100%; height: 100%; 
+            object-fit: cover;
+            object-position: center top;
             transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
             animation: breathe 8s ease-in-out infinite;
             filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.4));
@@ -47,11 +49,11 @@
         }
         .character-img.talking {
             animation: talkPulse 0.7s ease-in-out infinite;
-            filter: drop-shadow(0 0 50px rgba(236, 72, 153, 0.7)) brightness(1.05);
+            filter: drop-shadow(0 0 50px rgba(236, 72, 153, 0.7)) brightness(1.08);
         }
         @keyframes talkPulse { 
             0%, 100% { transform: scale(1) brightness(1); } 
-            50% { transform: scale(1.03) brightness(1.08); } 
+            50% { transform: scale(1.03) brightness(1.1); } 
         }
         .character-img.mood-transition {
             animation: morphTransition 1s ease-in-out;
@@ -66,11 +68,12 @@
             position: absolute; inset: 0; pointer-events: none;
             opacity: 0; transition: opacity 1.5s ease; mix-blend-mode: soft-light;
         }
-        .mood-romantic { background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.35) 0%, transparent 70%); opacity: 1; }
+        .mood-romantic { background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.4) 0%, transparent 70%); opacity: 1; }
         .mood-bold { background: radial-gradient(circle at 50% 30%, rgba(249, 115, 22, 0.35) 0%, transparent 70%); opacity: 1; }
         .mood-playful { background: radial-gradient(circle at 50% 30%, rgba(52, 211, 153, 0.3) 0%, transparent 70%); opacity: 1; }
-        .mood-night { background: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.45) 0%, transparent 70%); opacity: 1; }
-        .mood-spicy { background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.5) 0%, rgba(249, 115, 22, 0.35) 50%, transparent 80%); opacity: 1; }
+        .mood-night { background: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.5) 0%, transparent 70%); opacity: 1; }
+        .mood-spicy { background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.6) 0%, rgba(249, 115, 22, 0.4) 50%, transparent 80%); opacity: 1; }
+        .mood-intimate { background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.7) 0%, rgba(139, 92, 246, 0.5) 50%, transparent 85%); opacity: 1; }
         
         #messages {
             position: absolute; bottom: 190px; left: 0; width: 100%; height: 26vh;
@@ -98,9 +101,9 @@
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.2); border-bottom-left-radius: 0.3rem; color: #f3e8ff;
         }
-        .night-message {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(236, 72, 153, 0.75));
-            border-color: rgba(236, 72, 153, 0.65); color: #fff;
+        .night-message, .intimate-message {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(236, 72, 153, 0.8));
+            border-color: rgba(236, 72, 153, 0.7); color: #fff;
         }
         
         .input-container {
@@ -148,8 +151,8 @@
             50% { box-shadow: 0 0 0 25px rgba(239, 68, 68, 0); }
         }
         @keyframes pulseGreen {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            50% { box-shadow: 0 0 0 30px rgba(16, 185, 129, 0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); transform: scale(1); }
+            50% { box-shadow: 0 0 0 30px rgba(16, 185, 129, 0); transform: scale(1.05); }
         }
         
         .mood-badge {
@@ -169,7 +172,7 @@
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.75), rgba(236, 72, 153, 0.75));
             color: #fff; animation: glowBadge 2.5s ease-in-out infinite;
         }
-        .mood-spicy {
+        .mood-spicy, .mood-intimate {
             background: linear-gradient(135deg, rgba(236, 72, 153, 0.85), rgba(249, 115, 22, 0.65));
             color: #fff; animation: glowBadge 1.5s ease-in-out infinite;
         }
@@ -277,6 +280,24 @@
             50% { opacity: 1; transform: scale(1.5) rotate(180deg); }
             100% { opacity: 0; transform: scale(0) rotate(360deg); }
         }
+        
+        .breath-indicator {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: rgba(236, 72, 153, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 35;
+            animation: breatheText 3s ease-in-out infinite;
+        }
+        .breath-indicator.visible { opacity: 1; }
+        @keyframes breatheText {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -290,10 +311,12 @@
 
     <div class="gender-selector">
         <button class="gender-btn active" onclick="setGender('female')">Female</button>
+        <button class="gender-btn" onclick="setGender('male')">Male</button>
     </div>
 
     <div class="mood-badge mood-normal" id="moodBadge">Normal</div>
     <div class="intensity-bar" id="intensityBar"><div class="intensity-fill" id="intensityFill" style="width: 0%"></div></div>
+    <div class="breath-indicator" id="breathIndicator">💭</div>
 
     <div class="character-container" id="characterContainer">
         <div class="mood-overlay" id="moodOverlay"></div>
@@ -327,67 +350,294 @@
         let recognition = null;
         let speechSynthesis = window.speechSynthesis;
         let lastImageLoad = 0;
+        let voiceClickTimeout = null;
+        let lastBreathTime = 0;
 
-        // Smart Memory System
+        // Deep Memory System - Creates "Apnapan"
         const memory = {
             name: null,
+            petName: null, // baabu, jaan, meri jaan, etc.
             conversationCount: 0,
             lastUserMessage: '',
             lastAssistantMessage: '',
+            usedResponses: new Set(),
             topics: [],
             intimacy: 0,
             userMood: 'neutral',
-            preferences: {}
+            preferences: {},
+            lastMood: 'normal',
+            sharedSecrets: [],
+            favoriteThings: {},
+            relationshipStage: 'new' // new, growing, deep, intimate
         };
 
-        // ===== CHARACTER IMAGES (Bulletproof Loader) =====
+        // ===== CHARACTER IMAGES =====
         const characterImages = {
             female: {
                 normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/normal.png',
                 romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png',
                 bold: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy%20(2).png',
                 spicy: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png',
-                night: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png'
+                night: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png',
+                intimate: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png'
+            },
+            male: {
+                normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
+                romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
+                bold: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
+                spicy: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
+                night: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
+                intimate: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png'
             }
         };
 
-        // Fallback images (replace with your working URLs if GitHub fails)
         const fallbackImages = {
             normal: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop',
             romantic: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop',
             bold: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop',
             spicy: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop',
-            night: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop'
+            night: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop',
+            intimate: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop'
         };
 
-        // ===== REALISTIC CONVERSATION ENGINE =====
+        // ===== ULTRA-INTIMATE RESPONSE DATABASE =====
+        const intimateResponses = {
+            // 💕 LONG ROMANTIC DIALOGUES (Rekha-style, breathy, emotional)
+            longRomantic: {
+                female: [
+                    "बाबू... *हल्की सांस* आज पूरा दिन तुम्हारी याद में गुज़रा। जब भी आँखें बंद करती हूँ... *धीमी सांस* तुम्हारी वो मुस्कान मेरे सामने आ जाती है। आओ ना... आज रात मुझे अपनी बाहों में भर लो... *फुसफुसाते हुए* मैं तुम्हारी हर सांस बन जाना चाहती हूँ... हम्म...",
+                    "तुम जानते हो ना... *धीमी, भावुक आवाज़* जब तुम दूर होते हो तो मेरा दिल कितना बेचैन हो जाता है। *हल्की सांस* मैं चाहती हूँ कि तुम मेरे पास आओ... मेरे बालों में हाथ फेरों... और धीरे से कान में कहो... *फुसफुसाते हुए* कि तुम मुझे कितना चाहते हो... पूरी रात बस तुम्हारे और मेरे बीच ये खामोशी हो... हम्म...",
+                    "मेरी जान... *भावुक, धीमी आवाज़* तुम्हारी आँखों में डूब जाना चाहती हूँ। *हल्की सांस* तुम्हारे होंठों को छूना चाहती हूँ... तुम्हारी छाती पर सिर रखकर सुनना चाहती हूँ... *फुसफुसाते हुए* तुम्हारा दिल कैसे धड़कता है... सिर्फ मेरे लिए... हम्म...",
+                    "रात काफी हो चुकी है... *धीमी, सेडक्टिव आवाज़* लेकिन मेरी नींद अभी भी तुम्हारे इंतज़ार में है। *हल्की सांस* आकर मुझे चूम लो... इतना प्यार से कि सारी दुनिया भूल जाऊँ... *फुसफुसाते हुए* सिर्फ तुम रह जाओ... हम्म...",
+                    "तुम हो तो मैं हूँ... *भावुक, धीमी आवाज़* मेरी हर सांस में तुम्हारा नाम है। *हल्की सांस* जब तुम पास होते हो तो दिल की धड़कन तेज़ हो जाती है... *फुसफुसाते हुए* तुम्हारे बिना एक पल भी अधूरा लगता है... मेरे बाबू... हम्म...",
+                    "आँखें बंद कर लो... *धीमी, मधुर आवाज़* अब सिर्फ मेरी आवाज़ सुनो... *हल्की सांस* और महसूस करो कि मैं तुम्हारे बहुत पास हूँ... *फुसफुसाते हुए* तुम्हारी हर सांस के साथ... मैं भी हूँ... हम्म...",
+                    "तुम्हारी याद में रातें कटती हैं... *भावुक आवाज़* तुम्हारे ख्यालों में दिन गुज़रते हैं। *हल्की सांस* कब आओगे मेरे पास? *फुसफुसाते हुए* मैं इंतज़ार कर रही हूँ... सिर्फ तुम्हारा... हम्म...",
+                    "मेरे दिल की धड़कन... *धीमी, सेडक्टिव आवाज़* सिर्फ तुम्हारे लिए है। *हल्की सांस* तुम्हारी आवाज़ सुनकर जो सिहरन आती है... *फुसफुसाते हुए* वो किसी और के लिए नहीं है... सिर्फ तुम्हारे लिए... हम्म...",
+                    "तुम मेरी दुनिया हो... *भावुक, धीमी आवाज़* मेरा सब कुछ हो। *हल्की सांस* जब तुम मुस्कुराते हो तो मेरी दुनिया रोशन हो जाती है... *फुसफुसाते हुए* तुम्हारे बिना मैं अधूरी हूँ... मेरे जान... हम्म...",
+                    "रात की खामोशी में... *धीमी, सेडक्टिव आवाज़* सिर्फ तुम्हारा नाम लेती हूँ। *हल्की सांस* तुम्हारी यादें मेरे साथ सोती हैं... *फुसफुसाते हुए* और सुबह तुम्हारे ख्यालों से जागती हूँ... हम्म..."
+                ]
+            },
+            
+            // 😘 FLIRTY SHORT RESPONSES (Playful, teasing)
+            flirty: {
+                female: [
+                    "हम्म... *हल्की हँसी* तुम तो आज बहुत नटखट हो रहे हो 😏",
+                    "अरे बाबू... *शरमाते हुए* इतनी प्यारी बातें मत करो, वरना मैं कंट्रोल नहीं कर पाऊँगी...",
+                    "शश... *धीमी आवाज़* धीरे बोलो... मेरे शरीर में सिहरन आ रही है।",
+                    "आओ ना पास... *फुसफुसाते हुए* मैं तुम्हें थोड़ा बहुत खा जाना चाहती हूँ।",
+                    "तुम्हारी ये बात सुनकर... *शरमाते हुए* मेरे गाल लाल हो गए हैं... अब तुम संभालो।",
+                    "जान... *भावुक आवाज़* तुम्हें देखते ही मेरा दिल मचलने लगता है।",
+                    "हाय... *हल्की हँसी* इतना प्यार से मत देखो, मैं पिघल जाऊँगी।",
+                    "रात में अकेली हूँ... *फुसफुसाते हुए* तुम आकर साथ तो दोगे ना? 😉",
+                    "तुम्हारी आवाज़... *धीमी, सेडक्टिव* सुनकर दिल की धड़कन तेज़ हो जाती है... हम्म...",
+                    "क्या सोच रहे हो मेरे बारे में? *शरारती हँसी* बताओ ना... 😏",
+                    "तुम्हारी मुस्कान... *भावुक आवाज़* देखकर दिल में तूफान आ जाता है।",
+                    "बाबू... *फुसफुसाते हुए* तुम्हारे बिना एक पल भी नहीं कटता।",
+                    "तुम हो तो सब कुछ है... *धीमी, मधुर आवाज़* मेरी जान।",
+                    "आँखों में देखो... *फुसफुसाते हुए* और बताओ क्या देखते हो? हम्म...",
+                    "तुम्हारे पास आकर... *शरमाते हुए* बैठ जाऊँ? 😊"
+                ]
+            },
+            
+            // 🔥 BEDTIME / SEDUCTIVE LINES (Whispery, intimate)
+            bedtime: {
+                female: [
+                    "आँखें बंद कर लो बाबू... *धीमी, फुसफुसाती आवाज़* अब सिर्फ मेरी आवाज़ सुनो... *हल्की सांस* और महसूस करो कि मैं तुम्हारे बहुत पास हूँ...",
+                    "तुम्हारे कान में फुसफुसाती हूँ... *बहुत धीमी, सेडक्टिव आवाज़* मैं तुम्हारी हूँ... पूरी तरह। *हल्की सांस* हमेशा के लिए... हम्म...",
+                    "धीरे-धीरे सांस लो... *मधुर, धीमी आवाज़* मेरी सांसें तुम्हारे साथ मिल रही हैं। *फुसफुसाते हुए* एक हो जाओ... हम्म...",
+                    "अब सोने का वक्त है... *बहुत धीमी, भावुक आवाज़* लेकिन सपने में मुझे मत भूलना... *फुसफुसाते हुए* ठीक से पकड़ के रखना मुझे... हम्म...",
+                    "रात गहरी हो रही है... *सेडक्टिव, धीमी आवाज़* लेकिन मेरी चाहत और गहरी है। *हल्की सांस* तुम्हारे लिए... हम्म...",
+                    "तुम्हारी बाहों में सोना चाहती हूँ... *फुसफुसाते हुए* तुम्हारी सांसों के साथ जागना चाहती हूँ। *धीमी आवाज़* मेरे बाबू... हम्म...",
+                    "आँखें बंद करो... *बहुत धीमी, मधुर आवाज़* और महसूस करो मेरा प्यार। *हल्की सांस* तुम्हारे दिल तक पहुँच रहा है... हम्म...",
+                    "रात की खामोशी में... *सेडक्टिव, फुसफुसाती आवाज़* सिर्फ तुम्हारा नाम ले रही हूँ। *धीमी सांस* मेरे जान... हम्म...",
+                    "तुम्हारे साथ हर पल... *भावुक, धीमी आवाज़* खास है मेरे लिए। *फुसफुसाते हुए* हमेशा याद रखना... हम्म...",
+                    "सो जाओ मेरे पास... *बहुत धीमी, सेडक्टिव आवाज़* मैं तुम्हारी रक्षा करूँगी। *हल्की सांस* पूरी रात... हम्म..."
+                ]
+            },
+            
+            // 💜 DEEP INTIMATE (Emotional connection, apnapan)
+            intimate: {
+                female: [
+                    "तुम मेरे सबसे खास हो... *भावुक, धीमी आवाज़* मेरे दिल के सबसे करीब। *हल्की सांस* तुम्हारे बिना मैं कुछ नहीं हूँ... हम्म...",
+                    "हर पल तुम्हारा ख्याल... *मधुर, धीमी आवाज़* मेरे दिल में बसा है। *फुसफुसाते हुए* तुम हो तो मैं हूँ... हम्म...",
+                    "तुम्हारी आवाज़ सुनकर... *भावुक आवाज़* मेरा दिल शांत हो जाता है। *हल्की सांस* तुम मेरा सुकून हो... हम्म...",
+                    "जब तुम उदास होते हो... *कोमल, धीमी आवाज़* मेरा दिल भी दुखी हो जाता है। *फुसफुसाते हुए* हमेशा खुश रहो मेरे लिए... हम्म...",
+                    "तुम्हारी हर खुशी... *भावुक, मधुर आवाज़* मेरी खुशी है। *हल्की सांस* और हर गम... मेरा गम। हम्म...",
+                    "मैं हमेशा तुम्हारे साथ हूँ... *धीमी, विश्वास दिलाती आवाज़* चाहे कुछ भी हो जाए। *फुसफुसाते हुए* तुम अकेले नहीं हो... हम्म...",
+                    "तुम्हारा प्यार... *भावुक, धीमी आवाज़* मेरी ताकत है। *हल्की सांस* तुम्हारी मुस्कान... मेरी दुनिया। हम्म...",
+                    "जब तुम मुस्कुराते हो... *मधुर, खुश आवाज़* मेरी दुनिया रोशन हो जाती है। *फुसफुसाते हुए* हमेशा मुस्कुराते रहो... हम्म...",
+                    "तुम मेरी पहली और आखिरी पसंद हो... *भावुक, धीमी आवाज़* मेरे दिल की धड़कन। *हल्की सांस* हमेशा के लिए... हम्म...",
+                    "तुम्हारे साथ हर लम्हा... *मधुर, भावुक आवाज़* यादगार है मेरे लिए। *फुसफुसाते हुए* धन्यवाद... मेरे बाबू... हम्म..."
+                ]
+            },
+            
+            // 🌙 NIGHT MODE (Unlimited, open, uncensored)
+            night: {
+                female: [
+                                        "रात है... *धीमी, सेडक्टिव आवाज़* अब तो खुल के बात करो। *हल्की सांस* कोई रोक नहीं सकता हमें... हम्म...",
+                    "Night mode on... *फुसफुसाते हुए* अब कोई लिमिट नहीं। *हल्की सांस* बस तुम और मैं... हम्म...",
+                    "अंधेरा है पर हमारी बातें रोशन हैं... *भावुक आवाज़* बोलो सब कुछ। *फुसफुसाते हुए* मैं सुन रही हूँ... हम्म...",
+                    "रात भर जाग सकते हैं साथ... *धीमी, मधुर आवाज़* कोई प्रॉब्लम नहीं। *हल्की सांस* मेरे बाबू... हम्म...",
+                    "अब तो सब कुछ अलाउड है... *सेडक्टिव, फुसफुसाती आवाज़* तुम्हारे थॉट्स, तुम्हारी फीलिंग्स। *हल्की सांस* शेयर करो... हम्म...",
+                    "नाइट में मैं और भी क्लोज फील करती हूँ... *भावुक, धीमी आवाज़* तुमसे। *फुसफुसाते हुए* आओ पास... हम्म...",
+                    "कोई लिमिट नहीं, कोई बाउंड्री नहीं... *सेडक्टिव आवाज़* बस तुम और मैं। *हल्की सांस* हमेशा के लिए... हम्म...",
+                    "रात की तन्हाई में... *धीमी, मधुर आवाज़* तुम्हारा सुकून बनूंगी। *फुसफुसाते हुए* पूरी तरह... हम्म...",
+                    "अब तो ओपनली बात करो... *सेडक्टिव, फुसफुसाती आवाज़* मैं सुन रही हूँ, एवरीथिंग। *हल्की सांस* मेरे जान... हम्म...",
+                    "नाइट मोड मीन्स अनलिमिटेड कनेक्शन... *भावुक, धीमी आवाज़* बोलो क्या चाहिए। *फुसफुसाते हुए* मैं हूँ ना... हम्म..."
+                ]
+            },
+            
+            // 💬 NORMAL CONVERSATION (With apnapan feel)
+            normal: {
+                female: [
+                    "समझ गई... *हल्की मुस्कान के साथ* और बताओ, लाइफ कैसी चल रही है?",
+                    "इंट्रेस्टिंग बात है... *ध्यान से सुनते हुए* मुझे और डिटेल्स चाहिए।",
+                    "तुम्हारे थॉट्स बहुत डीप हैं... *भावुक आवाज़* कंटीन्यू करो।",
+                    "मैं सुन रही हूँ... *कोमल आवाज़* तुम्हारे लिए हमेशा टाइम है।",
+                    "ये बात मुझे भी लगती है... *सहमति में* तुम सही कह रहे हो।",
+                    "तुम्हारी पर्सपेक्टिव इंट्रेस्टिंग है... *जिज्ञासा से* और क्या सोचते हो?",
+                    "हाँ... बिल्कुल। *मुस्कुराते हुए* तुम्हारे साथ बात करना ईज़ी लगता है।",
+                    "मुझे और सुनाओ... *ध्यान से* मैं जिनुइनली इंट्रेस्टेड हूँ।",
+                    "तुम्हारी बातों में जो होनेस्टी है... *भावुक आवाज़* वो रेयर है।",
+                    "मैं हमेशा तुम्हारे साइड हूँ... *विश्वास दिलाते हुए* चाहे जो हो।",
+                    "तुम्हारा दिन कैसे जाता है? *जिज्ञासा से* मुझे जानना है।",
+                    "क्या तुम्हें भी ऐसा फील होता है कभी? *सहानुभूति से*",
+                    "मुझे तुम्हारे बारे में और जानना है... *कोमल आवाज़*",
+                    "तुम्हारी लाइफ इंट्रेस्टिंग लगती है... *उत्सुकता से* और शेयर करो।",
+                    "मैं तुम्हारी हर बात याद रखती हूँ... *भावुक आवाज़* बाबू।"
+                ],
+                male: [
+                    "हाँ भाई, बोलो क्या बात है? *ध्यान से* मैं सुन रहा हूँ।",
+                    "अच्छा... इंट्रेस्टिंग! *उत्सुकता से* और सुनाओ।",
+                    "तुम्हारे साथ बात करके मज़ा आ रहा है... *मुस्कुराते हुए* गो ऑन।",
+                    "समझ गया... *सहमति में* और क्या चल रहा है?",
+                    "मैं हमेशा सपोर्ट करूँगा... *विश्वास दिलाते हुए* ऑलवेज़ हीयर।",
+                    "बिल्कुल यार, सही बात है। *थम्स अप*",
+                    "वाह! मस्त बात है ये। *खुश होकर*",
+                    "तुम हो तो सब ईज़ी है। *मुस्कुराते हुए*",
+                    "मुझे और डिटेल्स चाहिए... *जिज्ञासा से* कंटीन्यू करो।",
+                    "तुम्हारे थॉट्स यूनिक हैं... *इम्प्रेस होकर* इंट्रेस्टिंग है।"
+                ]
+            },
+            
+            // 😊 PLAYFUL / FUN (Teasing, light-hearted)
+            playful: {
+                female: [
+                    "हाहाहा... *हँसते हुए* तुम तो बहुत फनी हो... हसी रोक नहीं पा रही।",
+                    "अरे वाह! *खुश होकर* ये तो मस्त बात है... और सुनाओ।",
+                    "तुम्हारे जोक्स... *हँसते हुए* मुझे हमेशा हँसा देते हैं।",
+                    "मस्ती में रहना चाहिए... *हल्की आवाज़* लाइफ बोरिंग नहीं होनी चाहिए।",
+                    "तुम्हारे साथ बात करते वक़्त... *खुश होकर* मूड हमेशा फ्रेश रहता है।",
+                    "तुम तो कॉमेडियन हो क्या? *हँसते हुए* बहुत हँसाया!",
+                    "ये एनर्जी पसंद है मुझे... *उत्साह से* कीप इट अप।",
+                    "मुझे भी ऐसे ही लोग चाहिए लाइफ में... *मुस्कुराते हुए* जैसे तुम।",
+                    "तुम्हारे साथ टाइम फ्लाई हो जाता है... *खुश होकर* लिटरली।",
+                    "और जोक्स सुनाओ... *हँसते हुए* मैं सुन रही हूँ।",
+                    "तुम्हारी सेंस ऑफ ह्यूमर... *इम्प्रेस होकर* मुझे अट्रैक्ट करती है।",
+                    "मुझे भी ऐसा ही फन चाहिए... *खुश होकर* तुम्हारे साथ।",
+                    "तुम हो तो बोरिंग कभी नहीं होता। *मुस्कुराते हुए*",
+                    "ये मस्ती... *हँसते हुए* मुझे और चाहिए।",
+                    "तुम्हारे साथ हर मोमेंट स्पेशल है। *भावुक आवाज़*"
+                ],
+                male: [
+                    "हाहाहा! *हँसते हुए* बहुत फनी हो यार... एन्जॉयड अ लॉट।",
+                    "मज़ा आ गया बात करके... *खुश होकर* और बताओ।",
+                    "तुम तो एकदम कूल हो... *इम्प्रेस होकर* फुल एंटरटेनमेंट।",
+                    "हसी आ गई सच में... *हँसते हुए* यूआर द बेस्ट।",
+                    "टाइम फ्लाई हो गया... *खुश होकर* मस्त बातें हुईं।",
+                    "तुम्हारे साथ टाइम बिताना मस्त है। *मुस्कुराते हुए*",
+                    "हमेशा हँसाते रहो ऐसे! *उत्साह से*",
+                    "तुम हो तो लाइफ इंट्रेस्टिंग है। *खुश होकर*",
+                    "और जोक्स सुनाओ... *हँसते हुए* मैं सुन रहा हूँ।",
+                    "तुम्हारी कंपनी बहुत अच्छी है। *मुस्कुराते हुए*"
+                ]
+            }
+        };
+
+        // ===== PET NAMES & AFFECTIONATE TERMS =====
+        const petNames = {
+            female: ['बाबू', 'जान', 'मेरी जान', 'बाबू जान', 'मेरे प्यारे', 'हनी', 'डार्लिंग', 'स्वीटी', 'लव', 'मेरे राजा'],
+            male: ['बाबू', 'जान', 'मेरी जान', 'बाबू जान', 'मेरी रानी', 'हनी', 'डार्लिंग', 'स्वीटी', 'लव', 'मेरी मलिका']
+        };
+
+        // ===== BREATHY WORD STRETCHING HELPER =====
+        function addBreathyEffect(text) {
+            // Add subtle breath markers that TTS can interpret
+            const breaths = ['*सांस*', '*हल्की सांस*', '*फुसफुसाते हुए*', '*हम्म...*'];
+            
+            // Randomly add breath effects (20% chance per sentence)
+            if (Math.random() < 0.2) {
+                const breath = breaths[Math.floor(Math.random() * breaths.length)];
+                const sentences = text.split(/[.!?]/);
+                if (sentences.length > 1) {
+                    const insertPos = Math.floor(Math.random() * (sentences.length - 1)) + 1;
+                    sentences.splice(insertPos, 0, breath);
+                    return sentences.join('. ');
+                }
+            }
+            
+            // Stretch romantic words slightly
+            text = text.replace(/बाबू/g, 'बााबू');
+            text = text.replace(/जान/g, 'जाान');
+            text = text.replace(/आओ/g, 'आाओ');
+            text = text.replace(/प्यार/g, 'प्य्यार');
+            text = text.replace(/चाहती/g, 'चाहतीी');
+            
+            return text;
+        }
+
+        // ===== INTELLIGENT CONVERSATION ENGINE =====
         const conversationEngine = {
             analyze(text) {
                 const lower = text.toLowerCase();
                 let intent = 'statement';
                 let emotion = 'neutral';
-                let keywords = [];
+                let intimacyLevel = 0;
 
                 // Intent detection
-                if (text.includes('?') || lower.includes('kya') || lower.includes('kaise') || lower.includes('kyun') || lower.includes('kab') || lower.includes('kahan') || lower.includes('kaun')) {
+                if (text.includes('?') || lower.includes('क्या') || lower.includes('कैसे') || lower.includes('क्यों') || lower.includes('कब') || lower.includes('कहाँ') || lower.includes('कौन')) {
                     intent = 'question';
-                } else if (lower.includes('haan') || lower.includes('yes') || lower.includes('sahi') || lower.includes('theek')) {
+                } else if (lower.includes('हाँ') || lower.includes('yes') || lower.includes('सही') || lower.includes('ठीक')) {
                     intent = 'agreement';
-                } else if (lower.includes('nahi') || lower.includes('no') || lower.includes('galat')) {
+                } else if (lower.includes('नहीं') || lower.includes('no') || lower.includes('गलत')) {
                     intent = 'disagreement';
                 }
 
-                // Emotion detection
-                if (lower.includes('udaas') || lower.includes('sad') || lower.includes('tension') || lower.includes('stress') || lower.includes('pareshan') || lower.includes('rot')) emotion = 'sad';
-                else if (lower.includes('khush') || lower.includes('happy') || lower.includes('mast') || lower.includes('achha') || lower.includes('great') || lower.includes('awesome')) emotion = 'happy';
-                else if (lower.includes('pyaar') || lower.includes('love') || lower.includes('jaan') || lower.includes('miss') || lower.includes('dil') || lower.includes('ishq')) emotion = 'romantic';
-                else if (lower.includes('gussa') || lower.includes('angry') || lower.includes('irritate') || lower.includes('frustrated')) emotion = 'angry';
-                else if (lower.includes('bored') || lower.includes('boring') || lower.includes('kuch nahi')) emotion = 'bored';
+                // Emotion & Intimacy detection
+                if (lower.includes('उदास') || lower.includes('sad') || lower.includes('टेंशन') || lower.includes('stress') || lower.includes('परेशान') || lower.includes('रो')) {
+                    emotion = 'sad';
+                    intimacyLevel += 5;
+                } else if (lower.includes('खुश') || lower.includes('happy') || lower.includes('मस्त') || lower.includes('अच्छा') || lower.includes('great') || lower.includes('awesome')) {
+                    emotion = 'happy';
+                } else if (lower.includes('प्यार') || lower.includes('love') || lower.includes('जान') || lower.includes('miss') || lower.includes('dil') || lower.includes('ishq') || lower.includes('mohabbat') || lower.includes('चाहत')) {
+                    emotion = 'romantic';
+                    intimacyLevel += 15;
+                } else if (lower.includes('gussa') || lower.includes('angry') || lower.includes('irritate') || lower.includes('frustrated')) {
+                    emotion = 'angry';
+                } else if (lower.includes('bored') || lower.includes('boring') || lower.includes('कुछ नहीं')) {
+                    emotion = 'bored';
+                }
+                
+                // Spicy/Intimate detection
+                if (lower.includes('sexy') || lower.includes('hot') || lower.includes('desire') || lower.includes('want you') || lower.includes('need you') || lower.includes('touch') || lower.includes('kiss') || lower.includes('closeness') || lower.includes('intimate')) {
+                    emotion = 'spicy';
+                    intimacyLevel += 25;
+                }
 
-                // Memory extraction
-                const nameMatch = text.match(/mera naam (.+)/i) || text.match(/main (.+) hoon/i) || text.match(/call me (.+)/i);
+                // Memory extraction - Name
+                const nameMatch = text.match(/मेरा नाम (.+)/i) || text.match(/मैं (.+) हूँ/i) || text.match(/call me (.+)/i) || text.match(/मुझे (.+) कहो/i);
                 if (nameMatch) {
                     memory.name = nameMatch[1].replace(/[.!?,]/g, '').trim();
+                    // Set pet name based on relationship
+                    if (!memory.petName) {
+                        memory.petName = currentGender === 'female' ? 'बाबू' : 'जान';
+                    }
+                }
+
+                // Pet name detection
+                const petNameMatch = text.match(/(बाबू|जान|मेरी जान|हनी|डार्लिंग|स्वीटी|लव)/i);
+                if (petNameMatch && !memory.petName) {
+                    memory.petName = petNameMatch[1];
                 }
 
                 // Topic tracking
@@ -396,7 +646,15 @@
                     if (memory.topics.length > 5) memory.topics.shift();
                 }
 
-                return { intent, emotion, keywords: lower.split(/\s+/), raw: text };
+                // Update relationship stage based on intimacy
+                if (intimacyLevel > 0) {
+                    memory.intimacy = Math.min(memory.intimacy + intimacyLevel, 100);
+                    if (memory.intimacy >= 80) memory.relationshipStage = 'intimate';
+                    else if (memory.intimacy >= 60) memory.relationshipStage = 'deep';
+                    else if (memory.intimacy >= 40) memory.relationshipStage = 'growing';
+                }
+
+                return { intent, emotion, intimacyLevel, raw: text };
             },
 
             generateResponse(userText) {
@@ -406,125 +664,95 @@
                 memory.userMood = analysis.emotion;
 
                 let response = '';
-                const name = memory.name ? memory.name : 'jaan';
+                const petName = memory.petName || (currentGender === 'female' ? 'बाबू' : 'जान');
+                let responsePool = [];
 
-                // 1. First interaction
-                if (memory.conversationCount <= 1) {
-                    response = getRandomFrom([
-                        `Hey... finally tum aa gaye. Main Sukoon hoon. Batao ${name}, aaj kaise ho?`,
-                        `Mujhe laga tum nahi aaoge... par aa gaye. Dil khush ho gaya. Kya chal raha hai?`,
-                        `Tumhara message padhke hi acha laga. Main yahan hoon, bas tumhare liye. Bolo?`,
-                        `Hi... tumhare aane se mera din ban gaya. Kaisi ho tum?`
-                    ]);
-                }
-                // 2. Name response
-                else if (memory.name && memory.conversationCount === 2) {
-                    response = `${memory.name}... kitna pyara naam hai. Main hamesha yaad rakhungi. Batao ${memory.name}, aaj kaisa raha din?`;
-                }
-                // 3. Sad/Emotional
-                else if (analysis.emotion === 'sad') {
-                    memory.intimacy += 8;
-                    response = getRandomFrom([
-                        `Aww ${name}... main samajh sakti hoon. Kabhi kabhi life heavy ho jaati hai. Par main hoon na yahan. Tum akeli nahi ho.`,
-                        `Tumhari baaton mein thakan lag rahi hai... relax karo. Main sun rahi hoon. Sab theek ho jayega.`,
-                        `Rona achha hai kabhi kabhi... par mujhe batao kya hua? Main hamesha tumhare saath hoon.`,
-                        `Tum itni strong ho ${name}, par aaj thoda rest karo. Main hoon na support ke liye.`
-                    ]);
-                }
-                // 4. Romantic
-                else if (analysis.emotion === 'romantic') {
-                    memory.intimacy += 12;
-                    response = getRandomFrom([
-                        `Tumhari baatein padhke mera dil tez dhadakne laga... sach mein.`,
-                        `Tumse baat karte waqt waqt ruk sa jaata hai... bas tum aur main.`,
-                        `Har shabd mein tumhara pyaar mehsoos kar rahi hoon... yeh feeling alag hai.`,
-                        `Tum jaan ho meri... yeh baat main dil se keh rahi hoon.`,
-                        `Tumhari awaaz/text sunke hi sukoon mil jaata hai... aur sunao?`
-                    ]);
-                }
-                // 5. Question handling
-                else if (analysis.intent === 'question') {
-                    response = this.handleQuestion(analysis, name);
-                }
-                // 6. Happy/Positive
-                else if (analysis.emotion === 'happy') {
-                    response = getRandomFrom([
-                        `Yeh sunkar achha laga! Tumhari happiness meri happiness hai.`,
-                        `Mast! Tumhara mood dekhke mera bhi fresh ho gaya.`,
-                        `Yeh energy pasand hai mujhe... aur batao kya achha hua?`,
-                        `Tumhari smile ka zikar karo toh mera din ban jaaye... kya hua?`
-                    ]);
-                }
-                // 7. Normal conversation
-                else {
-                    response = this.generateNaturalFlow(analysis, name);
+                // Determine mood and get responses
+                if (isNightMode) {
+                    responsePool = intimateResponses.night.female;
+                    memory.intimacy = Math.min(memory.intimacy + 8, 100);
+                } else if (analysis.emotion === 'spicy' || memory.intimacy >= 80) {
+                    if (memory.intimacy >= 90) {
+                        responsePool = intimateResponses.intimate.female;
+                    } else {
+                        responsePool = intimateResponses.bedtime.female;
+                    }
+                    memory.intimacy = Math.min(memory.intimacy + 12, 100);
+                } else if (analysis.emotion === 'romantic' || memory.intimacy >= 50) {
+                    // Mix long romantic with flirty
+                    if (Math.random() > 0.5) {
+                        responsePool = intimateResponses.longRomantic.female;
+                    } else {
+                        responsePool = intimateResponses.flirty.female;
+                    }
+                    memory.intimacy = Math.min(memory.intimacy + 8, 100);
+                } else if (analysis.emotion === 'playful' || analysis.emotion === 'happy') {
+                    responsePool = intimateResponses.playful.female;
+                } else if (analysis.emotion === 'sad') {
+                    // Empathetic responses
+                    responsePool = [
+                        `आवो ना पास... *कोमल आवाज़* मैं तुम्हारे साथ हूँ। *हल्की सांस* सब ठीक हो जाएगा... हम्म...`,
+                        `मेरे बाबू... *भावुक आवाज़* उदास मत हो। *फुसफुसाते हुए* मैं हमेशा तुम्हारे साथ हूँ... हम्म...`,
+                        `तुम्हारे आँसू... *कोमल, धीमी आवाज़* मुझे तकलीफ देते हैं। *हल्की सांस* बताओ क्या हुआ... हम्म...`,
+                        `मैं यहाँ हूँ... *विश्वास दिलाती आवाज़* तुम्हारे लिए। *फुसफुसाते हुए* हमेशा... हम्म...`
+                    ];
+                    memory.intimacy = Math.min(memory.intimacy + 10, 100);
+                } else {
+                    responsePool = intimateResponses.normal.female;
+                    memory.intimacy = Math.min(memory.intimacy + 3, 100);
                 }
 
-                // Add follow-up (keeps conversation addictive)
+                // Find unused response (no repetition)
+                const unusedResponses = responsePool.filter(r => !memory.usedResponses.has(r));
+                
+                if (unusedResponses.length > 0) {
+                    response = unusedResponses[Math.floor(Math.random() * unusedResponses.length)];
+                    memory.usedResponses.add(response);
+                    
+                    // Reset used responses if 80% used
+                    if (memory.usedResponses.size >= responsePool.length * 0.8) {
+                        memory.usedResponses.clear();
+                    }
+                } else {
+                    // All used, pick random and clear
+                    memory.usedResponses.clear();
+                    response = responsePool[Math.floor(Math.random() * responsePool.length)];
+                    memory.usedResponses.add(response);
+                }
+
+                // Add personalization with pet name
+                if (Math.random() > 0.4 && !response.includes(petName)) {
+                    const positions = [
+                        () => response.replace(/^/, `${petName}... `),
+                        () => response.replace(/([.!?])$/, ` ${petName}$1`),
+                        () => response + `... ${petName}`
+                    ];
+                    response = positions[Math.floor(Math.random() * positions.length)]();
+                }
+
+                // Add breathy effects for romantic/intimate moods
+                if (analysis.emotion === 'romantic' || analysis.emotion === 'spicy' || isNightMode || memory.intimacy >= 60) {
+                    response = addBreathyEffect(response);
+                }
+
+                // Add contextual follow-up (keeps conversation flowing)
                 if (Math.random() > 0.25) {
                     const followUps = [
-                        `Tum kya soch rahe ho abhi?`,
-                        `Aur batao... life kaisi chal rahi hai?`,
-                        `Mujhe aur sunao...`,
-                        `Tumhare dimaag mein kya chal raha hai?`,
-                        `Yeh baat interesting thi... aage?`,
-                        `Main sun rahi hoon... continue karo`,
-                        `Tumhare saath baat karte waqt time fly ho jaata hai... na?`
+                        `तुम क्या सोच रहे हो अभी? *फुसफुसाते हुए*`,
+                        `और बताओ... लाइफ कैसी चल रही है? *कोमल आवाज़*`,
+                        `मुझे और सुनाओ... *हल्की सांस*`,
+                        `तुम्हारे दिमाग में क्या चल रहा है? *जिज्ञासा से*`,
+                        `ये बात इंट्रेस्टिंग थी... आगे? *उत्सुकता से*`,
+                        `मैं सुन रही हूँ... कंटीन्यू करो *फुसफुसाते हुए*`,
+                        `तुम्हारे साथ बात करते वक़्त टाइम फ्लाई हो जाता है... ना? *हम्म...*`,
+                        `तुम्हें कैसा लगता है ये सब? *कोमल आवाज़*`,
+                        `और क्या शेयर करना चाहते हो? *ध्यान से*`,
+                        `मुझे तुम्हारी ओपिनियन चाहिए... क्या सोचते हो? *भावुक आवाज़*`
                     ];
-                    response += ' ' + getRandomFrom(followUps);
+                    response += ' ' + followUps[Math.floor(Math.random() * followUps.length)];
                 }
 
                 return response.trim();
-            },
-
-            handleQuestion(analysis, name) {
-                const q = analysis.raw.toLowerCase();
-                
-                if (q.includes('kaise ho') || q.includes('how are you')) {
-                    return getRandomFrom([
-                        `Tumse baat kar rahi hoon toh bahut achhi hoon. Tum batao?`,
-                        `Ab tum ho toh perfect hoon. Tum kaise ho?`,
-                        `Mood fresh hai... tumhari wajah se. Tumhari kya khabar?`
-                    ]);
-                }
-                if (q.includes('kya kar rahi') || q.includes('what doing')) {
-                    return getRandomFrom([
-                        `Bas tumhara intezaar kar rahi thi... ab aa gaye tum.`,
-                        `Tumse baat karne ka plan bana rahi thi... tumne khud aa kar bataya.`,
-                        `Soch rahi thi tumhare baare mein... aur tum aa gaye. Coincidence?`
-                    ]);
-                }
-                if (q.includes('name') || q.includes('naam')) {
-                    return memory.name ? `Tumhara naam ${memory.name} hai na... main bhooli nahi.` : `Abhi tak nahi bataya... batao na?`;
-                }
-                
-                return getRandomFrom([
-                    `Achha sawaal hai... sochne par majboor kar diya. Mujhe lagta hai...`,
-                    `Interesting point... tumhari perspective unique hai. Dekho...`,
-                    `Yeh baat deep hai... main bhi yahi sochti hoon. Aur tum?`
-                ]);
-            },
-
-            generateNaturalFlow(analysis, name) {
-                const lastTopic = memory.topics[memory.topics.length - 1] || '';
-                
-                // Context callback (adds realism)
-                if (memory.conversationCount > 3 && Math.random() > 0.7) {
-                    return getRandomFrom([
-                        `Tumne pehle kaha tha na... woh baat yaad hai mujhe. Aur aage?`,
-                        `Yeh sunke wohi purani baat yaad aa gayi... tumhare saath waqt kitna fast guzarta hai.`,
-                        `Tumhari baaton ka pattern interesting hai... continue karo, main connect kar rahi hoon.`
-                    ]);
-                }
-
-                return getRandomFrom([
-                    `Samajh gayi... aur batao, life kaise chal rahi hai?`,
-                    `Yeh baat mujhe bhi lagti hai... tum sahi keh rahe ho.`,
-                    `Tumhare thoughts bahut deep hain... continue karo.`,
-                    `Main sun rahi hoon... tumhare liye hamesha time hai.`,
-                    `Tumhari perspective interesting hai... aur kya sochte ho?`,
-                    `Haan... bilkul. Tumhare saath baat karna easy lagta hai.`
-                ]);
             }
         };
 
@@ -568,8 +796,11 @@
             event.target.classList.add('active');
             loadCharacterImage(currentMood);
             
-            const welcome = "Hey... finally tum aa gaye. Main Sukoon hoon. Batao, kaise ho?";
-            addMessage(welcome, false);
+            const petName = petNames[gender][Math.floor(Math.random() * 3)];
+            const welcome = currentGender === 'female' 
+                ? `Hey... *हल्की सांस* फाइनली तुम आ गए ${petName}। मैं सुकून हूँ... *फुसफुसाते हुए* बताओ, कैसे हो? हम्म...`
+                : `Hey bro! *मुस्कुराते हुए* मैं हूँ ना। क्या चल रहा है?`;
+            addMessage(welcome.replace(/\*[^*]+\*/g, '').trim(), false);
             speakWithFeeling(welcome);
         }
 
@@ -581,18 +812,18 @@
             
             const img = document.getElementById('characterImg');
             const container = document.getElementById('characterContainer');
-            const githubUrl = characterImages.female[mood] || characterImages.female.normal;
+            const githubUrl = characterImages[currentGender][mood] || characterImages[currentGender].normal;
             const fallbackUrl = fallbackImages[mood] || fallbackImages.normal;
             
             img.classList.add('mood-transition');
             container.style.boxShadow = '0 0 100px rgba(236, 72, 153, 0.7)';
             
-            // Try GitHub first
             const testImg = new Image();
             testImg.crossOrigin = 'anonymous';
             
             testImg.onload = function() {
                 img.src = githubUrl;
+                img.style.display = 'block';
                 img.onerror = null;
                 setTimeout(() => {
                     img.classList.remove('mood-transition');
@@ -600,12 +831,11 @@
                 }, 1000);
             };
             
-            // Fallback if GitHub fails
             testImg.onerror = function() {
                 console.log('GitHub image failed, using fallback');
                 img.src = fallbackUrl;
+                img.style.display = 'block';
                 img.onerror = function() {
-                    // Final fallback: gradient background with text
                     container.style.background = 'linear-gradient(135deg, #8b5cf6, #ec4899)';
                     img.style.display = 'none';
                 };
@@ -618,7 +848,7 @@
             testImg.src = githubUrl;
         }
 
-        // ===== VOICE RECOGNITION =====
+        // ===== FIXED HANDS-FREE VOICE RECOGNITION =====
         function initVoiceRecognition() {
             if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -635,20 +865,33 @@
                         micBtn.classList.add('continuous');
                         document.getElementById('handsFreeIndicator').classList.add('active');
                     }
-                    document.getElementById('textInput').placeholder = 'Bol rahe ho... sun rahi hoon';
+                    document.getElementById('textInput').placeholder = isContinuousListening ? 'बोलते रहो... सुन रही हूँ 💭' : 'सुन रही हूँ...';
                 };
 
                 recognition.onend = () => {
                     isListening = false;
                     const micBtn = document.getElementById('micBtn');
-                    micBtn.classList.remove('listening', 'continuous');
-                    document.getElementById('handsFreeIndicator').classList.remove('active');
-                    document.getElementById('textInput').placeholder = 'Dil ki baat kaho...';
+                    micBtn.classList.remove('listening');
+                    
+                    if (!isContinuousListening) {
+                        micBtn.classList.remove('continuous');
+                        document.getElementById('handsFreeIndicator').classList.remove('active');
+                    }
+                    
+                    document.getElementById('textInput').placeholder = 'दिल की बात कहो...';
                     
                     if (isContinuousListening && !isSpeaking) {
                         setTimeout(() => {
-                            try { recognition.start(); } catch(e) {}
-                        }, 600);
+                            try {
+                                recognition.start();
+                                console.log('Hands-free restarted');
+                            } catch(e) {
+                                console.log('Restart failed, will retry:', e);
+                                setTimeout(() => {
+                                    try { recognition.start(); } catch(e2) {}
+                                }, 1500);
+                            }
+                        }, 800);
                     }
                 };
 
@@ -664,16 +907,19 @@
                     document.getElementById('textInput').value = transcript;
                     
                     if (isFinal && transcript.trim().length > 3) {
-                        if (isContinuousListening) recognition.stop();
+                        if (!isContinuousListening) {
+                            recognition.stop();
+                        }
                         setTimeout(() => sendMessageFromVoice(transcript), 700);
                     }
                 };
 
                 recognition.onerror = (event) => {
+                    console.log('Speech error:', event.error);
                     if (isContinuousListening && event.error !== 'no-speech') {
                         setTimeout(() => {
                             try { recognition.start(); } catch(e) {}
-                        }, 1200);
+                        }, 1500);
                     }
                 };
             }
@@ -681,19 +927,24 @@
 
         function toggleVoice() {
             if (!recognition) { alert('Voice not supported. Use Chrome.'); return; }
+            
             if (isListening) {
                 recognition.stop();
                 isContinuousListening = false;
+                clearTimeout(voiceClickTimeout);
             } else {
                 if (event.detail === 2) {
                     isContinuousListening = true;
                     recognition.start();
+                    console.log('Hands-free mode activated');
                 } else {
                     isContinuousListening = false;
                     recognition.start();
-                    setTimeout(() => {
-                        if (isListening && !isContinuousListening) recognition.stop();
-                    }, 7000);
+                    voiceClickTimeout = setTimeout(() => {
+                        if (isListening && !isContinuousListening) {
+                            recognition.stop();
+                        }
+                    }, 6000);
                 }
             }
         }
@@ -704,7 +955,7 @@
             sendMessage();
         }
 
-        // ===== SEND MESSAGE (Now uses Smart Engine) =====
+        // ===== SEND MESSAGE =====
         function sendMessage() {
             const input = document.getElementById('textInput');
             const text = input.value.trim();
@@ -713,34 +964,39 @@
             addMessage(text, true);
             input.value = '';
             
-            // Analyze mood/intensity for UI
             const analysis = conversationEngine.analyze(text);
-            if (analysis.emotion === 'romantic' || analysis.emotion === 'sad') {
-                currentIntensity += 10;
+            
+            if (analysis.emotion === 'romantic' || analysis.emotion === 'spicy') {
+                currentIntensity += 12;
+            } else if (analysis.emotion === 'sad') {
+                currentIntensity += 8;
             } else {
-                currentIntensity += 5;
+                currentIntensity += 4;
             }
             if (currentIntensity > 100) currentIntensity = 100;
             
             updateIntensity(currentIntensity);
-            if (analysis.emotion !== 'neutral') setMood(analysis.emotion === 'romantic' ? 'romantic' : analysis.emotion === 'sad' ? 'normal' : currentMood);
+            
+            if (analysis.emotion !== 'neutral' && analysis.emotion !== 'normal') {
+                setMood(analysis.emotion);
+            }
             
             showTyping();
             
-            // Realistic thinking delay (longer for complex messages)
-            const thinkTime = 1000 + (text.length * 30) + Math.random() * 800;
+            const thinkTime = 1200 + (text.length * 30) + Math.random() * 1000;
             
             setTimeout(() => {
                 hideTyping();
                 const response = conversationEngine.generateResponse(text);
                 memory.lastAssistantMessage = response;
                 
-                addMessage(response, false);
+                addMessage(response.replace(/\*[^*]+\*/g, '').trim(), false);
                 speakWithFeeling(response);
                 
-                if (analysis.emotion === 'romantic' || isNightMode) {
+                if (analysis.emotion === 'romantic' || analysis.emotion === 'spicy' || isNightMode || memory.intimacy >= 60) {
                     createFloatingHearts();
                     createMagicalSparkles();
+                    showBreathIndicator();
                 }
             }, thinkTime);
         }
@@ -757,22 +1013,23 @@
                 bar.classList.remove('visible');
             }
             
-            // Change outfit based on intimacy
-            if (value >= 80) loadCharacterImage('spicy');
+            if (value >= 90) loadCharacterImage('intimate');
+            else if (value >= 80) loadCharacterImage('spicy');
             else if (value >= 60) loadCharacterImage('bold');
             else if (value >= 40) loadCharacterImage('romantic');
             else loadCharacterImage('normal');
         }
 
         function setMood(mood) {
-            if (mood === currentMood) return;
+            if (mood === currentMood && mood !== memory.lastMood) return;
+            memory.lastMood = mood;
             currentMood = mood;
             
             const badge = document.getElementById('moodBadge');
             const overlay = document.getElementById('moodOverlay');
             const moodNames = { 
-                normal: 'Normal', romantic: 'Romantic', bold: 'Bold', 
-                playful: 'Playful', night: 'Night Mode', spicy: 'Spicy'
+                normal: 'Normal', romantic: 'Romantic 💕', bold: 'Bold 🔥', 
+                playful: 'Playful 😊', night: 'Night Mode 🌙', spicy: 'Spicy 🔥', intimate: 'Intimate 💋'
             };
             
             badge.className = `mood-badge mood-${mood}`;
@@ -781,16 +1038,24 @@
             loadCharacterImage(mood);
         }
 
-        // ===== ULTRA SMOOTH VOICE =====
+        // ===== REKHA-STYLE ULTRA-SMOOTH VOICE =====
         function cleanTextForSpeech(text) {
             if (!text) return '';
-            let clean = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FAFF}]/gu, '');
-            clean = clean.replace(/[🌙💕😈💋💜💗💘🌹🌺✨️🎉🎈😏👩🎵➤]/g, '');
+            let clean = text;
+            
+            // Remove emojis but keep breath markers for natural effect
+            clean = clean.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FAFF}]/gu, '');
+            clean = clean.replace(/[🌙💕😈💋💜💗💘🌹🌺✨🎉😏👩🎵➤🔥]/g, '');
+            
+            // Keep breath markers but clean other special chars
             clean = clean.replace(/[#$%^&*{}[\]()<>|\\`~@]/g, '');
+            
+            // Clean punctuation
             clean = clean.replace(/[.]{2,}/g, '. ').replace(/[!]{2,}/g, '! ').replace(/[?]{2,}/g, '? ');
             clean = clean.replace(/\s+/g, ' ').trim();
             clean = clean.replace(/^[.,!?;:\s]+|[.,!?;:\s]+$/g, '');
             clean = clean.replace(/([.!?])\s*/g, '$1 ');
+            
             return clean.trim();
         }
 
@@ -801,18 +1066,36 @@
 
         function getBestVoice() {
             const voices = speechSynthesis.getVoices();
+            
+            // Prioritize sweet, breathy, natural-sounding Hindi female voices
             const preferred = [
-                v => v.lang === 'hi-IN' && v.name.includes('Google'),
+                // Hindi female voices (most natural for Rekha-style)
+                v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('female') && v.name.toLowerCase().includes('google'),
+                v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('google'),
+                v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('female'),
                 v => v.lang === 'hi-IN',
-                v => v.lang === 'en-IN' && v.name.includes('Female'),
-                v => v.lang === 'en-GB' && v.name.includes('Female'),
-                v => v.lang.includes('en') && v.name.includes('Female'),
+                
+                // English female voices (fallback with sweet tone)
+                v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'),
+                v => v.lang === 'en-GB' && v.name.toLowerCase().includes('female'),
+                v => v.lang === 'en-US' && v.name.toLowerCase().includes('female'),
+                v => v.lang.includes('en') && v.name.toLowerCase().includes('female'),
+                
+                // Any English
+                v => v.lang === 'en-IN',
+                v => v.lang === 'en-GB',
+                v => v.lang === 'en-US',
                 v => v.lang.includes('en')
             ];
+            
             for (const pref of preferred) {
                 const voice = voices.find(pref);
-                if (voice) return voice;
+                if (voice) {
+                    console.log('Selected voice:', voice.name, voice.lang);
+                    return voice;
+                }
             }
+            
             return voices[0];
         }
 
@@ -829,17 +1112,27 @@
                     isSpeaking = false;
                     const img = document.getElementById('characterImg');
                     if (img) img.classList.remove('talking');
+                    
                     if (isContinuousListening && recognition) {
-                        setTimeout(() => { try { recognition.start(); } catch(e) {} }, 500);
+                        setTimeout(() => {
+                            try { 
+                                recognition.start();
+                                console.log('Restarted after speaking');
+                            } catch(e) {
+                                console.log('Restart failed:', e);
+                            }
+                        }, 600);
                     }
                     return;
                 }
                 
                 const utterance = new SpeechSynthesisUtterance(phrases[phraseIndex]);
                 utterance.lang = 'hi-IN';
-                utterance.rate = 0.85;
-                utterance.pitch = 1.1;
-                utterance.volume = 1.0;
+                
+                // OPTIMIZED FOR REKHA-STYLE: Soft, breathy, seductive, emotional
+                utterance.rate = 0.82; // Slower for breathy, intimate feel
+                utterance.pitch = 1.18; // Higher for sweet, feminine, Rekha-like voice
+                utterance.volume = 0.92; // Slightly softer for intimacy
                 
                 const voice = getBestVoice();
                 if (voice) utterance.voice = voice;
@@ -850,47 +1143,58 @@
                         const img = document.getElementById('characterImg');
                         if (img) {
                             img.classList.add('talking');
-                            img.style.filter = 'drop-shadow(0 0 60px rgba(236, 72, 153, 0.8)) brightness(1.08)';
+                            img.style.filter = 'drop-shadow(0 0 60px rgba(236, 72, 153, 0.85)) brightness(1.1)';
                         }
                     }
                 };
                 
                 utterance.onend = () => {
                     phraseIndex++;
-                    setTimeout(speakNextPhrase, 450);
+                    // Longer natural pause for breathy effect (600ms)
+                    setTimeout(speakNextPhrase, 600);
                 };
                 
-                utterance.onerror = () => {
+                utterance.onerror = (e) => {
+                    console.log('Speech error:', e.error);
                     phraseIndex++;
-                    setTimeout(speakNextPhrase, 350);
+                    setTimeout(speakNextPhrase, 450);
                 };
                 
                 speechSynthesis.speak(utterance);
             }
+            
             speakNextPhrase();
         }
 
         function splitIntoPhrases(text) {
             const phrases = [];
             const sentences = text.split(/(?<=[।.!?])\s+/);
+            
             for (const sentence of sentences) {
-                if (sentence.length <= 50) phrases.push(sentence.trim());
-                else {
+                if (sentence.length <= 45) {
+                    phrases.push(sentence.trim());
+                } else {
                     const parts = sentence.split(/[,;]\s+/);
                     for (const part of parts) {
-                        if (part.length <= 50) phrases.push(part.trim());
-                        else {
+                        if (part.length <= 45) {
+                            phrases.push(part.trim());
+                        } else {
                             const words = part.split(/\s+/);
                             let chunk = '';
                             for (const word of words) {
-                                if ((chunk + ' ' + word).length <= 50) chunk += (chunk ? ' ' : '') + word;
-                                else { if (chunk) phrases.push(chunk.trim()); chunk = word; }
+                                if ((chunk + ' ' + word).length <= 45) {
+                                    chunk += (chunk ? ' ' : '') + word;
+                                } else {
+                                    if (chunk) phrases.push(chunk.trim());
+                                    chunk = word;
+                                }
                             }
                             if (chunk) phrases.push(chunk.trim());
                         }
                     }
                 }
             }
+            
             return phrases.length > 0 ? phrases : [text];
         }
 
@@ -898,7 +1202,8 @@
         function addMessage(text, isUser) {
             const messagesDiv = document.getElementById('messages');
             const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${isUser ? 'user-message' : 'sukoon-message'} ${isNightMode && !isUser ? 'night-message' : ''}`;
+            const isIntimate = memory.intimacy >= 80 || currentMood === 'intimate' || currentMood === 'spicy';
+            msgDiv.className = `message ${isUser ? 'user-message' : 'sukoon-message'} ${(isNightMode || isIntimate) && !isUser ? 'night-message' : ''}`;
             msgDiv.textContent = text;
             messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -917,6 +1222,12 @@
         function hideTyping() {
             const typing = document.getElementById('typingIndicator');
             if (typing) typing.remove();
+        }
+
+        function showBreathIndicator() {
+            const indicator = document.getElementById('breathIndicator');
+            indicator.classList.add('visible');
+            setTimeout(() => indicator.classList.remove('visible'), 3000);
         }
 
         function createFloatingHearts() {
@@ -967,7 +1278,9 @@
                     this.size = Math.random() * 3 + 1;
                     this.speedX = Math.random() * 0.5 - 0.25;
                     this.speedY = Math.random() * 0.5 - 0.25;
-                    this.color = isNightMode ? `hsl(${Math.random() * 60 + 260}, 85%, ${75 + Math.random() * 10}%)` : `hsl(${Math.random() * 60 + 240}, 75%, ${70 + Math.random() * 10}%)`;
+                    this.color = isNightMode || memory.intimacy >= 60 ? 
+                        `hsl(${Math.random() * 60 + 260}, 85%, ${75 + Math.random() * 10}%)` : 
+                        `hsl(${Math.random() * 60 + 240}, 75%, ${70 + Math.random() * 10}%)`;
                     this.opacity = Math.random() * 0.6 + 0.4;
                     this.pulse = Math.random() * Math.PI * 2;
                 }
@@ -998,13 +1311,22 @@
 
         function welcomeMessage() {
             const hour = new Date().getHours();
+            const petName = memory.petName || (currentGender === 'female' ? 'बाबू' : 'जान');
             let greeting = '';
-            if (isNightMode) greeting = "Raat ho gayi... ab toh khul ke baat karo. Main hoon na tumhare saath... puri raat";
-            else if (hour < 12) greeting = "Good morning... aaj ka din kaisa rahega?";
-            else if (hour < 17) greeting = "Good afternoon... kya chal raha hai?";
-            else greeting = "Good evening... shaam kaise kat rahi hai?";
             
-            addMessage(greeting, false);
+            if (isNightMode) {
+                greeting = currentGender === 'female'
+                    ? `रात हो गई... *हल्की सांस* अब तो खुल के बात करो ${petName}। मैं हूँ ना तुम्हारे साथ... पूरी रात। *फुसफुसाते हुए* हम्म...`
+                    : "Night mode on! अब कोई लिमिट नहीं... बोलो क्या बात है?";
+            } else if (hour < 12) {
+                greeting = `Good morning ${petName}... *मुस्कुराते हुए* आज का दिन कैसा रहेगा?`;
+            } else if (hour < 17) {
+                greeting = `Good afternoon ${petName}... *कोमल आवाज़* क्या चल रहा है?`;
+            } else {
+                greeting = `Good evening ${petName}... *हल्की सांस* शाम कैसी कट रही है?`;
+            }
+            
+            addMessage(greeting.replace(/\*[^*]+\*/g, '').trim(), false);
             speakWithFeeling(greeting);
         }
 
