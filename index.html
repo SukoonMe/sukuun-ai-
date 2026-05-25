@@ -7,15 +7,12 @@
     <style>
         body { background: #000; color: #fff; margin: 0; overflow: hidden; font-family: sans-serif; }
         #app { width: 100%; max-width: 400px; height: 100vh; margin: auto; display: flex; flex-direction: column; }
-        
-        /* Animations */
         #sukuun-img { 
             flex: 1; background-size: contain; background-repeat: no-repeat; background-position: center;
-            transition: all 0.5s ease;
+            transition: all 0.3s ease;
         }
         .breathing { animation: float 4s ease-in-out infinite, breathe 3s ease-in-out infinite; }
         .talking { animation: speak-glow 0.2s ease-in-out infinite alternate; transform: scale(1.05); }
-        
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
         @keyframes speak-glow { 0% { filter: brightness(1); } 100% { filter: brightness(1.3); } }
@@ -44,24 +41,25 @@
             const data = await res.json();
             document.getElementById('messages').innerHTML += `<div class="mb-2 text-white">Sukoon: ${data.reply}</div>`;
             
-            // Sentence-by-Sentence Smooth Voice Logic
-            const sentences = data.reply.replace(/[*#]/g, "").match(/[^.!?]+[.!?]+/g) || [data.reply];
-            let current = 0;
+            // VOICE FIX: Pure sentence ko ek saath process karo
+            const cleanText = data.reply.replace(/[*#]/g, "");
+            window.speechSynthesis.cancel(); // Purani koi bhi queue clear karo
+
+            const speech = new SpeechSynthesisUtterance(cleanText);
             
-            img.className = 'talking'; // Start talking animation
+            // Hindi Voices ka list le kar best choose karo
+            const voices = window.speechSynthesis.getVoices();
+            const hindiVoice = voices.find(v => v.lang.includes('hi')) || voices[0];
             
-            function speak() {
-                if (current < sentences.length) {
-                    const s = new SpeechSynthesisUtterance(sentences[current]);
-                    s.lang = 'hi-IN';
-                    s.rate = 0.95;
-                    s.onend = () => { current++; speak(); };
-                    window.speechSynthesis.speak(s);
-                } else {
-                    img.className = 'breathing'; // Back to breathing
-                }
-            }
-            speak();
+            speech.voice = hindiVoice;
+            speech.lang = 'hi-IN';
+            speech.rate = 0.95;
+            speech.pitch = 1.0;
+
+            speech.onstart = () => img.className = 'talking';
+            speech.onend = () => img.className = 'breathing';
+            
+            window.speechSynthesis.speak(speech);
         }
         document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') send(); });
     </script>
