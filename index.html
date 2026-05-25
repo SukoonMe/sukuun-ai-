@@ -8,25 +8,25 @@
         body { background: #000; color: #fff; margin: 0; overflow: hidden; font-family: sans-serif; }
         #app { width: 100%; max-width: 400px; height: 100vh; margin: auto; display: flex; flex-direction: column; }
         
-        /* Smooth Breathing Animation - Koi vibration nahi, sirf soft movement */
+        /* Animations */
         #sukuun-img { 
             flex: 1; background-size: contain; background-repeat: no-repeat; background-position: center;
-            transition: all 0.8s ease-in-out;
-            transform: scale(1);
+            transition: all 0.5s ease;
         }
-        .breathing { animation: breathe 4s ease-in-out infinite; }
-        .talking { animation: speak-glow 0.4s ease-in-out infinite alternate; transform: scale(1.05); }
+        .breathing { animation: float 4s ease-in-out infinite, breathe 3s ease-in-out infinite; }
+        .talking { animation: speak-glow 0.2s ease-in-out infinite alternate; transform: scale(1.05); }
         
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-        @keyframes speak-glow { 0% { filter: brightness(1); } 100% { filter: brightness(1.2); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        @keyframes speak-glow { 0% { filter: brightness(1); } 100% { filter: brightness(1.3); } }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="sukuun-img" class="breathing"></div>
-        <div class="h-1/3 bg-black/80 backdrop-blur-lg p-6 border-t border-white/10">
+        <div class="h-1/3 bg-black/80 backdrop-blur-xl p-6 border-t border-white/10">
             <div id="messages" class="h-24 overflow-y-auto mb-4 text-sm text-gray-300"></div>
-            <input type="text" id="userInput" class="w-full bg-white/5 p-3 rounded-xl border border-white/10 outline-none" placeholder="Sukoon se baat karo...">
+            <input type="text" id="userInput" class="w-full bg-white/5 p-4 rounded-xl border border-white/10 outline-none" placeholder="Sukoon se baat karo...">
         </div>
     </div>
 
@@ -38,23 +38,30 @@
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
             const text = input.value; input.value = '';
-
-            // AI Response
+            
+            document.getElementById('messages').innerHTML += `<div class="mb-2 text-indigo-400">You: ${text}</div>`;
             const res = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: text, userId: localStorage.getItem('userId') || '1' }) });
             const data = await res.json();
-            document.getElementById('messages').innerHTML += `<div class="mb-2">Sukoon: ${data.reply}</div>`;
+            document.getElementById('messages').innerHTML += `<div class="mb-2 text-white">Sukoon: ${data.reply}</div>`;
             
-            // SMOOTH VOICE LOGIC
-            const speech = new SpeechSynthesisUtterance(data.reply.replace(/[*#]/g, ""));
-            speech.lang = 'hi-IN';
-            speech.rate = 0.9; // Normal pace
-            speech.pitch = 1.0; 
+            // Sentence-by-Sentence Smooth Voice Logic
+            const sentences = data.reply.replace(/[*#]/g, "").match(/[^.!?]+[.!?]+/g) || [data.reply];
+            let current = 0;
             
-            // Smooth Animation Sync
-            speech.onstart = () => { img.className = 'talking'; };
-            speech.onend = () => { img.className = 'breathing'; };
+            img.className = 'talking'; // Start talking animation
             
-            window.speechSynthesis.speak(speech);
+            function speak() {
+                if (current < sentences.length) {
+                    const s = new SpeechSynthesisUtterance(sentences[current]);
+                    s.lang = 'hi-IN';
+                    s.rate = 0.95;
+                    s.onend = () => { current++; speak(); };
+                    window.speechSynthesis.speak(s);
+                } else {
+                    img.className = 'breathing'; // Back to breathing
+                }
+            }
+            speak();
         }
         document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') send(); });
     </script>
