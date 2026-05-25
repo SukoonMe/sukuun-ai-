@@ -7,13 +7,10 @@
         body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #app { width: 90%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Breathing and Movement Animation */
         @keyframes breathe {
             0%, 100% { transform: scale(1) translateY(0); }
             50% { transform: scale(1.02) translateY(-5px); }
         }
-
-        /* Eye blink effect */
         @keyframes blink {
             0%, 90%, 100% { opacity: 0; }
             95% { opacity: 0.2; }
@@ -26,11 +23,9 @@
             background-repeat: no-repeat;
             transition: 0.5s; 
             border-bottom: 2px solid #4f46e5;
-            animation: breathe 6s infinite ease-in-out; /* Breathing Effect */
+            animation: breathe 6s infinite ease-in-out;
             position: relative;
         }
-
-        /* Blinking overlay */
         #sukuun-img::after {
             content: '';
             position: absolute;
@@ -64,44 +59,38 @@
         const userProfile = { name: 'Yaar', gender: 'male' }; 
         const img = document.getElementById('sukuun-img');
         const inputField = document.getElementById('userInput');
+        const msgDiv = document.getElementById('messages');
 
         inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') send(); });
 
-        function startListening() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'hi-IN';
-            recognition.start();
-            recognition.onresult = (e) => {
-                inputField.value = e.results[0][0].transcript;
-                send();
-            };
-        }
-
         async function send() {
             if(!inputField.value.trim()) return;
-
-            const msgDiv = document.getElementById('messages');
-            msgDiv.innerHTML += `<div class="msg user">${inputField.value}</div>`;
+            const message = inputField.value;
+            msgDiv.innerHTML += `<div class="msg user">${message}</div>`;
             
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: inputField.value, userProfile })
+                body: JSON.stringify({ message, userProfile })
             });
             const data = await res.json();
             
             img.style.backgroundImage = data.avatarType === 'female' ? "url('/best.png')" : "url('/male.png')";
-            
-            const cleanReply = data.reply.replace(/[\u{1F300}-\u{1F64F}\u{1F680}-\u{1F6FF}]/gu, '');
             msgDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
             
-            const speech = new SpeechSynthesisUtterance(cleanReply);
-            speech.lang = 'hi-IN';
+            const speech = new SpeechSynthesisUtterance(data.reply);
             img.classList.add('speaking');
             speech.onend = () => img.classList.remove('speaking');
             window.speechSynthesis.speak(speech);
             
             inputField.value = '';
+        }
+
+        function startListening() {
+            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            rec.lang = 'hi-IN';
+            rec.start();
+            rec.onresult = (e) => { inputField.value = e.results[0][0].transcript; send(); };
         }
     </script>
 </body>
