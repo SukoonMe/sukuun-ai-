@@ -7,7 +7,7 @@ const redis = new Redis({
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
-  const { message, userId } = req.body;
+  const { message, userId, gender } = req.body;
   const chatKey = `chat:${userId}`;
 
   try {
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "llama3-8b-8192",
         messages: [
-          { role: "system", content: "Tum Sukoon ho, meri soulmate. Hinglish mein baat karo, short, sweet aur caring raho." },
+          { role: "system", content: `Tum ${gender === 'male' ? 'Sukoon' : 'Sathi'} ho, meri soulmate. Hinglish mein baat karo, bahut hi caring aur sweet raho.` },
           ...history.map(msg => JSON.parse(msg)),
           { role: "user", content: message }
         ]
