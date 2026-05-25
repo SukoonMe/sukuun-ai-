@@ -24,7 +24,8 @@ export default async function handler(req, res) {
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+   // Bas model ka naam likho, "models/" prefix hata do
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     // 3. Prompt mein Context (Memory) daalo
     const prompt = `${persona}\n\nChat History:\n${context}\n\nUser: ${message}\nSukuun:`;
