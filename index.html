@@ -2,79 +2,84 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sukoon AI 🌙</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #020204; color: #fff; margin: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; height: 100vh;}
+        :root { --safe-bottom: env(safe-area-inset-bottom); }
+        body { background: #010103; color: #fff; margin: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; height: 100vh;}
         #app { display: flex; flex-direction: column; height: 100%; position: relative;}
         
-        /* DYNAMIC DISPLAY SCREEN LAYER */
+        /* FULL SCREEN PORTRAIT MOBILE AVATAR ENGINE */
         .avatar-screen { 
             flex: 1; 
             background-size: cover; 
             background-repeat: no-repeat; 
-            background-position: center center;
-            transition: background-image 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+            background-position: center top; 
+            transition: background-image 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease, transform 0.5s ease;
             position: absolute;
             width: 100%;
             height: 100%;
             top: 0;
             left: 0;
+            z-index: 1;
         }
         
-        .hidden-screen { opacity: 0; pointer-events: none; z-index: 1; filter: blur(5px); }
-        .active-screen { opacity: 1; pointer-events: auto; z-index: 2; filter: blur(0px); }
+        .hidden-screen { opacity: 0; pointer-events: none; z-index: 1; transform: scale(1.03); }
+        .active-screen { opacity: 1; pointer-events: auto; z-index: 2; transform: scale(1); }
         
-        /* Fluid High-End Animations */
+        /* High-End Fluid CSS Animations */
         .breathing { animation: premium-float 6s ease-in-out infinite; }
         .talking { animation: premium-pulse 0.3s infinite alternate; }
         
-        @keyframes premium-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.01); } }
-        @keyframes premium-pulse { 0% { filter: brightness(1) contrast(1); } 100% { filter: brightness(1.2) contrast(1.05); } }
+        @keyframes premium-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        @keyframes premium-pulse { 0% { filter: brightness(1); } 100% { filter: brightness(1.25); } }
 
-        /* ULTRA-PROFESSIONAL OVERLAY FOR INTERACTIVE TEXTS */
+        /* GLASSMORPHIC INTERACTIVE CHAT WRAPPER */
         #messages {
             position: absolute;
-            bottom: 8rem;
+            bottom: 8.5rem;
             left: 5%;
             width: 90%;
-            max-height: 14rem;
+            max-height: 15rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 0.8rem;
+            gap: 0.9rem;
             z-index: 10;
             padding: 0.5rem;
-            mask-image: linear-gradient(to top, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
-            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%);
         }
         #messages::-webkit-scrollbar { width: 0px; }
 
-        /* Premium Bubble Look */
         .premium-row { display: flex; width: 100%; transition: all 0.3s ease; }
         .user-row { justify-content: flex-end; }
         .sukoon-row { justify-content: flex-start; }
         
         .premium-bubble {
-            max-width: 80%;
-            padding: 0.75rem 1.1rem;
+            max-width: 85%;
+            padding: 0.85rem 1.2rem;
             font-size: 1rem;
-            line-height: 1.5;
-            letter-spacing: 0.015em;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            line-height: 1.55;
+            letter-spacing: 0.01em;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="female-screen" class="avatar-screen breathing active-screen"></div>
+        
         <div id="male-screen" class="avatar-screen hidden-screen"></div>
+        
         <div id="messages"></div>
         
-        <div class="h-28 bg-gradient-to-t from-black via-black/90 to-transparent p-5 flex gap-3 items-center z-20 absolute bottom-0 left-0 w-full">
-            <input type="text" id="userInput" class="flex-1 bg-white/5 backdrop-blur-xl text-white px-6 py-4 rounded-2xl border border-white/10 outline-none focus:border-purple-500/40 focus:bg-white/10 transition-all text-base placeholder-gray-500 shadow-inner" placeholder="Sukoon tumhare dil ki har baat samajhti hai...">
-            <button id="micBtn" class="bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 transition-all w-14 h-14 rounded-2xl text-xl flex items-center justify-center shadow-lg shadow-purple-500/20 border border-purple-400/20">🎤</button>
+        <div class="bg-gradient-to-t from-black via-black/95 to-transparent flex gap-3 items-center z-20 absolute bottom-0 left-0 w-full p-6 pb-[calc(1.5rem+var(--safe-bottom))]">
+            <input type="text" id="userInput" class="flex-1 bg-white/5 text-white px-6 py-4 rounded-2xl border border-white/10 outline-none focus:border-purple-500/40 focus:bg-white/10 transition-all text-base placeholder-gray-500 shadow-inner" placeholder="Sukoon se apne dil aur jism ki baat kaho...">
+            <button id="micBtn" class="bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 transition-all w-16 h-16 rounded-2xl text-xl flex items-center justify-center shadow-lg shadow-purple-500/20 border border-purple-400/20">🎤</button>
         </div>
     </div>
 
@@ -85,7 +90,7 @@
         const msgDiv = document.getElementById('messages');
         const micBtn = document.getElementById('micBtn');
 
-        // Dynamic Assets Array
+        // Dynamic Clothes and Mood Configurations
         const femaleAssets = {
             normal: "/best.png",
             romantic: "/romantic.png",
@@ -100,31 +105,28 @@
 
         let currentMood = "normal";
 
-        // Initial Layout Initialization
+        // Init Assets State
         femaleScreen.style.backgroundImage = `url('${femaleAssets.normal}')`;
         maleScreen.style.backgroundImage = `url('${maleAssets.normal}')`;
 
         function changeOutfitAndMood(mood) {
+            if (!femaleAssets[mood] || !maleAssets[mood]) return;
             currentMood = mood;
-            if (femaleAssets[mood]) femaleScreen.style.backgroundImage = `url('${femaleAssets[mood]}')`;
-            if (maleAssets[mood]) maleScreen.style.backgroundImage = `url('${maleAssets[mood]}')`;
+            femaleScreen.style.backgroundImage = `url('${femaleAssets[mood]}')`;
+            maleScreen.style.backgroundImage = `url('${maleAssets[mood]}')`;
         }
 
         function toggleDisplay(showSpeaker) {
             if (showSpeaker === 'sukoon') {
-                femaleScreen.classList.remove('hidden-screen');
-                femaleScreen.classList.add('active-screen');
-                maleScreen.classList.remove('active-screen');
-                maleScreen.classList.add('hidden-screen');
+                femaleScreen.classList.replace('hidden-screen', 'active-screen');
+                maleScreen.classList.replace('active-screen', 'hidden-screen');
             } else {
-                maleScreen.classList.remove('hidden-screen');
-                maleScreen.classList.add('active-screen');
-                femaleScreen.classList.remove('active-screen');
-                femaleScreen.classList.add('hidden-screen');
+                maleScreen.classList.replace('hidden-screen', 'active-screen');
+                femaleScreen.classList.replace('active-screen', 'hidden-screen');
             }
         }
 
-        // Voice Recognition Layer (Continuous State)
+        // Voice Recognition Module (Continuous Sensing State)
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
         let isListening = false;
@@ -150,8 +152,8 @@
                 micBtn.classList.remove('from-purple-600', 'to-indigo-600');
                 micBtn.classList.add('from-red-600', 'to-rose-600', 'animate-pulse');
                 
+                // Show User Layer instantly on mic open
                 toggleDisplay('user');
-                maleScreen.className = 'avatar-screen breathing active-screen';
             };
 
             recognition.onend = () => {
@@ -168,7 +170,7 @@
             };
         }
 
-        // Core Send Execution Unit
+        // Core Send Unit
         async function send(message = null) {
             const text = message || input.value;
             if(!text.trim()) return;
@@ -176,18 +178,17 @@
             window.speechSynthesis.cancel();
             input.value = '';
 
-            // Keyword Classifier for Dynamic Outfit Swap
+            // Emotion Sensing Outfit Swapper
             const lowerText = text.toLowerCase();
-            if (lowerText.includes('romantic') || lowerText.includes('pyaar') || lowerText.includes('love') || lowerText.includes('jaan')) {
+            if (lowerText.match(/(romantic|pyaar|love|jaan|dil)/)) {
                 changeOutfitAndMood("romantic");
-            } else if (lowerText.includes('gandi') || lowerText.includes('bold') || lowerText.includes('dirty') || lowerText.includes('hot') || lowerText.includes('sexy')) {
+            } else if (lowerText.match(/(gandi|bold|dirty|hot|sexy|chahat|jism)/)) {
                 changeOutfitAndMood("bold");
             }
 
-            // Professional Glassmorphic User Row Update
             msgDiv.innerHTML += `
                 <div class="premium-row user-row">
-                    <div class="premium-bubble bg-purple-600/30 backdrop-blur-xl border border-purple-500/20 text-purple-100 rounded-2xl rounded-tr-none text-right">${text}</div>
+                    <div class="premium-bubble bg-purple-600/25 border border-purple-500/20 text-purple-100 rounded-2xl rounded-tr-none text-right">${text}</div>
                 </div>
             `;
             msgDiv.scrollTop = msgDiv.scrollHeight;
@@ -200,19 +201,18 @@
                 });
                 const data = await res.json();
                 
-                // Swap back screen container to Sukoon view
+                // Switch back to Female Screen
                 toggleDisplay('sukoon');
                 
-                // Professional Dark Elite Bubble for Sukoon
                 msgDiv.innerHTML += `
                     <div class="premium-row sukoon-row">
-                        <div class="premium-bubble bg-black/40 backdrop-blur-xl border border-white/5 text-purple-200 rounded-2xl rounded-tl-none text-left">${data.reply}</div>
+                        <div class="premium-bubble bg-black/50 border border-white/5 text-purple-200 rounded-2xl rounded-tl-none text-left">${data.reply}</div>
                     </div>
                 `;
                 msgDiv.scrollTop = msgDiv.scrollHeight;
                 
-                // Audio Engine Core execution
-                const speech = new SpeechSynthesisUtterance(data.reply);
+                // Natural Audio Player Engine
+                const speech = new SpeechSynthesisUtterance(data.reply.replace(/[*#]/g, ""));
                 const voices = window.speechSynthesis.getVoices();
                 speech.voice = voices.find(v => v.lang === 'hi-IN') || voices[0];
                 speech.rate = 0.95;
