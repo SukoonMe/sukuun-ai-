@@ -14,17 +14,25 @@ export default async function handler(req, res) {
     const rawHistory = await redis.lrange(`chat:${userProfile.name}`, 0, 10) || [];
     const context = rawHistory.map(item => JSON.parse(item)).reverse().map(m => `${m.role}: ${m.content}`).join("\n");
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    // FIXED: Using gemini-1.5-flash-001 which is the base stable version
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Sukuun, a soulmate. Context: ${context}\nUser: ${message}` }] }]
+        contents: [{ parts: [{ text: `You are Sukuun. Context: ${context}\nUser: ${message}` }] }]
       })
     });
 
     const data = await response.json();
-    const reply = data.candidates[0].content.parts[0].text;
+    
+    if (!data.candidates) {
+      console.error("API ERROR:", JSON.stringify(data));
+      throw new Error("Invalid Response");
+    }
 
+    const reply = data.candidates[0].content.parts[0].text;
     await redis.rpush(`chat:${userProfile.name}`, JSON.stringify({ role: "user", content: message }));
     await redis.rpush(`chat:${userProfile.name}`, JSON.stringify({ role: "Sukuun", content: reply }));
 
