@@ -46,22 +46,29 @@
             const userMsg = input.value;
             input.value = '';
 
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: userMsg, userProfile: { name: 'Yaar', gender: 'male' } })
-            });
-            const data = await res.json();
-            
-            avatarDiv.style.backgroundImage = `url('/${data.avatarType}.png')`;
-            msgDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
-            msgDiv.scrollTop = msgDiv.scrollHeight;
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: userMsg, userProfile: { name: 'Yaar', gender: 'male' } })
+                });
+                const data = await res.json();
+                
+                // SAFETY FIX: Agar data ya avatarType na mile, toh 'best' use karo
+                const avatar = data.avatarType || 'best';
+                avatarDiv.style.backgroundImage = `url('/${avatar}.png')`;
+                
+                msgDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
+                msgDiv.scrollTop = msgDiv.scrollHeight;
 
-            avatarDiv.classList.add('speaking');
-            const speech = new SpeechSynthesisUtterance(data.reply);
-            speech.lang = 'hi-IN';
-            speech.onend = () => avatarDiv.classList.remove('speaking');
-            window.speechSynthesis.speak(speech);
+                avatarDiv.classList.add('speaking');
+                const speech = new SpeechSynthesisUtterance(data.reply);
+                speech.lang = 'hi-IN';
+                speech.onend = () => avatarDiv.classList.remove('speaking');
+                window.speechSynthesis.speak(speech);
+            } catch (err) {
+                console.error("Error:", err);
+            }
         }
     </script>
 </body>
