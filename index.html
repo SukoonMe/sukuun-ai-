@@ -6,8 +6,19 @@
     <style>
         body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #app { width: 90%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
-        #sukuun-img { height: 55vh; background-size: cover; background-position: center top; transition: 0.5s; border-bottom: 2px solid #4f46e5; }
-        .speaking { filter: brightness(1.2) contrast(1.1); transform: scale(1.05); }
+        
+        /* Smooth transition for background changes */
+        #sukuun-img { 
+            height: 55vh; 
+            background-size: cover; 
+            background-position: center top; 
+            background-repeat: no-repeat;
+            background-color: #1e293b; /* Match app background color */
+            transition: background-image 0.4s ease-in-out, transform 0.3s; 
+            border-bottom: 2px solid #4f46e5;
+        }
+        
+        .speaking { filter: brightness(1.2) contrast(1.1); transform: scale(1.03); }
         #messages { flex: 1; padding: 15px; overflow-y: auto; }
         .msg { margin: 10px 0; padding: 12px; border-radius: 15px; max-width: 85%; }
         .ai { background: #334155; }
@@ -17,7 +28,7 @@
 </head>
 <body>
     <div id="app">
-        <div id="sukuun-img" style="background-image: url('/best.png');"></div>
+        <div id="sukuun-img" id="avatar"></div>
         <div id="messages"></div>
         <div class="input-area">
             <input type="text" id="userInput" placeholder="Dil ki baat kaho...">
@@ -25,7 +36,14 @@
         </div>
     </div>
     <script>
+        // Image Preloading to prevent black flashes
+        const femaleImg = new Image(); femaleImg.src = '/best.png';
+        const maleImg = new Image(); maleImg.src = '/male.png';
+        const avatarDiv = document.getElementById('sukuun-img');
+        avatarDiv.style.backgroundImage = `url('${femaleImg.src}')`;
+
         const userProfile = { name: 'Yaar', gender: 'male' };
+        
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
@@ -39,11 +57,16 @@
             });
             const data = await res.json();
             
-            document.getElementById('sukuun-img').style.backgroundImage = `url('/${data.avatarType}.png')`;
+            // Apply new image
+            avatarDiv.style.backgroundImage = `url('/${data.avatarType}.png')`;
             msgDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
             
+            // Speaking effect
+            avatarDiv.classList.add('speaking');
             const speech = new SpeechSynthesisUtterance(data.reply);
+            speech.onend = () => avatarDiv.classList.remove('speaking');
             window.speechSynthesis.speak(speech);
+            
             input.value = '';
         }
     </script>
