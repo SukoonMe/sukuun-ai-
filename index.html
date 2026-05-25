@@ -7,31 +7,16 @@
         body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #app { width: 90%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Animation: Breathing aur Blinking ka mix */
-        @keyframes breathe {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        @keyframes blink {
-            0%, 90%, 100% { filter: brightness(1); }
-            95% { filter: brightness(0.6); }
-        }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        @keyframes blink { 0%, 90%, 100% { filter: brightness(1); } 95% { filter: brightness(0.6); } }
 
         #sukuun-img { 
-            height: 55vh; 
-            background-size: cover; 
-            background-position: center top; 
-            background-repeat: no-repeat;
-            background-color: #1e293b;
-            border-bottom: 2px solid #4f46e5;
-            /* Animation apply ki hai */
+            height: 55vh; background-size: cover; background-position: center top; 
+            background-repeat: no-repeat; border-bottom: 2px solid #4f46e5;
             animation: breathe 6s infinite ease-in-out, blink 5s infinite;
             transition: background-image 0.5s ease;
         }
-
-        /* Bolte waqt ka movement */
         .speaking { animation: breathe 0.3s infinite alternate !important; filter: brightness(1.2) contrast(1.1); }
-        
         #messages { flex: 1; padding: 15px; overflow-y: auto; }
         .msg { margin: 10px 0; padding: 12px; border-radius: 15px; max-width: 85%; }
         .ai { background: #334155; }
@@ -50,14 +35,13 @@
     </div>
     <script>
         const avatarDiv = document.getElementById('sukuun-img');
-        // Default Image
         avatarDiv.style.backgroundImage = "url('/best.png')"; 
 
         async function send() {
             const input = document.getElementById('userInput');
+            const msgDiv = document.getElementById('messages');
             if(!input.value.trim()) return;
             
-            const msgDiv = document.getElementById('messages');
             msgDiv.innerHTML += `<div class="msg user">${input.value}</div>`;
             const userMsg = input.value;
             input.value = '';
@@ -69,12 +53,10 @@
             });
             const data = await res.json();
             
-            // Image update (static maintain rahegi)
             avatarDiv.style.backgroundImage = `url('/${data.avatarType}.png')`;
             msgDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
             msgDiv.scrollTop = msgDiv.scrollHeight;
 
-            // Speaking Animation
             avatarDiv.classList.add('speaking');
             const speech = new SpeechSynthesisUtterance(data.reply);
             speech.lang = 'hi-IN';
