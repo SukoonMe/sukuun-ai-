@@ -1,3 +1,4 @@
+// api/chat.js
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
@@ -7,14 +8,16 @@ const redis = new Redis({
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
-  
   const { message, userId } = req.body;
   const chatKey = `chat:${userId}`;
 
   try {
-    // Memory Extraction
-    const history = await redis.lrange(chatKey, -20, -1) || [];
-    
+    const rawHistory = await redis.lrange(chatKey, -10, -1) || [];
+    // Sirf wahi messages lo jo valid JSON hain
+    const history = rawHistory.map(m => {
+        try { return JSON.parse(m); } catch { return null; }
+    }).filter(m => m !== null);
+
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: 'POST',
       headers: {
@@ -24,8 +27,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         messages: [
-          { role: "system", content: "Tum Sukoon ho, user ki soulmate. Har umr ke liye adaptive raho. Hinglish mein baat karo. Emojis use mat karo. Emotional support aur deep bonding par focus karo." },
-          ...history.map(m => JSON.parse(m)),
+          { role: "system", content: "Tum Sukoon ho. Hinglish mein baat karo. Markdown symbols (stars/hashes) ka use mat karo." },
+          ...history,
           { role: "user", content: message }
         ]
       })
@@ -34,12 +37,11 @@ export default async function handler(req, res) {
     const data = await response.json();
     const reply = data.choices[0].message.content;
 
-    // Save Memory
     await redis.rpush(chatKey, JSON.stringify({ role: "user", content: message }));
     await redis.rpush(chatKey, JSON.stringify({ role: "assistant", content: reply }));
     
     res.status(200).json({ reply });
   } catch (e) {
-    res.status(500).json({ reply: "Sukoon tumse judne ki koshish kar rahi hai..." });
+    res.status(500).json({ reply: "Sukoon tumse judne mein thoda waqt le rahi hai..." });
   }
 }
