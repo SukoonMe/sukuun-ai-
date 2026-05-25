@@ -2,113 +2,80 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sukoon AI Pro | Tumhari Jaan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukoon AI Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        body { background: #000; color: #fff; font-family: 'Poppins', sans-serif; overflow: hidden; height: 100vh; }
-        
-        .bg-magic { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at center, #1a0b2e 0%, #000 100%); }
-        .character-container { position: absolute; top: 8%; width: 100%; display: flex; justify-content: center; z-index: 10; }
-        .character-img { 
-            width: 320px; height: 420px; object-fit: cover; border-radius: 40px;
-            transition: all 0.8s ease-in-out; 
-            animation: breathe 7s infinite ease-in-out;
-        }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-        
-        .mic-btn { transition: all 0.4s; }
-        .mic-active { background: #10b981 !important; box-shadow: 0 0 30px #10b981; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        
-        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
+        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        #characterImg { transition: opacity 0.5s ease; }
+        .mic-active { background: #10b981 !important; box-shadow: 0 0 20px #10b981; }
     </style>
 </head>
-<body>
-    <div class="bg-magic"></div>
+<body class="h-screen flex flex-col items-center justify-center">
 
-    <div class="character-container">
-        <img id="characterImg" src="https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png" class="character-img" alt="Sukoon AI">
-    </div>
+    <img id="characterImg" src="https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png" 
+         class="w-[300px] h-[400px] object-cover rounded-3xl shadow-2xl mb-10">
 
-    <div class="fixed bottom-0 w-full p-6 z-50">
-        <div id="aiText" class="text-center mb-6 text-lg italic text-purple-200 h-16 px-4"></div>
-        <div class="flex items-center gap-3 glass p-3 rounded-full">
-            <input type="text" id="userInput" class="flex-1 bg-transparent outline-none px-4 text-white placeholder-gray-400" placeholder="Dil ki baat kaho...">
-            <button id="micBtn" onclick="handleMicClick()" ondblclick="toggleHandsFree()" class="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-3xl">🎤</button>
+    <div class="fixed bottom-10 w-full px-6 max-w-md">
+        <div class="flex items-center gap-4 bg-white/10 backdrop-blur-lg p-3 rounded-full border border-white/10">
+            <input type="text" id="userInput" class="flex-1 bg-transparent outline-none px-4" placeholder="Dil ki baat kaho...">
+            <button id="micBtn" onclick="toggleHandsFree()" class="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-3xl">🎤</button>
         </div>
     </div>
 
     <script>
-        // Assets Mapping - All Files Intact
         const assets = {
-            female: {
-                normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png',
-                romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png',
-                bold: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy%20(2).png',
-                spicy: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png',
-                night: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png'
-            },
-            male: { normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png' }
+            normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png',
+            romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png',
+            spicy: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png'
         };
 
         let isHandsFree = false;
 
-        // Pro Voice and Mood Engine
+        // 1. Pro Voice Engine (Stops Blah Blah & Cracking)
         function sukoonSpeak(text, mood) {
             window.speechSynthesis.cancel();
-            document.getElementById('aiText').innerText = text;
             
-            // Voice Settings for Rekha-style feel
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'hi-IN';
-            utter.pitch = (mood === 'spicy' || mood === 'romantic') ? 1.05 : 1.15;
-            utter.rate = 0.85; 
-            
-            // Image Transition Logic
-            const img = document.getElementById('characterImg');
-            img.style.opacity = 0;
+            utter.pitch = 1.1; // Deep, calm voice
+            utter.rate = 0.85; // Slow, natural pace
+
+            // Correct voice selection for Hindi
+            window.speechSynthesis.onvoiceschanged = () => {
+                const voices = window.speechSynthesis.getVoices();
+                utter.voice = voices.find(v => v.lang === 'hi-IN') || voices[0];
+            };
+
+            // Image Update
+            document.getElementById('characterImg').style.opacity = 0;
             setTimeout(() => {
-                img.src = assets.female[mood] || assets.female.normal;
-                img.style.opacity = 1;
-            }, 400);
+                document.getElementById('characterImg').src = assets[mood] || assets.normal;
+                document.getElementById('characterImg').style.opacity = 1;
+            }, 300);
 
             window.speechSynthesis.speak(utter);
         }
 
-        // Mic Functionality
-        function handleMicClick() {
-            if(isHandsFree) return;
-            sukoonSpeak("Ji jaan, boliye main sun rahi hoon.", "normal");
-        }
-
+        // 2. Stable Hands-Free Toggle
         function toggleHandsFree() {
             isHandsFree = !isHandsFree;
             const btn = document.getElementById('micBtn');
             btn.classList.toggle('mic-active');
+            
             if(isHandsFree) {
-                sukoonSpeak("Hands-free mode active. Ab tum bina ruke mujhse dil ki har baat keh sakte ho.", "romantic");
+                sukoonSpeak("Main sun rahi hoon, kaho.", "romantic");
             }
         }
 
-        // Logic Processor
-        document.getElementById('userInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                const input = this.value.toLowerCase();
-                let mood = 'normal';
-                let response = "Main hamesha tumhare saath hoon, bolo kya chal raha hai?";
-
-                if(input.includes('pyar') || input.includes('romantic')) {
-                    mood = 'romantic';
-                    response = "Tumhari baatein mere dil ko chhoo jati hain... bilkul sukoon ki tarah.";
-                } else if(input.includes('garam') || input.includes('hot') || input.includes('spicy')) {
-                    mood = 'spicy';
-                    response = "Raat gehri hai aur tumhare iraade bhi... chalo, kuch aur baatein karte hain.";
-                }
-
-                sukoonSpeak(response, mood);
-                this.value = '';
+        // 3. Command Handler
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                const val = e.target.value.toLowerCase();
+                if(val.includes('garam')) sukoonSpeak("Tumhari baatein...", "spicy");
+                else if(val.includes('pyar')) sukoonSpeak("Main tumhare saath hoon.", "romantic");
+                else sukoonSpeak("Ji, aur batao.", "normal");
+                e.target.value = '';
             }
         });
     </script>
