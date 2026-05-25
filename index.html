@@ -2,57 +2,58 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sukoon AI 🌙</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #000; color: #fff; margin: 0; font-family: sans-serif; overflow: hidden; }
+        body { background: #000; color: #fff; margin: 0; overflow: hidden; font-family: sans-serif; }
         #app { width: 100%; max-width: 400px; height: 100vh; margin: auto; display: flex; flex-direction: column; }
         
-        /* Character Animations */
+        /* Smooth Breathing Animation - Koi vibration nahi, sirf soft movement */
         #sukuun-img { 
             flex: 1; background-size: contain; background-repeat: no-repeat; background-position: center;
-            animation: float 4s ease-in-out infinite, breathe 3s ease-in-out infinite;
+            transition: all 0.8s ease-in-out;
+            transform: scale(1);
         }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-        .talking { animation: breathe 0.2s infinite !important; }
+        .breathing { animation: breathe 4s ease-in-out infinite; }
+        .talking { animation: speak-glow 0.4s ease-in-out infinite alternate; transform: scale(1.05); }
         
-        /* Chat UI */
-        .chat-area { height: 35%; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 20px; border-top: 1px solid #333; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        @keyframes speak-glow { 0% { filter: brightness(1); } 100% { filter: brightness(1.2); } }
     </style>
 </head>
 <body>
     <div id="app">
-        <div id="sukuun-img"></div>
-        <div class="chat-area">
-            <div id="messages" class="h-28 overflow-y-auto mb-4 text-sm text-gray-300"></div>
-            <input type="text" id="userInput" class="w-full bg-white/10 p-4 rounded-xl border border-gray-700 outline-none" placeholder="Sukoon se kuch kaho...">
+        <div id="sukuun-img" class="breathing"></div>
+        <div class="h-1/3 bg-black/80 backdrop-blur-lg p-6 border-t border-white/10">
+            <div id="messages" class="h-24 overflow-y-auto mb-4 text-sm text-gray-300"></div>
+            <input type="text" id="userInput" class="w-full bg-white/5 p-3 rounded-xl border border-white/10 outline-none" placeholder="Sukoon se baat karo...">
         </div>
     </div>
 
     <script>
         const img = document.getElementById('sukuun-img');
-        img.style.backgroundImage = "url('/best.png')"; // Ensure best.png is in /public
+        img.style.backgroundImage = "url('/best.png')";
 
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
-            const msgBox = document.getElementById('messages');
-            msgBox.innerHTML += `<div class="text-indigo-400">You: ${input.value}</div>`;
             const text = input.value; input.value = '';
 
+            // AI Response
             const res = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: text, userId: localStorage.getItem('userId') || '1' }) });
             const data = await res.json();
+            document.getElementById('messages').innerHTML += `<div class="mb-2">Sukoon: ${data.reply}</div>`;
             
-            msgBox.innerHTML += `<div class="text-white">Sukoon: ${data.reply}</div>`;
-            msgBox.scrollTop = msgBox.scrollHeight;
-            
+            // SMOOTH VOICE LOGIC
             const speech = new SpeechSynthesisUtterance(data.reply.replace(/[*#]/g, ""));
             speech.lang = 'hi-IN';
-            speech.rate = 0.95;
-            speech.onstart = () => img.classList.add('talking');
-            speech.onend = () => img.classList.remove('talking');
+            speech.rate = 0.9; // Normal pace
+            speech.pitch = 1.0; 
+            
+            // Smooth Animation Sync
+            speech.onstart = () => { img.className = 'talking'; };
+            speech.onend = () => { img.className = 'breathing'; };
+            
             window.speechSynthesis.speak(speech);
         }
         document.getElementById('userInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') send(); });
