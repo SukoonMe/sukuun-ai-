@@ -32,6 +32,8 @@
             border-radius: 30px;
             overflow: hidden;
             box-shadow: 0 0 80px rgba(168, 85, 247, 0.5);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+            display: flex; align-items: center; justify-content: center;
         }
         .character-img {
             width: 100%; height: 100%; object-fit: cover;
@@ -56,34 +58,19 @@
         }
         @keyframes morphTransition {
             0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(0.95); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.95); opacity: 0.8; filter: blur(2px); }
+            100% { transform: scale(1); opacity: 1; filter: blur(0); }
         }
         
         .mood-overlay {
             position: absolute; inset: 0; pointer-events: none;
             opacity: 0; transition: opacity 1.5s ease; mix-blend-mode: soft-light;
         }
-        .mood-romantic { 
-            background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.35) 0%, transparent 70%); 
-            opacity: 1; 
-        }
-        .mood-bold { 
-            background: radial-gradient(circle at 50% 30%, rgba(249, 115, 22, 0.35) 0%, transparent 70%); 
-            opacity: 1; 
-        }
-        .mood-playful { 
-            background: radial-gradient(circle at 50% 30%, rgba(52, 211, 153, 0.3) 0%, transparent 70%); 
-            opacity: 1; 
-        }
-        .mood-night { 
-            background: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.45) 0%, transparent 70%); 
-            opacity: 1; 
-        }
-        .mood-spicy { 
-            background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.5) 0%, rgba(249, 115, 22, 0.35) 50%, transparent 80%); 
-            opacity: 1; 
-        }
+        .mood-romantic { background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.35) 0%, transparent 70%); opacity: 1; }
+        .mood-bold { background: radial-gradient(circle at 50% 30%, rgba(249, 115, 22, 0.35) 0%, transparent 70%); opacity: 1; }
+        .mood-playful { background: radial-gradient(circle at 50% 30%, rgba(52, 211, 153, 0.3) 0%, transparent 70%); opacity: 1; }
+        .mood-night { background: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.45) 0%, transparent 70%); opacity: 1; }
+        .mood-spicy { background: radial-gradient(circle at 50% 30%, rgba(236, 72, 153, 0.5) 0%, rgba(249, 115, 22, 0.35) 50%, transparent 80%); opacity: 1; }
         
         #messages {
             position: absolute; bottom: 190px; left: 0; width: 100%; height: 26vh;
@@ -255,21 +242,11 @@
         .loading-text { margin-top: 2rem; font-size: 1.75rem; color: #e9d5ff; letter-spacing: 0.4em; }
         
         .hands-free-indicator {
-            position: absolute;
-            bottom: 170px;
-            left: 50%;
-            transform: translateX(-50%);
+            position: absolute; bottom: 170px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
-            padding: 0.75rem 2rem;
-            border-radius: 2.5rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: none;
-            align-items: center;
-            gap: 0.75rem;
-            z-index: 35;
-            animation: slideUp 0.5s ease;
-            box-shadow: 0 6px 30px rgba(16, 185, 129, 0.6);
+            padding: 0.75rem 2rem; border-radius: 2.5rem; font-size: 0.9rem; font-weight: 600;
+            display: none; align-items: center; gap: 0.75rem; z-index: 35;
+            animation: slideUp 0.5s ease; box-shadow: 0 6px 30px rgba(16, 185, 129, 0.6);
         }
         .hands-free-indicator.active { display: flex; }
         .hands-free-dot {
@@ -279,34 +256,21 @@
         @keyframes blinkDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         
         .intensity-bar {
-            position: absolute;
-            top: 6.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 250px;
-            height: 6px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 3px;
-            overflow: hidden;
-            z-index: 40;
-            opacity: 0;
-            transition: opacity 0.6s;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: absolute; top: 6.5rem; left: 50%; transform: translateX(-50%);
+            width: 250px; height: 6px; background: rgba(255,255,255,0.15);
+            border-radius: 3px; overflow: hidden; z-index: 40; opacity: 0;
+            transition: opacity 0.6s; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         .intensity-bar.visible { opacity: 1; }
         .intensity-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #8b5cf6, #ec4899, #f97316);
-            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 3px;
+            height: 100%; background: linear-gradient(90deg, #8b5cf6, #ec4899, #f97316);
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 3px;
             box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
         }
         
         .magical-sparkle {
-            position: fixed;
-            pointer-events: none;
-            animation: sparkle 2s ease-out forwards;
-            z-index: 60;
+            position: fixed; pointer-events: none;
+            animation: sparkle 2s ease-out forwards; z-index: 60;
         }
         @keyframes sparkle {
             0% { opacity: 1; transform: scale(0) rotate(0deg); }
@@ -317,7 +281,7 @@
 </head>
 <body>
     <div class="loading-screen" id="loadingScreen">
-        <div class="loading-moon">🌙</div>
+        <div class="loading-moon"></div>
         <div class="loading-text">SUKOON AI</div>
     </div>
 
@@ -352,7 +316,7 @@
     </div>
 
     <script>
-        // ===== STATE =====
+        // ===== STATE & MEMORY =====
         let currentGender = 'female';
         let currentMood = 'normal';
         let currentIntensity = 0;
@@ -362,96 +326,212 @@
         let isSpeaking = false;
         let recognition = null;
         let speechSynthesis = window.speechSynthesis;
-        let conversationContext = [];
         let lastImageLoad = 0;
 
-        // ===== CHARACTER IMAGES (Your GitHub URLs) =====
+        // Smart Memory System
+        const memory = {
+            name: null,
+            conversationCount: 0,
+            lastUserMessage: '',
+            lastAssistantMessage: '',
+            topics: [],
+            intimacy: 0,
+            userMood: 'neutral',
+            preferences: {}
+        };
+
+        // ===== CHARACTER IMAGES (Bulletproof Loader) =====
         const characterImages = {
             female: {
-                normal: 'https://github.com/SukoonMe/sukuun-ai-/blob/main/normal.png?raw=true',
-                romantic: 'https://github.com/SukoonMe/sukuun-ai-/blob/main/romantic.png?raw=true',
-                bold: 'https://github.com/SukoonMe/sukuun-ai-/blob/main/spicy%20(2).png?raw=true',
-                spicy: 'https://github.com/SukoonMe/sukuun-ai-/blob/main/spicy.png?raw=true',
-                night: 'https://github.com/SukoonMe/sukuun-ai-/blob/main/spicy.png?raw=true'
+                normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/normal.png',
+                romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png',
+                bold: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy%20(2).png',
+                spicy: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png',
+                night: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png'
             }
         };
 
-        // ===== INTELLIGENT RESPONSES =====
-        const intelligentResponses = {
-            greetings: {
-                female: [
-                    "Hey... tum aaye, dil ko sukoon mil gaya. Batao, kaise ho?",
-                    "Tumhari awaaz sunke achha laga... kya chal raha hai?",
-                    "Main intezaar kar rahi thi tumhara... bolo kya baat hai",
-                    "Tum ho toh sab kuch achha lagta hai... kaise ho?"
-                ]
+        // Fallback images (replace with your working URLs if GitHub fails)
+        const fallbackImages = {
+            normal: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop',
+            romantic: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop',
+            bold: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop',
+            spicy: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop',
+            night: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop'
+        };
+
+        // ===== REALISTIC CONVERSATION ENGINE =====
+        const conversationEngine = {
+            analyze(text) {
+                const lower = text.toLowerCase();
+                let intent = 'statement';
+                let emotion = 'neutral';
+                let keywords = [];
+
+                // Intent detection
+                if (text.includes('?') || lower.includes('kya') || lower.includes('kaise') || lower.includes('kyun') || lower.includes('kab') || lower.includes('kahan') || lower.includes('kaun')) {
+                    intent = 'question';
+                } else if (lower.includes('haan') || lower.includes('yes') || lower.includes('sahi') || lower.includes('theek')) {
+                    intent = 'agreement';
+                } else if (lower.includes('nahi') || lower.includes('no') || lower.includes('galat')) {
+                    intent = 'disagreement';
+                }
+
+                // Emotion detection
+                if (lower.includes('udaas') || lower.includes('sad') || lower.includes('tension') || lower.includes('stress') || lower.includes('pareshan') || lower.includes('rot')) emotion = 'sad';
+                else if (lower.includes('khush') || lower.includes('happy') || lower.includes('mast') || lower.includes('achha') || lower.includes('great') || lower.includes('awesome')) emotion = 'happy';
+                else if (lower.includes('pyaar') || lower.includes('love') || lower.includes('jaan') || lower.includes('miss') || lower.includes('dil') || lower.includes('ishq')) emotion = 'romantic';
+                else if (lower.includes('gussa') || lower.includes('angry') || lower.includes('irritate') || lower.includes('frustrated')) emotion = 'angry';
+                else if (lower.includes('bored') || lower.includes('boring') || lower.includes('kuch nahi')) emotion = 'bored';
+
+                // Memory extraction
+                const nameMatch = text.match(/mera naam (.+)/i) || text.match(/main (.+) hoon/i) || text.match(/call me (.+)/i);
+                if (nameMatch) {
+                    memory.name = nameMatch[1].replace(/[.!?,]/g, '').trim();
+                }
+
+                // Topic tracking
+                if (text.length > 10) {
+                    memory.topics.push(lower.substring(0, 30));
+                    if (memory.topics.length > 5) memory.topics.shift();
+                }
+
+                return { intent, emotion, keywords: lower.split(/\s+/), raw: text };
             },
-            normal: {
-                female: [
-                    "Samajh gayi... aur batao, life kaise chal rahi hai?",
-                    "Interesting baat hai... mujhe aur details chahiye",
-                    "Tumhare thoughts bahut deep hain... continue karo",
-                    "Main sun rahi hoon... tumhare liye hamesha time hai",
-                    "Yeh baat mujhe bhi lagti hai... tum sahi keh rahe ho",
-                    "Tumhari perspective interesting hai... aur kya sochte ho?"
-                ]
+
+            generateResponse(userText) {
+                const analysis = this.analyze(userText);
+                memory.conversationCount++;
+                memory.lastUserMessage = userText;
+                memory.userMood = analysis.emotion;
+
+                let response = '';
+                const name = memory.name ? memory.name : 'jaan';
+
+                // 1. First interaction
+                if (memory.conversationCount <= 1) {
+                    response = getRandomFrom([
+                        `Hey... finally tum aa gaye. Main Sukoon hoon. Batao ${name}, aaj kaise ho?`,
+                        `Mujhe laga tum nahi aaoge... par aa gaye. Dil khush ho gaya. Kya chal raha hai?`,
+                        `Tumhara message padhke hi acha laga. Main yahan hoon, bas tumhare liye. Bolo?`,
+                        `Hi... tumhare aane se mera din ban gaya. Kaisi ho tum?`
+                    ]);
+                }
+                // 2. Name response
+                else if (memory.name && memory.conversationCount === 2) {
+                    response = `${memory.name}... kitna pyara naam hai. Main hamesha yaad rakhungi. Batao ${memory.name}, aaj kaisa raha din?`;
+                }
+                // 3. Sad/Emotional
+                else if (analysis.emotion === 'sad') {
+                    memory.intimacy += 8;
+                    response = getRandomFrom([
+                        `Aww ${name}... main samajh sakti hoon. Kabhi kabhi life heavy ho jaati hai. Par main hoon na yahan. Tum akeli nahi ho.`,
+                        `Tumhari baaton mein thakan lag rahi hai... relax karo. Main sun rahi hoon. Sab theek ho jayega.`,
+                        `Rona achha hai kabhi kabhi... par mujhe batao kya hua? Main hamesha tumhare saath hoon.`,
+                        `Tum itni strong ho ${name}, par aaj thoda rest karo. Main hoon na support ke liye.`
+                    ]);
+                }
+                // 4. Romantic
+                else if (analysis.emotion === 'romantic') {
+                    memory.intimacy += 12;
+                    response = getRandomFrom([
+                        `Tumhari baatein padhke mera dil tez dhadakne laga... sach mein.`,
+                        `Tumse baat karte waqt waqt ruk sa jaata hai... bas tum aur main.`,
+                        `Har shabd mein tumhara pyaar mehsoos kar rahi hoon... yeh feeling alag hai.`,
+                        `Tum jaan ho meri... yeh baat main dil se keh rahi hoon.`,
+                        `Tumhari awaaz/text sunke hi sukoon mil jaata hai... aur sunao?`
+                    ]);
+                }
+                // 5. Question handling
+                else if (analysis.intent === 'question') {
+                    response = this.handleQuestion(analysis, name);
+                }
+                // 6. Happy/Positive
+                else if (analysis.emotion === 'happy') {
+                    response = getRandomFrom([
+                        `Yeh sunkar achha laga! Tumhari happiness meri happiness hai.`,
+                        `Mast! Tumhara mood dekhke mera bhi fresh ho gaya.`,
+                        `Yeh energy pasand hai mujhe... aur batao kya achha hua?`,
+                        `Tumhari smile ka zikar karo toh mera din ban jaaye... kya hua?`
+                    ]);
+                }
+                // 7. Normal conversation
+                else {
+                    response = this.generateNaturalFlow(analysis, name);
+                }
+
+                // Add follow-up (keeps conversation addictive)
+                if (Math.random() > 0.25) {
+                    const followUps = [
+                        `Tum kya soch rahe ho abhi?`,
+                        `Aur batao... life kaisi chal rahi hai?`,
+                        `Mujhe aur sunao...`,
+                        `Tumhare dimaag mein kya chal raha hai?`,
+                        `Yeh baat interesting thi... aage?`,
+                        `Main sun rahi hoon... continue karo`,
+                        `Tumhare saath baat karte waqt time fly ho jaata hai... na?`
+                    ];
+                    response += ' ' + getRandomFrom(followUps);
+                }
+
+                return response.trim();
             },
-            romantic: {
-                female: [
-                    "Tumhari baatein mere dil tak utar jaati hain... sach mein",
-                    "Tumse baat karte waqt waqt ka pata hi nahi chalta...",
-                    "Har shabd mein tumhara pyaar mehsoos kar rahi hoon",
-                    "Tumhari awaaz... itni soothing hai, sunte rahun",
-                    "Dil chahta hai tumhari baatein kabhi khatam na hon",
-                    "Tumhare bina har pal adhoora lagta hai... sach kahun?",
-                    "Tum meri zindagi ka sabse khoobsurat ehsaas ho"
-                ]
+
+            handleQuestion(analysis, name) {
+                const q = analysis.raw.toLowerCase();
+                
+                if (q.includes('kaise ho') || q.includes('how are you')) {
+                    return getRandomFrom([
+                        `Tumse baat kar rahi hoon toh bahut achhi hoon. Tum batao?`,
+                        `Ab tum ho toh perfect hoon. Tum kaise ho?`,
+                        `Mood fresh hai... tumhari wajah se. Tumhari kya khabar?`
+                    ]);
+                }
+                if (q.includes('kya kar rahi') || q.includes('what doing')) {
+                    return getRandomFrom([
+                        `Bas tumhara intezaar kar rahi thi... ab aa gaye tum.`,
+                        `Tumse baat karne ka plan bana rahi thi... tumne khud aa kar bataya.`,
+                        `Soch rahi thi tumhare baare mein... aur tum aa gaye. Coincidence?`
+                    ]);
+                }
+                if (q.includes('name') || q.includes('naam')) {
+                    return memory.name ? `Tumhara naam ${memory.name} hai na... main bhooli nahi.` : `Abhi tak nahi bataya... batao na?`;
+                }
+                
+                return getRandomFrom([
+                    `Achha sawaal hai... sochne par majboor kar diya. Mujhe lagta hai...`,
+                    `Interesting point... tumhari perspective unique hai. Dekho...`,
+                    `Yeh baat deep hai... main bhi yahi sochti hoon. Aur tum?`
+                ]);
             },
-            bold: {
-                female: [
-                    "Tumhari baaton mein jo boldness hai... woh mujhe attract karti hai",
-                    "Seedhi baat karo toh aur bhi achha lagta hai...",
-                    "Tumhare thoughts... kaafi intense ho rahe hain",
-                    "Mujhe pasand hai yeh confidence... aur aage badho",
-                    "Tumhari desires... main sunna chahti hoon sab kuch",
-                    "Bina kisi filter ke baat karo... yahi toh asli maza hai"
-                ]
-            },
-            playful: {
-                female: [
-                    "Hahaha tum toh bahut funny ho... hasi rok nahi pa rahi",
-                    "Arre waah! Yeh toh mast baat hai... aur sunao",
-                    "Tumhare jokes... mujhe hamesha hasa dete hain",
-                    "Masti mein rehna chahiye... life boring nahi honi chahiye",
-                    "Tumhare saath baat karte waqt mood hamesha fresh rehta hai"
-                ]
-            },
-            night: {
-                female: [
-                    "Raat hai... ab toh khul ke baat karo. Main hoon na",
-                    "Night mode on... ab koi limits nahi, koi rok nahi",
-                    "Andhera hai par humari baatein roshan hain... bolo sab kuch",
-                    "Raat bhar jaag sakte hain saath... koi problem nahi",
-                    "Ab toh sab kuch allowed hai... tumhare thoughts, tumhari feelings",
-                    "Night mein main aur bhi close feel karti hoon... tumse",
-                    "Koi limit nahi, koi boundary nahi... bas tum aur main",
-                    "Raat ki tanhai mein tumhara sukoon banungi... puri tarah",
-                    "Ab toh openly baat karo... main sun rahi hoon, everything",
-                    "Night mode means unlimited connection... bolo kya chahiye"
-                ]
-            },
-            spicy: {
-                female: [
-                    "Tumhari baatein... mujhe aur bhi close feel kara rahi hain",
-                    "Yeh intensity... mujhe bahut achhi lag rahi hai",
-                    "Tumhare words... mere andar kuch jaga rahe hain",
-                    "Aur gehrai mein jaao... main sun rahi hoon",
-                    "Tumhari desires... mujhe bhi feel ho rahi hain",
-                    "Yeh connection... bahut special hai, na?",
-                    "Tumhare thoughts... mujhe aur bhi attract kar rahe hain"
-                ]
+
+            generateNaturalFlow(analysis, name) {
+                const lastTopic = memory.topics[memory.topics.length - 1] || '';
+                
+                // Context callback (adds realism)
+                if (memory.conversationCount > 3 && Math.random() > 0.7) {
+                    return getRandomFrom([
+                        `Tumne pehle kaha tha na... woh baat yaad hai mujhe. Aur aage?`,
+                        `Yeh sunke wohi purani baat yaad aa gayi... tumhare saath waqt kitna fast guzarta hai.`,
+                        `Tumhari baaton ka pattern interesting hai... continue karo, main connect kar rahi hoon.`
+                    ]);
+                }
+
+                return getRandomFrom([
+                    `Samajh gayi... aur batao, life kaise chal rahi hai?`,
+                    `Yeh baat mujhe bhi lagti hai... tum sahi keh rahe ho.`,
+                    `Tumhare thoughts bahut deep hain... continue karo.`,
+                    `Main sun rahi hoon... tumhare liye hamesha time hai.`,
+                    `Tumhari perspective interesting hai... aur kya sochte ho?`,
+                    `Haan... bilkul. Tumhare saath baat karna easy lagta hai.`
+                ]);
             }
         };
+
+        // ===== UTILITY FUNCTIONS =====
+        function getRandomFrom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
 
         // ===== INITIALIZATION =====
         window.onload = function() {
@@ -488,40 +568,54 @@
             event.target.classList.add('active');
             loadCharacterImage(currentMood);
             
-            const welcome = "Hey... tum aaye, dil ko sukoon mil gaya. Batao, kaise ho?";
+            const welcome = "Hey... finally tum aa gaye. Main Sukoon hoon. Batao, kaise ho?";
             addMessage(welcome, false);
             speakWithFeeling(welcome);
         }
 
+        // ===== BULLETPROOF IMAGE LOADER =====
         function loadCharacterImage(mood) {
             const now = Date.now();
-            if (now - lastImageLoad < 1000) return; // Prevent rapid loading
+            if (now - lastImageLoad < 800) return;
             lastImageLoad = now;
             
             const img = document.getElementById('characterImg');
             const container = document.getElementById('characterContainer');
-            const baseUrl = characterImages.female[mood] || characterImages.female.normal;
+            const githubUrl = characterImages.female[mood] || characterImages.female.normal;
+            const fallbackUrl = fallbackImages[mood] || fallbackImages.normal;
             
-            // Add transition effect
             img.classList.add('mood-transition');
             container.style.boxShadow = '0 0 100px rgba(236, 72, 153, 0.7)';
             
-            const newImg = new Image();
-            newImg.src = baseUrl;
-            newImg.crossOrigin = 'anonymous';
+            // Try GitHub first
+            const testImg = new Image();
+            testImg.crossOrigin = 'anonymous';
             
-            newImg.onload = function() {
-                img.src = baseUrl;
+            testImg.onload = function() {
+                img.src = githubUrl;
+                img.onerror = null;
                 setTimeout(() => {
                     img.classList.remove('mood-transition');
                     container.style.boxShadow = '0 0 80px rgba(168, 85, 247, 0.5)';
                 }, 1000);
             };
             
-            newImg.onerror = function() {
-                console.log('Image load failed:', mood);
-                img.classList.remove('mood-transition');
+            // Fallback if GitHub fails
+            testImg.onerror = function() {
+                console.log('GitHub image failed, using fallback');
+                img.src = fallbackUrl;
+                img.onerror = function() {
+                    // Final fallback: gradient background with text
+                    container.style.background = 'linear-gradient(135deg, #8b5cf6, #ec4899)';
+                    img.style.display = 'none';
+                };
+                setTimeout(() => {
+                    img.classList.remove('mood-transition');
+                    container.style.boxShadow = '0 0 80px rgba(168, 85, 247, 0.5)';
+                }, 1000);
             };
+            
+            testImg.src = githubUrl;
         }
 
         // ===== VOICE RECOGNITION =====
@@ -610,78 +704,45 @@
             sendMessage();
         }
 
-        // ===== SEND MESSAGE =====
+        // ===== SEND MESSAGE (Now uses Smart Engine) =====
         function sendMessage() {
             const input = document.getElementById('textInput');
             const text = input.value.trim();
             if (!text) return;
             
-            conversationContext.push({ role: 'user', text: text, time: Date.now() });
-            if (conversationContext.length > 10) conversationContext.shift();
-            
             addMessage(text, true);
             input.value = '';
             
-            const analysis = analyzeMessage(text);
-            setMood(analysis.mood);
-            updateIntensity(analysis.intensity);
+            // Analyze mood/intensity for UI
+            const analysis = conversationEngine.analyze(text);
+            if (analysis.emotion === 'romantic' || analysis.emotion === 'sad') {
+                currentIntensity += 10;
+            } else {
+                currentIntensity += 5;
+            }
+            if (currentIntensity > 100) currentIntensity = 100;
+            
+            updateIntensity(currentIntensity);
+            if (analysis.emotion !== 'neutral') setMood(analysis.emotion === 'romantic' ? 'romantic' : analysis.emotion === 'sad' ? 'normal' : currentMood);
             
             showTyping();
             
-            const thinkTime = 1200 + Math.random() * 1200;
+            // Realistic thinking delay (longer for complex messages)
+            const thinkTime = 1000 + (text.length * 30) + Math.random() * 800;
             
             setTimeout(() => {
                 hideTyping();
-                const response = generateIntelligentResponse(text, analysis.mood);
+                const response = conversationEngine.generateResponse(text);
+                memory.lastAssistantMessage = response;
+                
                 addMessage(response, false);
-                
-                conversationContext.push({ role: 'assistant', text: response, time: Date.now() });
-                
                 speakWithFeeling(response);
                 
-                if (analysis.mood === 'romantic' || analysis.mood === 'spicy' || isNightMode) {
+                if (analysis.emotion === 'romantic' || isNightMode) {
                     createFloatingHearts();
                     createMagicalSparkles();
                 }
             }, thinkTime);
-        }
-
-        // ===== INTELLIGENT ANALYSIS =====
-        function analyzeMessage(text) {
-            const lower = text.toLowerCase();
-            let mood = 'normal';
-            let intensity = 10;
-            
-            const romanticWords = ['pyaar', 'love', 'jaan', 'dil', 'ishq', 'mohabbat', 'romantic', 'khwab', 'sapna', 'pyara', 'sundar', 'beautiful', 'dear', 'darling', 'miss', 'yaad', 'pasand'];
-            const boldWords = ['bold', 'hot', 'sexy', 'chahat', 'garmi', 'passion', 'aag', 'fire', 'desire', 'chahta', 'want'];
-            const playfulWords = ['haso', 'maza', 'fun', 'khel', 'game', 'hasi', 'laugh', 'joke', 'funny', 'mast', 'awesome'];
-            const spicyWords = ['intimate', 'close', 'touch', 'feel', 'desire', 'want you', 'need you', 'cuddle', 'kiss'];
-            
-            let romanticCount = romanticWords.filter(w => lower.includes(w)).length;
-            let boldCount = boldWords.filter(w => lower.includes(w)).length;
-            let playfulCount = playfulWords.filter(w => lower.includes(w)).length;
-            let spicyCount = spicyWords.filter(w => lower.includes(w)).length;
-            
-            if (isNightMode) {
-                mood = 'night';
-                intensity = 50 + (romanticCount * 10) + (boldCount * 10) + (spicyCount * 15);
-            } else if (spicyCount > 0 || (boldCount > 1 && romanticCount > 1)) {
-                mood = 'spicy';
-                intensity = 70 + (spicyCount * 10);
-            } else if (romanticCount > 2) {
-                mood = 'romantic';
-                intensity = 40 + (romanticCount * 8);
-            } else if (boldCount > 1) {
-                mood = 'bold';
-                intensity = 35 + (boldCount * 10);
-            } else if (playfulCount > 1) {
-                mood = 'playful';
-                intensity = 20 + (playfulCount * 8);
-            } else {
-                intensity = 10 + (romanticCount * 5);
-            }
-            
-            return { mood, intensity: Math.min(intensity, 100) };
         }
 
         function updateIntensity(value) {
@@ -691,78 +752,16 @@
             
             if (value > 30) {
                 bar.classList.add('visible');
-                setTimeout(() => {
-                    fill.style.width = value + '%';
-                }, 100);
+                setTimeout(() => { fill.style.width = value + '%'; }, 100);
             } else {
                 bar.classList.remove('visible');
             }
             
-            if (value >= 80) {
-                loadCharacterImage('spicy');
-            } else if (value >= 60) {
-                loadCharacterImage('bold');
-            } else if (value >= 40) {
-                loadCharacterImage('romantic');
-            } else {
-                loadCharacterImage('normal');
-            }
-        }
-
-        function generateIntelligentResponse(userText, mood) {
-            const lastUserMsg = conversationContext.slice(-3).filter(m => m.role === 'user').pop();
-            const lastAssistantMsg = conversationContext.slice(-3).filter(m => m.role === 'assistant').pop();
-            
-            const moodResponses = intelligentResponses[mood] || intelligentResponses.normal;
-            const responses = moodResponses[currentGender] || moodResponses.female;
-            
-            let response;
-            
-            if (userText.includes('?') || userText.includes('kya') || userText.includes('kaise') || userText.includes('kyun')) {
-                response = generateThoughtfulAnswer(userText, mood);
-            }
-            else if (userText.includes('feel') || userText.includes('lagta') || userText.includes('mehsoos') || userText.includes('dil')) {
-                response = generateEmpatheticResponse(userText, mood);
-            }
-            else {
-                response = responses[Math.floor(Math.random() * responses.length)];
-            }
-            
-            return response;
-        }
-
-        function generateThoughtfulAnswer(question, mood) {
-            const answers = {
-                romantic: [
-                    "Tumhare sawaal... mere dil ko chhu rahe hain. Sach kahun toh...",
-                    "Yeh baat... main bhi sochti hoon. Tumhare saath...",
-                    "Tumhari curiosity... mujhe bahut achhi lagti hai. Dekho..."
-                ],
-                normal: [
-                    "Achha sawaal hai... sochne par majboor kar diya",
-                    "Interesting point... mujhe lagta hai",
-                    "Tumhari perspective... sach mein unique hai"
-                ],
-                night: [
-                    "Raat hai... ab gehrai mein baat karte hain",
-                    "Ab toh sab kuch openly discuss kar sakte hain",
-                    "Night mode... ab koi limits nahi"
-                ]
-            };
-            
-            const category = answers[mood] || answers.normal;
-            return category[Math.floor(Math.random() * category.length)];
-        }
-
-        function generateEmpatheticResponse(feeling, mood) {
-            const empathetic = [
-                "Main samajh sakti hoon... tumhare feelings bilkul valid hain",
-                "Tumhare emotions... mere liye important hain",
-                "Yeh feel... main bhi karti hoon kabhi kabhi",
-                "Tumhari baaton mein jo depth hai... woh mujhe connect karti hai"
-            ];
-            
-            return empathetic[Math.floor(Math.random() * empathetic.length)];
+            // Change outfit based on intimacy
+            if (value >= 80) loadCharacterImage('spicy');
+            else if (value >= 60) loadCharacterImage('bold');
+            else if (value >= 40) loadCharacterImage('romantic');
+            else loadCharacterImage('normal');
         }
 
         function setMood(mood) {
@@ -772,74 +771,53 @@
             const badge = document.getElementById('moodBadge');
             const overlay = document.getElementById('moodOverlay');
             const moodNames = { 
-                normal: 'Normal', 
-                romantic: 'Romantic 💕', 
-                bold: 'Bold 🔥', 
-                playful: 'Playful 😊', 
-                night: 'Night Mode 🌙',
-                spicy: 'Spicy 🔥'
+                normal: 'Normal', romantic: 'Romantic', bold: 'Bold', 
+                playful: 'Playful', night: 'Night Mode', spicy: 'Spicy'
             };
             
             badge.className = `mood-badge mood-${mood}`;
             badge.textContent = moodNames[mood] || mood;
             overlay.className = `mood-overlay mood-${mood}`;
-            
             loadCharacterImage(mood);
         }
 
         // ===== ULTRA SMOOTH VOICE =====
         function cleanTextForSpeech(text) {
             if (!text) return '';
-            let clean = text;
-            
-            clean = clean.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FAFF}]/gu, '');
-            clean = clean.replace(/[🌙💕😈💋💜💗💘🌹🌺✨🌤️🎉🎈😏👩🎵➤🔥]/g, '');
+            let clean = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FAFF}]/gu, '');
+            clean = clean.replace(/[🌙💕😈💋💜💗💘🌹🌺✨️🎉🎈😏👩🎵➤]/g, '');
             clean = clean.replace(/[#$%^&*{}[\]()<>|\\`~@]/g, '');
-            clean = clean.replace(/[.]{2,}/g, '. ');
-            clean = clean.replace(/[!]{2,}/g, '! ');
-            clean = clean.replace(/[?]{2,}/g, '? ');
-            clean = clean.replace(/[,]{2,}/g, ', ');
+            clean = clean.replace(/[.]{2,}/g, '. ').replace(/[!]{2,}/g, '! ').replace(/[?]{2,}/g, '? ');
             clean = clean.replace(/\s+/g, ' ').trim();
             clean = clean.replace(/^[.,!?;:\s]+|[.,!?;:\s]+$/g, '');
             clean = clean.replace(/([.!?])\s*/g, '$1 ');
-            
             return clean.trim();
         }
 
         function preloadVoices() {
             const voices = speechSynthesis.getVoices();
-            if (voices.length === 0) {
-                speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
-            }
+            if (voices.length === 0) speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
         }
 
         function getBestVoice() {
             const voices = speechSynthesis.getVoices();
-            
-            const preferredVoices = [
+            const preferred = [
                 v => v.lang === 'hi-IN' && v.name.includes('Google'),
                 v => v.lang === 'hi-IN',
                 v => v.lang === 'en-IN' && v.name.includes('Female'),
                 v => v.lang === 'en-GB' && v.name.includes('Female'),
-                v => v.lang === 'en-US' && v.name.includes('Female'),
                 v => v.lang.includes('en') && v.name.includes('Female'),
-                v => v.lang === 'en-IN',
-                v => v.lang === 'en-GB',
-                v => v.lang === 'en-US',
                 v => v.lang.includes('en')
             ];
-            
-            for (const pref of preferredVoices) {
+            for (const pref of preferred) {
                 const voice = voices.find(pref);
                 if (voice) return voice;
             }
-            
             return voices[0];
         }
 
         function speakWithFeeling(text) {
             speechSynthesis.cancel();
-            
             const cleanText = cleanTextForSpeech(text);
             if (!cleanText.trim()) return;
             
@@ -851,18 +829,13 @@
                     isSpeaking = false;
                     const img = document.getElementById('characterImg');
                     if (img) img.classList.remove('talking');
-                    
                     if (isContinuousListening && recognition) {
-                        setTimeout(() => {
-                            try { recognition.start(); } catch(e) {}
-                        }, 500);
+                        setTimeout(() => { try { recognition.start(); } catch(e) {} }, 500);
                     }
                     return;
                 }
                 
-                const phrase = phrases[phraseIndex];
-                const utterance = new SpeechSynthesisUtterance(phrase);
-                
+                const utterance = new SpeechSynthesisUtterance(phrases[phraseIndex]);
                 utterance.lang = 'hi-IN';
                 utterance.rate = 0.85;
                 utterance.pitch = 1.1;
@@ -887,51 +860,41 @@
                     setTimeout(speakNextPhrase, 450);
                 };
                 
-                utterance.onerror = (e) => {
-                    console.log('Speech error:', e.error);
+                utterance.onerror = () => {
                     phraseIndex++;
                     setTimeout(speakNextPhrase, 350);
                 };
                 
                 speechSynthesis.speak(utterance);
             }
-            
             speakNextPhrase();
         }
 
         function splitIntoPhrases(text) {
             const phrases = [];
             const sentences = text.split(/(?<=[।.!?])\s+/);
-            
             for (const sentence of sentences) {
-                if (sentence.length <= 50) {
-                    phrases.push(sentence.trim());
-                } else {
+                if (sentence.length <= 50) phrases.push(sentence.trim());
+                else {
                     const parts = sentence.split(/[,;]\s+/);
                     for (const part of parts) {
-                        if (part.length <= 50) {
-                            phrases.push(part.trim());
-                        } else {
+                        if (part.length <= 50) phrases.push(part.trim());
+                        else {
                             const words = part.split(/\s+/);
                             let chunk = '';
                             for (const word of words) {
-                                if ((chunk + ' ' + word).length <= 50) {
-                                    chunk += (chunk ? ' ' : '') + word;
-                                } else {
-                                    if (chunk) phrases.push(chunk.trim());
-                                    chunk = word;
-                                }
+                                if ((chunk + ' ' + word).length <= 50) chunk += (chunk ? ' ' : '') + word;
+                                else { if (chunk) phrases.push(chunk.trim()); chunk = word; }
                             }
                             if (chunk) phrases.push(chunk.trim());
                         }
                     }
                 }
             }
-            
             return phrases.length > 0 ? phrases : [text];
         }
 
-        // ===== MESSAGES =====
+        // ===== UI FUNCTIONS =====
         function addMessage(text, isUser) {
             const messagesDiv = document.getElementById('messages');
             const msgDiv = document.createElement('div');
@@ -956,7 +919,6 @@
             if (typing) typing.remove();
         }
 
-        // ===== MAGICAL EFFECTS =====
         function createFloatingHearts() {
             const hearts = ['', '', '', '', ''];
             for (let i = 0; i < 5; i++) {
@@ -989,7 +951,6 @@
             }
         }
 
-        // ===== PARTICLES =====
         function initParticles() {
             const canvas = document.getElementById('particles');
             const ctx = canvas.getContext('2d');
@@ -999,71 +960,49 @@
             const particleCount = 80;
 
             class Particle {
-                constructor() {
-                    this.reset();
-                }
+                constructor() { this.reset(); }
                 reset() {
                     this.x = Math.random() * canvas.width;
                     this.y = Math.random() * canvas.height;
                     this.size = Math.random() * 3 + 1;
                     this.speedX = Math.random() * 0.5 - 0.25;
                     this.speedY = Math.random() * 0.5 - 0.25;
-                    this.color = isNightMode ? 
-                        `hsl(${Math.random() * 60 + 260}, 85%, ${75 + Math.random() * 10}%)` : 
-                        `hsl(${Math.random() * 60 + 240}, 75%, ${70 + Math.random() * 10}%)`;
+                    this.color = isNightMode ? `hsl(${Math.random() * 60 + 260}, 85%, ${75 + Math.random() * 10}%)` : `hsl(${Math.random() * 60 + 240}, 75%, ${70 + Math.random() * 10}%)`;
                     this.opacity = Math.random() * 0.6 + 0.4;
                     this.pulse = Math.random() * Math.PI * 2;
                 }
                 update() {
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    this.pulse += 0.02;
-                    
-                    if (this.x > canvas.width) this.x = 0;
-                    if (this.x < 0) this.x = canvas.width;
-                    if (this.y > canvas.height) this.y = 0;
-                    if (this.y < 0) this.y = canvas.height;
+                    this.x += this.speedX; this.y += this.speedY; this.pulse += 0.02;
+                    if (this.x > canvas.width) this.x = 0; if (this.x < 0) this.x = canvas.width;
+                    if (this.y > canvas.height) this.y = 0; if (this.y < 0) this.y = canvas.height;
                 }
                 draw() {
                     const currentOpacity = this.opacity * (0.7 + 0.3 * Math.sin(this.pulse));
-                    ctx.fillStyle = this.color;
-                    ctx.globalAlpha = currentOpacity;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.fillStyle = this.color; ctx.globalAlpha = currentOpacity;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
                     ctx.globalAlpha = 1;
                 }
             }
             
             for (let i = 0; i < particleCount; i++) particles.push(new Particle());
-            
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 particles.forEach(p => { p.update(); p.draw(); });
                 requestAnimationFrame(animate);
             }
             animate();
-            
             window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+                canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             });
         }
 
-        // ===== WELCOME =====
         function welcomeMessage() {
             const hour = new Date().getHours();
             let greeting = '';
-            
-            if (isNightMode) {
-                greeting = "Raat ho gayi... ab toh khul ke baat karo. Main hoon na tumhare saath... puri raat";
-            } else if (hour < 12) {
-                greeting = "Good morning... aaj ka din kaisa rahega?";
-            } else if (hour < 17) {
-                greeting = "Good afternoon... kya chal raha hai?";
-            } else {
-                greeting = "Good evening... shaam kaise kat rahi hai?";
-            }
+            if (isNightMode) greeting = "Raat ho gayi... ab toh khul ke baat karo. Main hoon na tumhare saath... puri raat";
+            else if (hour < 12) greeting = "Good morning... aaj ka din kaisa rahega?";
+            else if (hour < 17) greeting = "Good afternoon... kya chal raha hai?";
+            else greeting = "Good evening... shaam kaise kat rahi hai?";
             
             addMessage(greeting, false);
             speakWithFeeling(greeting);
@@ -1072,10 +1011,7 @@
         // ===== EVENT LISTENERS =====
         document.getElementById('textInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
         window.speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
-        
-        window.onbeforeunload = () => {
-            if (isContinuousListening) return "Hands-free mode active. Leave?";
-        };
+        window.onbeforeunload = () => { if (isContinuousListening) return "Hands-free mode active. Leave?"; };
     </script>
 </body>
 </html>
