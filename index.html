@@ -1,27 +1,29 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukoon AI 🌙</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=t0g8gH2d"></script>
     <style>
-        body { background: #000; color: white; font-family: sans-serif; overflow: hidden; }
-        #sukuun-img { width: 250px; height: 250px; margin: 50px auto; background-size: contain; background-repeat: no-repeat; transition: 0.3s; }
+        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        /* Image badi aur full-screen jaisi dikhegi */
+        #sukuun-img { width: 100%; height: 350px; background-size: contain; background-repeat: no-repeat; background-position: center; transition: 0.5s; }
         .breathing { animation: float 4s ease-in-out infinite; }
-        .talking { animation: pulse 0.5s infinite; filter: hue-rotate(90deg); }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .talking { animation: pulse 0.5s infinite; filter: brightness(1.5); }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes pulse { 0% { transform: scale(1.1); } 50% { transform: scale(1.15); } }
     </style>
 </head>
 <body>
-    <div id="app" class="flex flex-col h-screen max-w-md mx-auto">
+    <div class="flex flex-col h-screen max-w-lg mx-auto">
         <div id="sukuun-img" class="breathing" style="background-image: url('/best.png');"></div>
-        
-        <div id="messages" class="flex-1 overflow-y-auto p-4 text-gray-300 space-y-2"></div>
-
-        <div class="p-4 bg-gray-900 border-t border-gray-700">
+        <div id="messages" class="flex-1 overflow-y-auto px-6 text-base text-gray-200 space-y-4"></div>
+        <div class="p-4 bg-gray-900 border-t border-gray-800">
             <div class="flex gap-2">
-                <input type="text" id="userInput" class="w-full bg-black p-3 rounded-lg border border-gray-600 outline-none" placeholder="Kuch bolo...">
-                <button id="micBtn" class="bg-indigo-600 px-4 rounded-lg">🎤</button>
+                <input type="text" id="userInput" class="w-full bg-black p-4 rounded-xl outline-none border border-gray-700" placeholder="Sukoon se baat karo...">
+                <button id="micBtn" class="bg-indigo-600 px-6 rounded-xl text-xl">🎤</button>
             </div>
         </div>
     </div>
@@ -29,32 +31,41 @@
     <script>
         const msgDiv = document.getElementById('messages');
         const input = document.getElementById('userInput');
-        
-        // Voice Recognition
-        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        document.getElementById('micBtn').onclick = () => rec.start();
-        rec.onresult = (e) => { input.value = e.results[0][0].transcript; send(); };
+        const img = document.getElementById('sukuun-img');
 
-        async function send() {
-            const txt = input.value;
-            if(!txt) return;
-            msgDiv.innerHTML += `<div class="text-right text-indigo-400">Me: ${txt}</div>`;
+        // Wait for voice engine to load
+        responsiveVoice.onReady = () => console.log("Voice Engine Ready!");
+
+        async function send(text = null) {
+            const val = text || input.value;
+            if(!val.trim()) return;
+            msgDiv.innerHTML += `<div class="text-right text-indigo-400">You: ${val}</div>`;
             input.value = '';
 
-            const res = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: txt, userId: '1' }) });
+            const res = await fetch('/api/chat', { 
+                method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ message: val, userId: 'user_123' }) 
+            });
             const data = await res.json();
             
             msgDiv.innerHTML += `<div class="text-white">Sukoon: ${data.reply}</div>`;
             msgDiv.scrollTop = msgDiv.scrollHeight;
 
-            // Natural Voice Sync
-            document.getElementById('sukuun-img').className = 'talking';
+            // Voice + Animation
+            img.className = 'talking';
             responsiveVoice.speak(data.reply, "Hindi Female", { 
-                rate: 0.9, 
-                onend: () => document.getElementById('sukuun-img').className = 'breathing' 
+                rate: 0.95, 
+                onend: () => img.className = 'breathing' 
             });
         }
+
         input.onkeydown = (e) => { if(e.key === 'Enter') send(); };
+        
+        // Mic Logic
+        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        rec.lang = 'hi-IN';
+        document.getElementById('micBtn').onclick = () => rec.start();
+        rec.onresult = (e) => send(e.results[0][0].transcript);
     </script>
 </body>
 </html>
