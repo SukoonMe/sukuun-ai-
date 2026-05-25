@@ -11,28 +11,28 @@ export default async function handler(req, res) {
   const { message, userProfile } = req.body;
   
   try {
-    // API URL: v1 version + model name directly (bina 'models/' prefix ke)
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    // 2026 Stable Path: v1beta + models/gemini-1.5-flash
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Sukuun. User: ${message}` }] }]
+        contents: [{ role: "user", parts: [{ text: message }] }]
       })
     });
 
     const data = await response.json();
     
-    if (!data.candidates) {
-      // Agar yahan error aaye, toh samajh lo API Key ka scope galat hai
-      console.error("API Response Data:", JSON.stringify(data));
-      throw new Error("API Path or Model access error");
+    // Check if model returned valid data
+    if (!data.candidates || !data.candidates[0].content.parts[0].text) {
+      throw new Error("Model response empty or forbidden");
     }
 
     const reply = data.candidates[0].content.parts[0].text;
     res.status(200).json({ reply, avatarType: "female" });
   } catch (e) {
+    console.error("Critical Error:", e);
     res.status(500).json({ reply: "Sukoon abhi busy hai... 🌸", avatarType: "best" });
   }
 }
