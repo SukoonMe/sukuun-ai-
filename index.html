@@ -7,6 +7,18 @@
         body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #app { width: 90%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
         
+        /* Breathing and Movement Animation */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.02) translateY(-5px); }
+        }
+
+        /* Eye blink effect */
+        @keyframes blink {
+            0%, 90%, 100% { opacity: 0; }
+            95% { opacity: 0.2; }
+        }
+
         #sukuun-img { 
             height: 55vh; 
             background-size: cover; 
@@ -14,8 +26,21 @@
             background-repeat: no-repeat;
             transition: 0.5s; 
             border-bottom: 2px solid #4f46e5;
+            animation: breathe 6s infinite ease-in-out; /* Breathing Effect */
+            position: relative;
         }
-        .speaking { filter: brightness(1.3); transform: scale(1.02); }
+
+        /* Blinking overlay */
+        #sukuun-img::after {
+            content: '';
+            position: absolute;
+            top: 25%; left: 0; right: 0; height: 8%;
+            background: rgba(0,0,0,0.3);
+            animation: blink 4s infinite;
+            pointer-events: none;
+        }
+
+        .speaking { filter: brightness(1.2) contrast(1.1); transform: scale(1.05) !important; }
         
         #messages { flex: 1; padding: 15px; overflow-y: auto; }
         .msg { margin: 10px 0; padding: 12px; border-radius: 15px; max-width: 85%; }
@@ -40,17 +65,14 @@
         const img = document.getElementById('sukuun-img');
         const inputField = document.getElementById('userInput');
 
-        // Enter Key Logic
-        inputField.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') send();
-        });
+        inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') send(); });
 
         function startListening() {
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'hi-IN';
             recognition.start();
-            recognition.onresult = (event) => {
-                inputField.value = event.results[0][0].transcript;
+            recognition.onresult = (e) => {
+                inputField.value = e.results[0][0].transcript;
                 send();
             };
         }
