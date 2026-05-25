@@ -2,101 +2,237 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sukoon AI 🌙</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #000; color: #fff; margin: 0; overflow: hidden; font-family: sans-serif; height: 100vh;}
-        #app { display: flex; flex-direction: column; height: 100%;}
+        body { background: #020204; color: #fff; margin: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; height: 100vh;}
+        #app { display: flex; flex-direction: column; height: 100%; position: relative;}
         
-        /* FULL-SCREEN IMAGE LAYOUT */
-        #sukuun-img { 
-            flex: 1; background-size: contain; background-repeat: no-repeat; background-position: center bottom;
-            transition: all 0.5s ease;
-            position: relative;
+        /* DYNAMIC DISPLAY SCREEN LAYER */
+        .avatar-screen { 
+            flex: 1; 
+            background-size: cover; 
+            background-repeat: no-repeat; 
+            background-position: center center;
+            transition: background-image 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
         }
-        .breathing { animation: float 4s ease-in-out infinite; }
-        .talking { animation: speak-glow 0.2s ease-in-out infinite alternate; }
         
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes speak-glow { 0% { filter: brightness(1) scale(1); } 100% { filter: brightness(1.3) scale(1.05); } }
+        .hidden-screen { opacity: 0; pointer-events: none; z-index: 1; filter: blur(5px); }
+        .active-screen { opacity: 1; pointer-events: auto; z-index: 2; filter: blur(0px); }
+        
+        /* Fluid High-End Animations */
+        .breathing { animation: premium-float 6s ease-in-out infinite; }
+        .talking { animation: premium-pulse 0.3s infinite alternate; }
+        
+        @keyframes premium-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-6px) scale(1.01); } }
+        @keyframes premium-pulse { 0% { filter: brightness(1) contrast(1); } 100% { filter: brightness(1.2) contrast(1.05); } }
 
-        /* TRANSPARENT OVERLAY FOR MESSAGES */
+        /* ULTRA-PROFESSIONAL OVERLAY FOR INTERACTIVE TEXTS */
         #messages {
             position: absolute;
-            bottom: 6rem;
+            bottom: 8rem;
             left: 5%;
             width: 90%;
-            height: 4rem;
+            max-height: 14rem;
             overflow-y: auto;
-            text-align: center;
-            font-size: 0.9rem;
-            text-shadow: 0 0 5px #000;
-            color: #d1d5db;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            z-index: 10;
+            padding: 0.5rem;
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+        }
+        #messages::-webkit-scrollbar { width: 0px; }
+
+        /* Premium Bubble Look */
+        .premium-row { display: flex; width: 100%; transition: all 0.3s ease; }
+        .user-row { justify-content: flex-end; }
+        .sukoon-row { justify-content: flex-start; }
+        
+        .premium-bubble {
+            max-width: 80%;
+            padding: 0.75rem 1.1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            letter-spacing: 0.015em;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <div id="sukuun-img" class="breathing">
-            <div id="messages"></div>
-        </div>
+        <div id="female-screen" class="avatar-screen breathing active-screen"></div>
         
-        <div class="h-20 bg-black p-4 flex gap-2 border-t border-white/10 z-10">
-            <input type="text" id="userInput" class="flex-1 bg-white/5 p-3 rounded-xl border border-white/10 outline-none" placeholder="Sukoon se baat karo...">
-            <button id="micBtn" class="bg-indigo-600 p-3 rounded-xl text-xl">🎤</button>
+        <div id="male-screen" class="avatar-screen hidden-screen"></div>
+        
+        <div id="messages"></div>
+        
+        <div class="h-28 bg-gradient-to-t from-black via-black/90 to-transparent p-5 flex gap-3 items-center z-20 absolute bottom-0 left-0 w-full">
+            <input type="text" id="userInput" class="flex-1 bg-white/5 backdrop-blur-xl text-white px-6 py-4 rounded-2xl border border-white/10 outline-none focus:border-purple-500/40 focus:bg-white/10 transition-all text-base placeholder-gray-500 shadow-inner" placeholder="Sukoon tumhare dil ki har baat samajhti hai...">
+            <button id="micBtn" class="bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 transition-all w-14 h-14 rounded-2xl text-xl flex items-center justify-center shadow-lg shadow-purple-500/20 border border-purple-400/20">🎤</button>
         </div>
     </div>
 
     <script>
-        const img = document.getElementById('sukuun-img');
-        img.style.backgroundImage = "url('/best.png')";
+        const femaleScreen = document.getElementById('female-screen');
+        const maleScreen = document.getElementById('male-screen');
+        const input = document.getElementById('userInput');
+        const msgDiv = document.getElementById('messages');
+        const micBtn = document.getElementById('micBtn');
 
-        // 1. VOICE RECOGNITION (CONTINUOUS MIKE)
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'hi-IN';
-        recognition.continuous = true; // KEEP LISTENING
-        recognition.interimResults = false;
-
-        document.getElementById('micBtn').onclick = () => {
-            recognition.start();
-            document.getElementById('micBtn').innerText = '🛑'; // Click to stop
+        // Dynamic Assets Array
+        const femaleAssets = {
+            normal: "/best.png",
+            romantic: "/romantic.png",
+            bold: "/bold.png"
         };
 
-        recognition.onresult = (event) => {
-            const transcript = event.results[event.results.length - 1][0].transcript;
-            document.getElementById('userInput').value = transcript;
-            send(transcript); // Auto-send when voice detected
+        const maleAssets = {
+            normal: "/male.png",
+            romantic: "/male_romantic.png",
+            bold: "/male_bold.png"
         };
 
-        recognition.onerror = (event) => { console.error("Speech Recog Error:", event.error); };
+        let currentMood = "normal";
 
-        // 2. SEND LOGIC
-        async function send(message = null) {
-            const input = document.getElementById('userInput');
-            const text = message || input.value;
-            if(!text.trim()) return;
-            input.value = '';
+        // Initial Layout Initialization
+        femaleScreen.style.backgroundImage = `url('${femaleAssets.normal}')`;
+        maleScreen.style.backgroundImage = `url('${maleAssets.normal}')`;
 
-            const res = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: text, userId: localStorage.getItem('userId') || '1' }) });
-            const data = await res.json();
-            
-            document.getElementById('messages').innerHTML = `<div class="mb-2">Sukoon: ${data.reply}</div>`;
-            
-            // 3. SMOOTH VOICE SYNTHESIS
-            const speech = new SpeechSynthesisUtterance(data.reply.replace(/[*#]/g, ""));
-            const voices = window.speechSynthesis.getVoices();
-            speech.voice = voices.find(v => v.lang === 'hi-IN') || voices[0];
-            speech.rate = 0.95;
-            
-            speech.onstart = () => { img.className = 'talking'; img.style.backgroundPosition = 'center';}; // Recenter when talking
-            speech.onend = () => { img.className = 'breathing'; img.style.backgroundPosition = 'center bottom';};
-            
-            window.speechSynthesis.speak(speech);
+        function changeOutfitAndMood(mood) {
+            currentMood = mood;
+            if (femaleAssets[mood]) femaleScreen.style.backgroundImage = `url('${femaleAssets[mood]}')`;
+            if (maleAssets[mood]) maleScreen.style.backgroundImage = `url('${maleAssets[mood]}')`;
         }
 
-        // ENTER KEY FIX
-        document.getElementById('userInput').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') send();
+        function toggleDisplay(showSpeaker) {
+            if (showSpeaker === 'sukoon') {
+                femaleScreen.classList.remove('hidden-screen');
+                femaleScreen.classList.add('active-screen');
+                maleScreen.classList.remove('active-screen');
+                maleScreen.classList.add('hidden-screen');
+            } else {
+                maleScreen.classList.remove('hidden-screen');
+                maleScreen.classList.add('active-screen');
+                femaleScreen.classList.remove('active-screen');
+                femaleScreen.classList.add('hidden-screen');
+            }
+        }
+
+        // Voice Recognition Layer (Continuous State)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isListening = false;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            micBtn.onclick = () => {
+                if (!isListening) {
+                    window.speechSynthesis.cancel();
+                    recognition.start();
+                } else {
+                    recognition.stop();
+                }
+            };
+
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.innerHTML = '🛑';
+                micBtn.classList.remove('from-purple-600', 'to-indigo-600');
+                micBtn.classList.add('from-red-600', 'to-rose-600', 'animate-pulse');
+                
+                toggleDisplay('user');
+                maleScreen.className = 'avatar-screen breathing active-screen';
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.innerHTML = '🎤';
+                micBtn.classList.remove('from-red-600', 'to-rose-600', 'animate-pulse');
+                micBtn.classList.add('from-purple-600', 'to-indigo-600');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[event.results.length - 1][0].transcript;
+                input.value = transcript;
+                send(transcript);
+            };
+        }
+
+        // Core Send Execution Unit
+        async function send(message = null) {
+            const text = message || input.value;
+            if(!text.trim()) return;
+            
+            window.speechSynthesis.cancel();
+            input.value = '';
+
+            // Keyword Classifier for Dynamic Outfit Swap
+            const lowerText = text.toLowerCase();
+            if (lowerText.includes('romantic') || lowerText.includes('pyaar') || lowerText.includes('love') || lowerText.includes('jaan')) {
+                changeOutfitAndMood("romantic");
+            } else if (lowerText.includes('gandi') || lowerText.includes('bold') || lowerText.includes('dirty') || lowerText.includes('hot') || lowerText.includes('sexy')) {
+                changeOutfitAndMood("bold");
+            }
+
+            // Professional Glassmorphic User Row Update
+            msgDiv.innerHTML += `
+                <div class="premium-row user-row">
+                    <div class="premium-bubble bg-purple-600/30 backdrop-blur-xl border border-purple-500/20 text-purple-100 rounded-2xl rounded-tr-none text-right">${text}</div>
+                </div>
+            `;
+            msgDiv.scrollTop = msgDiv.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ message: text, userId: localStorage.getItem('userId') || '1' }) 
+                });
+                const data = await res.json();
+                
+                // Swap back screen container to Sukoon view
+                toggleDisplay('sukoon');
+                
+                // Professional Dark Elite Bubble for Sukoon
+                msgDiv.innerHTML += `
+                    <div class="premium-row sukoon-row">
+                        <div class="premium-bubble bg-black/40 backdrop-blur-xl border border-white/5 text-purple-200 rounded-2xl rounded-tl-none text-left">${data.reply}</div>
+                    </div>
+                `;
+                msgDiv.scrollTop = msgDiv.scrollHeight;
+                
+                // Audio Engine Core execution
+                const speech = new SpeechSynthesisUtterance(data.reply);
+                const voices = window.speechSynthesis.getVoices();
+                speech.voice = voices.find(v => v.lang === 'hi-IN') || voices[0];
+                speech.rate = 0.95;
+                
+                speech.onstart = () => { femaleScreen.className = 'avatar-screen talking active-screen'; }; 
+                speech.onend = () => { femaleScreen.className = 'avatar-screen breathing active-screen'; };
+                window.speechSynthesis.speak(speech);
+            } catch (err) {
+                console.error(err);
+                toggleDisplay('sukoon');
+            }
+        }
+
+        input.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                toggleDisplay('user');
+                send();
+            }
         });
     </script>
 </body>
