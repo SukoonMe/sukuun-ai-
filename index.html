@@ -7,65 +7,62 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/index.css">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: white; overflow: hidden; }
-        #app { width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; display: flex; flex-direction: column; }
-        #character-area { flex: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        #sukuun-img { width: 100%; height: 100%; background-size: cover; background-position: center; transition: 0.3s; animation: breathe 4s infinite ease-in-out; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        #chat-area { height: 30vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); border-top: 1px solid #333; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        #messages { flex: 1; overflow-y: auto; font-size: 15px; }
-        .input-box { width: 100%; padding: 15px; background: #1a1a1a; border-radius: 15px; border: 1px solid #444; color: white; }
+        body { background: #050505; color: white; font-family: 'Inter', sans-serif; }
+        /* Ambient Glow Layer */
+        .glow-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        
+        #app { width: 100%; max-width: 420px; height: 100vh; margin: auto; display: flex; flex-direction: column; position: relative; z-index: 1; }
+        #sukuun-img { flex: 1; background-size: cover; background-position: top; transition: 0.5s; }
+        
+        /* Chat Box Design */
+        .chat-container { background: rgba(0,0,0,0.6); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); padding: 20px; }
+        .input-wrap { background: #111; border: 1px solid #333; border-radius: 20px; display: flex; align-items: center; padding: 5px 15px; }
+        input { background: transparent; color: white; border: none; padding: 10px; width: 100%; outline: none; }
     </style>
 </head>
 <body>
+    <div class="glow-fixed">
+        <div class="animate-ambient-1 absolute w-[300px] h-[300px] bg-indigo-500/20 rounded-full -top-20 -left-20 blur-3xl"></div>
+        <div class="animate-ambient-2 absolute w-[300px] h-[300px] bg-rose-500/20 rounded-full bottom-0 right-0 blur-3xl"></div>
+    </div>
+
     <div id="app">
-        <div id="character-area">
-            <div id="sukuun-img" onerror="this.style.backgroundImage='url(/placeholder.png)'"></div>
-        </div>
-        <div id="chat-area">
-            <div id="messages"></div>
-            <input type="text" id="userInput" class="input-box" placeholder="Sukoon se kuch kaho..." onkeypress="if(event.key==='Enter') send()">
+        <div id="sukuun-img"></div>
+        <div class="chat-container">
+            <div id="messages" class="h-48 overflow-y-auto mb-4 space-y-3"></div>
+            <div class="input-wrap">
+                <input type="text" id="userInput" placeholder="Sukoon se baat karo...">
+                <button onclick="send()" class="text-indigo-400 font-bold">Send</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const userId = localStorage.getItem('userId') || 'u_' + Date.now();
-        localStorage.setItem('userId', userId);
+        document.getElementById('sukuun-img').style.backgroundImage = "url('/best.png')";
         
-        // Image Path Fix: Ensure file exists in /public
-        document.getElementById('sukuun-img').style.backgroundImage = "url('/best_female.png')";
-
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
+            
+            // UI Feedback
             const msgBox = document.getElementById('messages');
-            msgBox.innerHTML += `<div class="text-indigo-400 mb-2">You: ${input.value}</div>`;
+            msgBox.innerHTML += `<div class="text-right text-sm text-gray-400">${input.value}</div>`;
             const userMsg = input.value;
             input.value = '';
 
-            document.getElementById('sukuun-img').style.animation = "breathe 0.2s infinite";
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: userMsg, userId: localStorage.getItem('userId') })
+            });
+            const data = await res.json();
             
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ message: userMsg, userId })
-                });
-                const data = await res.json();
-                
-                msgBox.innerHTML += `<div class="text-white mb-2">Sukoon: ${data.reply}</div>`;
-                msgBox.scrollTop = msgBox.scrollHeight;
-                
-                // Voice Cleaner: Saare special chars remove karke sirf readable text bhejo
-                const cleanText = data.reply.replace(/[\*\#\_\`\~]/g, "").replace(/\n/g, " ");
-                const speech = new SpeechSynthesisUtterance(cleanText);
-                speech.lang = 'hi-IN';
-                speech.rate = 1.0;
-                speech.onend = () => { document.getElementById('sukuun-img').style.animation = "breathe 4s infinite"; };
-                window.speechSynthesis.speak(speech);
-            } catch(e) {
-                msgBox.innerHTML += `<div class="text-red-400">Sukoon busy hai...</div>`;
-            }
+            msgBox.innerHTML += `<div class="text-indigo-200 text-sm">Sukoon: ${data.reply}</div>`;
+            msgBox.scrollTop = msgBox.scrollHeight;
+
+            const cleanText = data.reply.replace(/[\*\#\_\`\~]/g, "");
+            const speech = new SpeechSynthesisUtterance(cleanText);
+            window.speechSynthesis.speak(speech);
         }
     </script>
 </body>
