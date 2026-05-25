@@ -11,32 +11,27 @@ export default async function handler(req, res) {
   const { message, userProfile } = req.body;
   
   try {
-    const rawHistory = await redis.lrange(`chat:${userProfile.name}`, 0, 10) || [];
-    const context = rawHistory.map(item => JSON.parse(item)).reverse().map(m => `${m.role}: ${m.content}`).join("\n");
-
-    // FIXED: Using gemini-1.5-flash-001 which is the base stable version
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    // API URL: v1 version + model name directly (bina 'models/' prefix ke)
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Sukuun. Context: ${context}\nUser: ${message}` }] }]
+        contents: [{ parts: [{ text: `You are Sukuun. User: ${message}` }] }]
       })
     });
 
     const data = await response.json();
     
     if (!data.candidates) {
-      console.error("API ERROR:", JSON.stringify(data));
-      throw new Error("Invalid Response");
+      // Agar yahan error aaye, toh samajh lo API Key ka scope galat hai
+      console.error("API Response Data:", JSON.stringify(data));
+      throw new Error("API Path or Model access error");
     }
 
     const reply = data.candidates[0].content.parts[0].text;
-    await redis.rpush(`chat:${userProfile.name}`, JSON.stringify({ role: "user", content: message }));
-    await redis.rpush(`chat:${userProfile.name}`, JSON.stringify({ role: "Sukuun", content: reply }));
-
-    res.status(200).json({ reply, avatarType: userProfile.gender === 'male' ? 'female' : 'male' });
+    res.status(200).json({ reply, avatarType: "female" });
   } catch (e) {
     res.status(500).json({ reply: "Sukoon abhi busy hai... 🌸", avatarType: "best" });
   }
