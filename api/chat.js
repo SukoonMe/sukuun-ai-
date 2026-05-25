@@ -14,30 +14,21 @@ export default async function handler(req, res) {
     const rawHistory = await redis.lrange(`chat:${userProfile.name}`, 0, 10) || [];
     const context = rawHistory.map(item => JSON.parse(item)).reverse().map(m => `${m.role}: ${m.content}`).join("\n");
 
-    // FIXED: Using 'gemini-1.5-flash-latest' to ensure API compatibility
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Sukuun. Context: ${context}\nUser: ${message}` }] }]
+        contents: [{ parts: [{ text: `You are Sukuun, a soulmate. Context: ${context}\nUser: ${message}` }] }]
       })
     });
 
     const data = await response.json();
-    
-    // Safety Check
-    if (!data.candidates) {
-      console.error("API Error Response:", JSON.stringify(data));
-      throw new Error("No candidates found");
-    }
-
     const reply = data.candidates[0].content.parts[0].text;
-    const avatarType = userProfile.gender === 'male' ? 'female' : 'male';
 
     await redis.rpush(`chat:${userProfile.name}`, JSON.stringify({ role: "user", content: message }));
     await redis.rpush(`chat:${userProfile.name}`, JSON.stringify({ role: "Sukuun", content: reply }));
 
-    res.status(200).json({ reply, avatarType });
+    res.status(200).json({ reply, avatarType: userProfile.gender === 'male' ? 'female' : 'male' });
   } catch (e) {
     res.status(500).json({ reply: "Sukoon abhi busy hai... 🌸", avatarType: "best" });
   }
