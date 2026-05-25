@@ -8,64 +8,64 @@
     <link rel="stylesheet" href="/index.css">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: white; overflow: hidden; }
-        #app { width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; position: relative; display: flex; flex-direction: column; }
-        
-        /* Character & Animation */
+        #app { width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; display: flex; flex-direction: column; }
         #character-area { flex: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         #sukuun-img { width: 100%; height: 100%; background-size: cover; background-position: center; transition: 0.3s; animation: breathe 4s infinite ease-in-out; }
         @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        
-        /* Chat UI */
-        #chat-area { height: 30vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); border-top: 1px solid #333; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        #messages { flex: 1; overflow-y: auto; font-size: 14px; }
-        .input-box { width: 100%; padding: 15px; background: #111; border-radius: 15px; border: 1px solid #444; color: white; }
+        #chat-area { height: 30vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); border-top: 1px solid #333; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        #messages { flex: 1; overflow-y: auto; font-size: 15px; }
+        .input-box { width: 100%; padding: 15px; background: #1a1a1a; border-radius: 15px; border: 1px solid #444; color: white; }
     </style>
 </head>
 <body>
-
     <div id="app">
         <div id="character-area">
-            <div id="sukuun-img"></div>
+            <div id="sukuun-img" onerror="this.style.backgroundImage='url(/placeholder.png)'"></div>
         </div>
-        
         <div id="chat-area">
             <div id="messages"></div>
-            <input type="text" id="userInput" class="input-box" placeholder="Sukoon se baat karo..." onkeypress="if(event.key==='Enter') send()">
+            <input type="text" id="userInput" class="input-box" placeholder="Sukoon se kuch kaho..." onkeypress="if(event.key==='Enter') send()">
         </div>
     </div>
 
     <script>
         const userId = localStorage.getItem('userId') || 'u_' + Date.now();
         localStorage.setItem('userId', userId);
+        
+        // Image Path Fix: Ensure file exists in /public
         document.getElementById('sukuun-img').style.backgroundImage = "url('/best_female.png')";
 
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
-            
             const msgBox = document.getElementById('messages');
-            msgBox.innerHTML += `<div class="text-indigo-400">You: ${input.value}</div>`;
+            msgBox.innerHTML += `<div class="text-indigo-400 mb-2">You: ${input.value}</div>`;
             const userMsg = input.value;
             input.value = '';
 
-            // AI Processing
             document.getElementById('sukuun-img').style.animation = "breathe 0.2s infinite";
             
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: userMsg, userId })
-            });
-            const data = await res.json();
-            
-            msgBox.innerHTML += `<div class="text-white">Sukoon: ${data.reply}</div>`;
-            msgBox.scrollTop = msgBox.scrollHeight;
-            
-            // Voice
-            const speech = new SpeechSynthesisUtterance(data.reply.replace(/[^\w\s.,?!]/g, ""));
-            speech.lang = 'hi-IN';
-            speech.onend = () => { document.getElementById('sukuun-img').style.animation = "breathe 4s infinite"; };
-            window.speechSynthesis.speak(speech);
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: userMsg, userId })
+                });
+                const data = await res.json();
+                
+                msgBox.innerHTML += `<div class="text-white mb-2">Sukoon: ${data.reply}</div>`;
+                msgBox.scrollTop = msgBox.scrollHeight;
+                
+                // Voice Cleaner: Saare special chars remove karke sirf readable text bhejo
+                const cleanText = data.reply.replace(/[\*\#\_\`\~]/g, "").replace(/\n/g, " ");
+                const speech = new SpeechSynthesisUtterance(cleanText);
+                speech.lang = 'hi-IN';
+                speech.rate = 1.0;
+                speech.onend = () => { document.getElementById('sukuun-img').style.animation = "breathe 4s infinite"; };
+                window.speechSynthesis.speak(speech);
+            } catch(e) {
+                msgBox.innerHTML += `<div class="text-red-400">Sukoon busy hai...</div>`;
+            }
         }
     </script>
 </body>
