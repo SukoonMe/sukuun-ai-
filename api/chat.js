@@ -15,7 +15,6 @@ export default async function handler(req, res) {
     const rawHistory = await redis.lrange(`chat:${userProfile.name}`, 0, 10) || [];
     const context = rawHistory.map(item => JSON.parse(item)).reverse().map(m => `${m.role}: ${m.content}`).join("\n");
 
-    // Using v1 API path as per 2026 stable requirements
     const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
