@@ -7,18 +7,31 @@
         body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #app { width: 90%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Smooth transition for background changes */
+        /* Animation: Breathing aur Blinking ka mix */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        @keyframes blink {
+            0%, 90%, 100% { filter: brightness(1); }
+            95% { filter: brightness(0.6); }
+        }
+
         #sukuun-img { 
             height: 55vh; 
             background-size: cover; 
             background-position: center top; 
             background-repeat: no-repeat;
-            background-color: #1e293b; /* Match app background color */
-            transition: background-image 0.4s ease-in-out, transform 0.3s; 
+            background-color: #1e293b;
             border-bottom: 2px solid #4f46e5;
+            /* Animation apply ki hai */
+            animation: breathe 6s infinite ease-in-out, blink 5s infinite;
+            transition: background-image 0.5s ease;
         }
+
+        /* Bolte waqt ka movement */
+        .speaking { animation: breathe 0.3s infinite alternate !important; filter: brightness(1.2) contrast(1.1); }
         
-        .speaking { filter: brightness(1.2) contrast(1.1); transform: scale(1.03); }
         #messages { flex: 1; padding: 15px; overflow-y: auto; }
         .msg { margin: 10px 0; padding: 12px; border-radius: 15px; max-width: 85%; }
         .ai { background: #334155; }
@@ -28,7 +41,7 @@
 </head>
 <body>
     <div id="app">
-        <div id="sukuun-img" id="avatar"></div>
+        <div id="sukuun-img"></div>
         <div id="messages"></div>
         <div class="input-area">
             <input type="text" id="userInput" placeholder="Dil ki baat kaho...">
@@ -36,38 +49,37 @@
         </div>
     </div>
     <script>
-        // Image Preloading to prevent black flashes
-        const femaleImg = new Image(); femaleImg.src = '/best.png';
-        const maleImg = new Image(); maleImg.src = '/male.png';
         const avatarDiv = document.getElementById('sukuun-img');
-        avatarDiv.style.backgroundImage = `url('${femaleImg.src}')`;
+        // Default Image
+        avatarDiv.style.backgroundImage = "url('/best.png')"; 
 
-        const userProfile = { name: 'Yaar', gender: 'male' };
-        
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
+            
             const msgDiv = document.getElementById('messages');
             msgDiv.innerHTML += `<div class="msg user">${input.value}</div>`;
-            
+            const userMsg = input.value;
+            input.value = '';
+
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: input.value, userProfile })
+                body: JSON.stringify({ message: userMsg, userProfile: { name: 'Yaar', gender: 'male' } })
             });
             const data = await res.json();
             
-            // Apply new image
+            // Image update (static maintain rahegi)
             avatarDiv.style.backgroundImage = `url('/${data.avatarType}.png')`;
             msgDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
-            
-            // Speaking effect
+            msgDiv.scrollTop = msgDiv.scrollHeight;
+
+            // Speaking Animation
             avatarDiv.classList.add('speaking');
             const speech = new SpeechSynthesisUtterance(data.reply);
+            speech.lang = 'hi-IN';
             speech.onend = () => avatarDiv.classList.remove('speaking');
             window.speechSynthesis.speak(speech);
-            
-            input.value = '';
         }
     </script>
 </body>
