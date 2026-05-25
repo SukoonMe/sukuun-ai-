@@ -5,65 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sukoon AI 🌙</title>
     <style>
-        body { margin:0; background: #0c0f1d; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
         #app { width: 95%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #6366f1; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* Sukoon Animation */
-        #sukuun-img { height: 45vh; background: url('/best.png') center/cover; animation: breathe 4s infinite ease-in-out; border-bottom: 2px solid #6366f1; transition: 0.3s; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-        
+        #sukuun-img { height: 45vh; background-size: cover; background-position: center; animation: breathe 4s infinite ease-in-out; border-bottom: 2px solid #6366f1; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
         #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 15px; border-radius: 15px; animation: pop 0.3s; max-width: 80%; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; }
         .ai { background: #334155; align-self: flex-start; }
         .user { background: #6366f1; align-self: flex-end; }
-        @keyframes pop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        
         .input-area { padding: 15px; background: #0f172a; display: flex; gap: 10px; }
-        input { flex: 1; background: #1e293b; border: 1px solid #475569; padding: 10px; border-radius: 10px; color: white; outline: none; }
-        button { background: #6366f1; border: none; padding: 10px 15px; border-radius: 10px; color: white; cursor: pointer; }
+        input { flex: 1; background: #1e293b; border: 1px solid #475569; padding: 10px; border-radius: 10px; color: white; }
+        button { background: #6366f1; border: none; padding: 10px; border-radius: 10px; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div id="sukuun-img" id="avatar"></div>
+        <div id="sukuun-img"></div>
         <div id="messages"></div>
         <div class="input-area">
             <input type="text" id="userInput" placeholder="Kuch kaho..." onkeypress="if(event.key==='Enter') send()">
-            <button onclick="send()">Send</button>
+            <button onclick="send()">Bejo</button>
         </div>
     </div>
 
     <script>
+        const gender = localStorage.getItem('gender') || prompt("Tumhara gender kya hai? (male/female)") || 'female';
+        localStorage.setItem('gender', gender);
+        const avatar = gender === 'male' ? '/best_female.png' : '/best_male.png';
+        document.getElementById('sukuun-img').style.backgroundImage = `url('${avatar}')`;
+
         const userId = localStorage.getItem('userId') || 'user_' + Date.now();
         localStorage.setItem('userId', userId);
 
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
-            
-            const msgBox = document.getElementById('messages');
-            msgBox.innerHTML += `<div class="msg user">${input.value}</div>`;
-            const userMsg = input.value;
-            input.value = '';
+            document.getElementById('messages').innerHTML += `<div class="msg user">${input.value}</div>`;
+            const userMsg = input.value; input.value = '';
 
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: userMsg, userId })
+                body: JSON.stringify({ message: userMsg, userId, gender })
             });
             const data = await res.json();
             
-            msgBox.innerHTML += `<div class="msg ai">${data.reply}</div>`;
-            msgBox.scrollTop = msgBox.scrollHeight;
+            document.getElementById('messages').innerHTML += `<div class="msg ai">${data.reply}</div>`;
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
             
-            // Animation Trigger
-            const img = document.getElementById('sukuun-img');
-            img.style.animation = "breathe 0.5s infinite";
-            
-            // Voice
             const speech = new SpeechSynthesisUtterance(data.reply.replace(/[^a-zA-Z0-9 ]/g, ""));
             speech.lang = 'hi-IN';
-            speech.onend = () => { img.style.animation = "breathe 4s infinite ease-in-out"; };
             window.speechSynthesis.speak(speech);
         }
     </script>
