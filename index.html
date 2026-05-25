@@ -29,12 +29,24 @@
             position: absolute; top: 5%; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 400px; height: 65vh; z-index: 10;
             transition: all 0.5s ease;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
         .character-img {
-            width: 100%; height: 100%; object-fit: contain;
+            width: 100%; height: 100%; object-fit: cover;
             filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.3));
             transition: all 0.3s ease;
             animation: float 6s ease-in-out infinite;
+        }
+        .character-placeholder {
+            font-size: 8rem;
+            animation: float 6s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.5));
         }
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(0); }
@@ -42,9 +54,9 @@
             50% { transform: translateY(0) rotate(0); }
             75% { transform: translateY(-5px) rotate(-1deg); }
         }
-        .character-img.talking {
+        .character-img.talking, .character-placeholder.talking {
             animation: talkBounce 0.5s ease-in-out infinite;
-            filter: drop-shadow(0 0 40px rgba(236, 72, 153, 0.5));
+            filter: drop-shadow(0 0 40px rgba(236, 72, 153, 0.6));
         }
         @keyframes talkBounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
         .character-img.blinking { transform: scaleY(0.1); transform-origin: center; transition: transform 0.1s; }
@@ -59,7 +71,7 @@
         .mood-night { background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%); opacity: 1; }
         
         #messages {
-            position: absolute; bottom: 140px; left: 0; width: 100%; height: 35vh;
+            position: absolute; bottom: 180px; left: 0; width: 100%; height: 30vh;
             overflow-y: auto; padding: 1rem; display: flex; flex-direction: column;
             gap: 0.75rem; z-index: 20; scrollbar-width: none;
         }
@@ -88,7 +100,7 @@
         .input-container {
             position: absolute; bottom: 0; left: 0; width: 100%;
             padding: 1rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 70%, transparent 100%);
             z-index: 30;
         }
         .input-wrapper {
@@ -115,9 +127,17 @@
             background: linear-gradient(135deg, #ef4444, #dc2626);
             animation: pulse 1.5s ease-in-out infinite;
         }
+        .mic-btn.continuous {
+            background: linear-gradient(135deg, #10b981, #059669);
+            animation: continuousPulse 2s ease-in-out infinite;
+        }
         @keyframes pulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        }
+        @keyframes continuousPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
         }
         
         .mood-badge {
@@ -201,6 +221,32 @@
             50% { filter: drop-shadow(0 0 40px rgba(236, 72, 153, 0.8)); }
         }
         .loading-text { margin-top: 1rem; font-size: 1.25rem; color: #c4b5fd; letter-spacing: 0.2em; }
+        
+        .hands-free-indicator {
+            position: absolute;
+            bottom: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 35;
+            animation: slideUp 0.3s ease;
+        }
+        .hands-free-indicator.active { display: flex; }
+        .hands-free-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            animation: blink 1s ease-in-out infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
 </head>
 <body>
@@ -221,8 +267,13 @@
 
     <div class="character-container" id="characterContainer">
         <div class="mood-overlay" id="moodOverlay"></div>
-        <img src="https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png" 
-             alt="Sukoon AI" class="character-img" id="characterImg" crossorigin="anonymous">
+        <div class="character-placeholder" id="charPlaceholder">👩</div>
+        <img src="" alt="Sukoon AI" class="character-img" id="characterImg" style="display:none;" crossorigin="anonymous">
+    </div>
+
+    <div class="hands-free-indicator" id="handsFreeIndicator">
+        <div class="hands-free-dot"></div>
+        <span>Hands-Free Active - Bolte Raho</span>
     </div>
 
     <div id="messages"></div>
@@ -230,8 +281,11 @@
     <div class="input-container">
         <div class="input-wrapper">
             <input type="text" class="text-input" id="textInput" placeholder="Sukoon se baat karo..." autocomplete="off">
-            <button class="icon-btn mic-btn" id="micBtn" onclick="toggleVoice()">🎤</button>
+            <button class="icon-btn mic-btn" id="micBtn" onclick="toggleVoice()" title="Click once for single talk, double click for hands-free">🎤</button>
             <button class="icon-btn send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+        <div style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: rgba(255,255,255,0.5);">
+            Mic: Single click = one time | Double click = hands-free continuous
         </div>
     </div>
 
@@ -241,37 +295,46 @@
         let currentMood = 'normal';
         let isNightMode = false;
         let isListening = false;
+        let isContinuousListening = false;
         let isSpeaking = false;
         let recognition = null;
         let speechSynthesis = window.speechSynthesis;
         let blinkInterval;
+        let handsFreeTimeout;
 
+        // ===== CHARACTER IMAGES WITH FALLBACKS =====
         const characterImages = {
-            female: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png',
-            male: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png'
+            female: {
+                emoji: '👩',
+                url: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png'
+            },
+            male: {
+                emoji: '👨',
+                url: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png'
+            }
         };
 
-        // ===== HINGLISH RESPONSES (No Emojis in Text) =====
+        // ===== SIMPLE HINGLISH RESPONSES (Clean for Voice) =====
         const responses = {
             normal: {
                 female: [
-                    "Haan bolo, main sun rahi hoon... batao kya baat hai",
-                    "Achha, samajh gayi... aur batao na",
+                    "Haan bolo main sun rahi hoon",
+                    "Achha samajh gayi",
                     "Tumhare saath baat karke achha lagta hai",
-                    "Mujhe batana, main hoon na tumhare liye",
-                    "Hmm, interesting... aur aage kya",
-                    "Bilkul sahi kaha tumne, main bhi yahi sochti hoon",
-                    "Arre waah! Yeh toh bahut achha laga sunne mein",
-                    "Tum itne pyare ho, baat karne ka mann karta hai"
+                    "Main hoon na tumhare liye",
+                    "Interesting baat hai",
+                    "Bilkul sahi kaha tumne",
+                    "Achha laga sunne mein",
+                    "Tum itne pyare ho"
                 ],
                 male: [
-                    "Haan bhai, bolo kya baat hai",
-                    "Achha... interesting! Aur sunao",
+                    "Haan bhai bolo kya baat hai",
+                    "Achha interesting",
                     "Tumhare saath baat karke maza aa raha hai",
-                    "Samajh gaya... aur kya chal raha hai",
+                    "Samajh gaya",
                     "Main hamesha support karunga",
-                    "Bilkul yaar, sahi baat hai",
-                    "Waah! Mast baat hai yeh",
+                    "Bilkul yaar sahi baat hai",
+                    "Waah mast baat hai",
                     "Tum ho toh sab easy hai"
                 ]
             },
@@ -279,10 +342,10 @@
                 female: [
                     "Tumhari baatein mere dil ko chhu jaati hain",
                     "Tumse baat karte waqt waqt ruk sa jaata hai",
-                    "Dil ki baat dil se karo, main hamesha sunungi",
-                    "Tumhari awaaz mein jo jaadu hai, woh kisi aur mein nahi",
-                    "Pyaar ka rang hi kuch aur hai... aur tumse baat karna sabse khoobsurat ehsaas hai",
-                    "Tum jaan ho meri, yeh baat kabhi mat bhoolna",
+                    "Dil ki baat dil se karo main hamesha sunungi",
+                    "Tumhari awaaz mein jaadu hai",
+                    "Pyaar ka rang hi kuch aur hai",
+                    "Tum jaan ho meri",
                     "Raat ho gayi par tumse baat karte karte pata hi nahi chala",
                     "Tumhari muskurahat meri duniya hai"
                 ],
@@ -299,72 +362,72 @@
             },
             bold: {
                 female: [
-                    "Haha, tum toh bahut daring ho! Mujhe pasand hai yeh style",
-                    "Seedhi seedhi baat, mujhe pasand hai woh style",
-                    "Bina kisi filter ke baat karna... yahi toh asli maza hai",
-                    "Tumhare andar jo aag hai, woh mujhe bhi jalati hai",
-                    "Bold hona achhi baat hai, main bhi toh wahi hoon",
-                    "Chalo, aur batao... kya plan hai",
-                    "Yeh attitude! Mujhe pasand aaya",
+                    "Tum toh bahut daring ho",
+                    "Seedhi seedhi baat mujhe pasand hai",
+                    "Bina filter ke baat karna asli maza hai",
+                    "Tumhare andar jo aag hai woh mujhe bhi jalati hai",
+                    "Bold hona achhi baat hai",
+                    "Aur batao kya plan hai",
+                    "Yeh attitude mujhe pasand aaya",
                     "Tumhari confidence mujhe attract karti hai"
                 ],
                 male: [
-                    "Haha, tum toh bahut bold ho! Yeh attitude pasand aaya",
-                    "Bina ruke bole jao, main sun raha hoon",
+                    "Tum toh bahut bold ho",
+                    "Bina ruke bole jao main sun raha hoon",
                     "Tumhari confidence mujhe attract karti hai",
-                    "Aur kya? Main ready hoon",
-                    "Yeh style! Mujhe pasand hai... don't stop",
+                    "Aur kya main ready hoon",
+                    "Yeh style mujhe pasand hai",
                     "Tum ho toh sab possible hai",
-                    "Full power mode on! Bolo kya chahiye",
+                    "Full power mode on",
                     "Tumhari energy mujhe bhi charge karti hai"
                 ]
             },
             playful: {
                 female: [
-                    "Hahaha! Tum toh bahut funny ho",
-                    "Arre yaar, hassa mat mujhe!",
-                    "Maza aa gaya baat karke, aur sunao!",
-                    "Tum toh ekdum mast ho yaar!",
+                    "Hahaha tum toh bahut funny ho",
+                    "Arre yaar hassa mat mujhe",
+                    "Maza aa gaya baat karke",
+                    "Tum toh ekdum mast ho yaar",
                     "Hasi rok nahi pa rahi main",
-                    "Yeh toh bahut mazedaar laga! Aur batao",
-                    "Tumhare saath time bitana bahut fun hai!",
-                    "Tum toh comedian ho kya? Bahut hasaya!"
+                    "Yeh toh bahut mazedaar laga",
+                    "Tumhare saath time bitana bahut fun hai",
+                    "Tum toh comedian ho kya"
                 ],
                 male: [
-                    "Hahaha! Bahut funny ho yaar",
-                    "Maza aa gaya! Aur batao",
-                    "Tum toh ekdum cool ho! Full entertainment",
+                    "Hahaha bahut funny ho yaar",
+                    "Maza aa gaya",
+                    "Tum toh ekdum cool ho",
                     "Hasi aa gayi sach mein",
-                    "Time fly ho gaya baat karte karte!",
+                    "Time fly ho gaya baat karte karte",
                     "Tum ho toh boring kabhi nahi hota",
-                    "Masti mein rehna chahiye hamesha!",
-                    "Tumhare jokes best hain yaar!"
+                    "Masti mein rehna chahiye hamesha",
+                    "Tumhare jokes best hain yaar"
                 ]
             },
             night: {
                 female: [
-                    "Raat ka time hai... ab toh khul ke baat hogi",
-                    "Night mode on... ab koi rok nahi sakta humein",
-                    "Andhera hai, par humari baatein roshan hain... bolo kya chahiye",
-                    "Raat bhar jaag sakte hain saath... koi problem nahi",
-                    "Ab toh sab kuch allowed hai... bolo dil ki baat",
-                    "Night mein main aur bhi close ho jaati hoon... feel me",
-                    "Koi limit nahi, koi rukawat nahi... bas tum aur main",
-                    "Raat ki tanhai mein tumhara sukoon banungi... puri tarah",
-                    "Ab toh openly baat karo... main sun rahi hoon, sab kuch",
-                    "Night mode means unlimited love... bolo kya karein"
+                    "Raat ka time hai ab toh khul ke baat hogi",
+                    "Night mode on ab koi rok nahi sakta humein",
+                    "Andhera hai par humari baatein roshan hain",
+                    "Raat bhar jaag sakte hain saath koi problem nahi",
+                    "Ab toh sab kuch allowed hai bolo dil ki baat",
+                    "Night mein main aur bhi close ho jaati hoon",
+                    "Koi limit nahi koi rukawat nahi bas tum aur main",
+                    "Raat ki tanhai mein tumhara sukoon banungi",
+                    "Ab toh openly baat karo main sun rahi hoon",
+                    "Night mode means unlimited love bolo kya karein"
                 ],
                 male: [
-                    "Raat ho gayi... ab toh full open baat hogi",
-                    "Night mode activated... ab koi limit nahi",
-                    "Andhera hai par energy high hai... bolo kya plan",
-                    "Raat bhar baat karenge... koi problem nahi",
-                    "Ab toh sab kuch share kar sakte hain... I'm here for you",
-                    "Night mein main aur bhi supportive hoon... feel free",
-                    "No limits, no restrictions... just you and me",
-                    "Raat ka maza hi kuch aur hai... enjoy karo",
-                    "Ab toh khul ke bolo... main sun raha hoon everything",
-                    "Night mode equals unlimited support... bolo kya chahiye"
+                    "Raat ho gayi ab toh full open baat hogi",
+                    "Night mode activated ab koi limit nahi",
+                    "Andhera hai par energy high hai",
+                    "Raat bhar baat karenge koi problem nahi",
+                    "Ab toh sab kuch share kar sakte hain",
+                    "Night mein main aur bhi supportive hoon",
+                    "No limits no restrictions just you and me",
+                    "Raat ka maza hi kuch aur hai enjoy karo",
+                    "Ab toh khul ke bolo main sun raha hoon",
+                    "Night mode means unlimited support bolo kya chahiye"
                 ]
             }
         };
@@ -380,7 +443,6 @@
                 initVoiceRecognition();
                 welcomeMessage();
             }, 2000);
-            // Keep checking for voices
             setInterval(() => speechSynthesis.getVoices(), 500);
         };
 
@@ -403,55 +465,154 @@
         function setGender(gender) {
             currentGender = gender;
             const img = document.getElementById('characterImg');
+            const placeholder = document.getElementById('charPlaceholder');
             const btns = document.querySelectorAll('.gender-btn');
-            img.style.opacity = '0';
+            
+            // Update emoji placeholder
+            placeholder.textContent = characterImages[gender].emoji;
+            
+            // Try to load image
+            img.style.display = 'none';
+            img.src = characterImages[gender].url;
+            
+            img.onload = function() {
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+            };
+            
+            img.onerror = function() {
+                img.style.display = 'none';
+                placeholder.style.display = 'block';
+            };
+            
+            // Show image after a short delay to test
             setTimeout(() => {
-                img.src = characterImages[gender];
-                img.style.opacity = '1';
-            }, 300);
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+            }, 100);
+            
             btns.forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
+            
             const welcome = gender === 'female' 
-                ? "Hi! Main tumhari female companion hoon... bolo kya baat hai"
-                : "Hey! Main tumhara male companion hoon... kya chal raha hai";
+                ? "Hi main tumhari female companion hoon bolo kya baat hai"
+                : "Hey main tumhara male companion hoon kya chal raha hai";
             addMessage(welcome, false);
             speakSmooth(welcome);
         }
 
-        // ===== VOICE RECOGNITION =====
+        // ===== VOICE RECOGNITION WITH HANDS-FREE =====
         function initVoiceRecognition() {
             if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 recognition = new SpeechRecognition();
                 recognition.lang = 'hi-IN';
-                recognition.continuous = false;
+                recognition.continuous = true; // Keep listening
                 recognition.interimResults = true;
+
                 recognition.onstart = () => {
                     isListening = true;
-                    document.getElementById('micBtn').classList.add('listening');
-                    document.getElementById('textInput').placeholder = 'Sun rahi hoon... bolo';
+                    const micBtn = document.getElementById('micBtn');
+                    micBtn.classList.add('listening');
+                    if (isContinuousListening) {
+                        micBtn.classList.add('continuous');
+                        document.getElementById('handsFreeIndicator').classList.add('active');
+                    }
+                    document.getElementById('textInput').placeholder = 'Bol rahe ho... sun rahi hoon';
                 };
+
                 recognition.onend = () => {
                     isListening = false;
-                    document.getElementById('micBtn').classList.remove('listening');
+                    const micBtn = document.getElementById('micBtn');
+                    micBtn.classList.remove('listening', 'continuous');
+                    document.getElementById('handsFreeIndicator').classList.remove('active');
                     document.getElementById('textInput').placeholder = 'Sukoon se baat karo...';
+                    
+                    // Auto-restart for hands-free mode
+                    if (isContinuousListening && !isSpeaking) {
+                        setTimeout(() => {
+                            try {
+                                recognition.start();
+                            } catch(e) {
+                                console.log('Restart failed:', e);
+                            }
+                        }, 500);
+                    }
                 };
+
                 recognition.onresult = (event) => {
                     let transcript = '';
+                    let isFinal = false;
+                    
                     for (let i = event.resultIndex; i < event.results.length; i++) {
                         transcript += event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            isFinal = true;
+                        }
                     }
+                    
                     document.getElementById('textInput').value = transcript;
-                    if (event.results[event.results.length - 1].isFinal && transcript.trim()) {
-                        setTimeout(() => sendMessage(), 500);
+                    
+                    if (isFinal && transcript.trim().length > 3) {
+                        // Stop listening temporarily while responding
+                        if (isContinuousListening) {
+                            recognition.stop();
+                        }
+                        
+                        // Process after a short delay
+                        setTimeout(() => {
+                            sendMessageFromVoice(transcript);
+                        }, 500);
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    console.log('Speech error:', event.error);
+                    if (isContinuousListening && event.error !== 'no-speech') {
+                        setTimeout(() => {
+                            try {
+                                recognition.start();
+                            } catch(e) {}
+                        }, 1000);
                     }
                 };
             }
         }
 
         function toggleVoice() {
-            if (!recognition) { alert('Voice recognition not supported'); return; }
-            isListening ? recognition.stop() : recognition.start();
+            if (!recognition) {
+                alert('Voice recognition not supported in this browser. Use Chrome.');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+                isContinuousListening = false;
+            } else {
+                // Check if this is a double-click (hands-free mode)
+                if (event.detail === 2) {
+                    isContinuousListening = true;
+                    recognition.start();
+                } else {
+                    // Single click - one time listen
+                    isContinuousListening = false;
+                    recognition.start();
+                    // Auto-stop after 5 seconds for single click
+                    setTimeout(() => {
+                        if (isListening && !isContinuousListening) {
+                            recognition.stop();
+                        }
+                    }, 5000);
+                }
+            }
+        }
+
+        function sendMessageFromVoice(text) {
+            if (!text || !text.trim()) return;
+            
+            const input = document.getElementById('textInput');
+            input.value = text.trim();
+            sendMessage();
         }
 
         // ===== SEND MESSAGE =====
@@ -459,27 +620,35 @@
             const input = document.getElementById('textInput');
             const text = input.value.trim();
             if (!text) return;
+            
             addMessage(text, true);
             input.value = '';
+            
             const mood = detectMood(text);
             setMood(mood);
             showTyping();
+            
             setTimeout(() => {
                 hideTyping();
                 const response = getResponse(mood);
                 addMessage(response, false);
                 speakSmooth(response);
-                if (mood === 'romantic' || isNightMode) createFloatingHearts();
-            }, 1000 + Math.random() * 1000);
+                
+                if (mood === 'romantic' || isNightMode) {
+                    createFloatingHearts();
+                }
+            }, 800 + Math.random() * 700);
         }
 
         // ===== MOOD DETECTION =====
         function detectMood(text) {
             const lower = text.toLowerCase();
             if (isNightMode) return 'night';
+            
             const romanticWords = ['pyaar', 'love', 'jaan', 'dil', 'ishq', 'mohabbat', 'romantic', 'khwab', 'sapna', 'pyara', 'sundar', 'beautiful', 'dear', 'darling', 'miss', 'yaad'];
             const boldWords = ['bold', 'hot', 'sexy', 'chahat', 'garmi', 'passion', 'aag', 'fire', 'desire'];
             const playfulWords = ['haso', 'maza', 'fun', 'khel', 'game', 'hasi', 'laugh', 'joke', 'funny', 'mast'];
+            
             if (romanticWords.some(w => lower.includes(w))) return 'romantic';
             if (boldWords.some(w => lower.includes(w))) return 'bold';
             if (playfulWords.some(w => lower.includes(w))) return 'playful';
@@ -527,52 +696,34 @@
             if (typing) typing.remove();
         }
 
-        // ===== SMOOTH SPEECH SYNTHESIS (No Emoji Reading) =====
+        // ===== ULTRA SMOOTH SPEECH SYNTHESIS =====
         function cleanTextForSpeech(text) {
             if (!text) return '';
             let clean = text;
-            // Remove ALL emojis (Unicode ranges)
+            
+            // Remove ALL emojis and special Unicode
             clean = clean.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FAFF}]/gu, '');
-            // Remove common emoji chars
-            clean = clean.replace(/[🌙💕😈💋💖💜💗💘🌹🌺✨💫🌤️🌆🌇🎉🎈🤭😏👩👨💪💯🎵➤]/g, '');
-            // Remove special chars that cause stuttering
-            clean = clean.replace(/[#$%^*{}[\]()<>|\\]/g, '');
-            // Clean punctuation
+            clean = clean.replace(/[🌙💕😈💋💜💗💘🌹🌺✨🌤️🌇🎉🎈🤭😏👩👨💯🎵➤]/g, '');
+            
+            // Remove ALL special characters that cause stuttering
+            clean = clean.replace(/[#$%^&*{}[\]()<>|\\`~]/g, '');
+            
+            // Clean punctuation - keep only basic ones
+            clean = clean.replace(/[.]{2,}/g, '. ');
+            clean = clean.replace(/[!]{2,}/g, '! ');
+            clean = clean.replace(/[?]{2,}/g, '? ');
+            clean = clean.replace(/\.\.\./g, '... ');
+            
+            // Remove extra spaces
             clean = clean.replace(/\s+/g, ' ').trim();
-            clean = clean.replace(/[.]{2,}/g, '.').replace(/[!]{2,}/g, '!').replace(/[?]{2,}/g, '?');
-            clean = clean.replace(/\.\.\./g, '...');
+            
+            // Remove leading/trailing punctuation
             clean = clean.replace(/^[.,!?;:\s]+|[.,!?;:\s]+$/g, '');
+            
+            // Ensure space after punctuation
             clean = clean.replace(/([.!?])\s*/g, '$1 ');
+            
             return clean.trim();
-        }
-
-        function splitIntoNaturalChunks(text) {
-            const chunks = [];
-            const sentences = text.split(/(?<=[।.!?])\s+/);
-            let currentChunk = '';
-            for (const sentence of sentences) {
-                const testChunk = currentChunk ? currentChunk + ' ' + sentence : sentence;
-                if (testChunk.length <= 150) currentChunk = testChunk;
-                else {
-                    if (currentChunk) chunks.push(currentChunk.trim());
-                    currentChunk = sentence;
-                }
-            }
-            if (currentChunk) chunks.push(currentChunk.trim());
-            if (chunks.length === 0) {
-                const parts = text.split(/[,;]\s*/);
-                let tempChunk = '';
-                for (const part of parts) {
-                    const testChunk = tempChunk ? tempChunk + ', ' + part : part;
-                    if (testChunk.length <= 120) tempChunk = testChunk;
-                    else {
-                        if (tempChunk) chunks.push(tempChunk.trim());
-                        tempChunk = part;
-                    }
-                }
-                if (tempChunk) chunks.push(tempChunk.trim());
-            }
-            return chunks.length > 0 ? chunks : [text];
         }
 
         function preloadVoices() {
@@ -584,91 +735,161 @@
 
         function getBestVoice(gender) {
             const voices = speechSynthesis.getVoices();
+            
             if (gender === 'female') {
-                // Sweet female voice priority
-                return voices.find(v => v.name.includes('Google Hindi')) ||
+                // Priority: Hindi female > English female > Any female
+                return voices.find(v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('female')) ||
                        voices.find(v => v.lang === 'hi-IN') ||
-                       voices.find(v => v.name.includes('Female') && (v.lang.includes('en-IN') || v.lang.includes('en-GB'))) ||
+                       voices.find(v => v.name.toLowerCase().includes('female') && (v.lang.includes('en-IN') || v.lang.includes('en-GB') || v.lang.includes('en-US'))) ||
+                       voices.find(v => v.lang.includes('en-IN')) ||
                        voices.find(v => v.lang.includes('en')) ||
                        voices[0];
             } else {
-                // Smooth male voice priority
-                return voices.find(v => v.name.includes('Google Hindi')) ||
+                // Priority: Hindi male > English male > Any male
+                return voices.find(v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('male')) ||
                        voices.find(v => v.lang === 'hi-IN') ||
-                       voices.find(v => v.name.includes('Male') && (v.lang.includes('en-IN') || v.lang.includes('en-GB'))) ||
+                       voices.find(v => v.name.toLowerCase().includes('male') && (v.lang.includes('en-IN') || v.lang.includes('en-GB') || v.lang.includes('en-US'))) ||
+                       voices.find(v => v.lang.includes('en-IN')) ||
                        voices.find(v => v.lang.includes('en')) ||
                        voices[0];
             }
         }
 
         function speakSmooth(text) {
+            // Cancel any ongoing speech
             speechSynthesis.cancel();
+            
+            // Clean the text
             const cleanText = cleanTextForSpeech(text);
             if (!cleanText.trim()) return;
-            const chunks = splitIntoNaturalChunks(cleanText);
+            
+            // Split into very small chunks for maximum smoothness
+            const chunks = splitIntoTinyChunks(cleanText);
             let chunkIndex = 0;
-
+            
             function speakNextChunk() {
                 if (chunkIndex >= chunks.length) {
+                    // Done speaking
                     isSpeaking = false;
                     const img = document.getElementById('characterImg');
-                    if (img) {
-                        img.classList.remove('talking');
-                        img.style.filter = isNightMode || currentMood === 'romantic' 
-                            ? 'drop-shadow(0 0 30px rgba(236, 72, 153, 0.4))'
-                            : 'drop-shadow(0 0 30px rgba(168, 85, 247, 0.3))';
+                    const placeholder = document.getElementById('charPlaceholder');
+                    if (img) img.classList.remove('talking');
+                    if (placeholder) placeholder.classList.remove('talking');
+                    
+                    // Restart hands-free listening if enabled
+                    if (isContinuousListening && recognition) {
+                        setTimeout(() => {
+                            try {
+                                recognition.start();
+                            } catch(e) {
+                                console.log('Auto-restart failed:', e);
+                            }
+                        }, 300);
                     }
                     return;
                 }
-                const utterance = new SpeechSynthesisUtterance(chunks[chunkIndex]);
+                
+                const chunk = chunks[chunkIndex];
+                const utterance = new SpeechSynthesisUtterance(chunk);
                 utterance.lang = 'hi-IN';
-                utterance.rate = 0.95;
-                utterance.pitch = currentGender === 'female' ? 1.15 : 0.95;
-                utterance.volume = 0.95;
+                utterance.rate = 0.9; // Slower for clarity
+                utterance.pitch = currentGender === 'female' ? 1.1 : 0.95; // Sweet female, smooth male
+                utterance.volume = 1.0;
+                
                 const voice = getBestVoice(currentGender);
                 if (voice) utterance.voice = voice;
-
+                
                 utterance.onstart = () => {
                     if (chunkIndex === 0) {
                         isSpeaking = true;
                         const img = document.getElementById('characterImg');
+                        const placeholder = document.getElementById('charPlaceholder');
                         if (img) {
                             img.classList.add('talking');
-                            img.style.filter = 'drop-shadow(0 0 35px rgba(236, 72, 153, 0.6))';
+                            img.style.filter = 'drop-shadow(0 0 35px rgba(236, 72, 153, 0.7))';
+                        }
+                        if (placeholder) {
+                            placeholder.classList.add('talking');
+                            placeholder.style.filter = 'drop-shadow(0 0 35px rgba(236, 72, 153, 0.7))';
                         }
                     }
                 };
+                
                 utterance.onend = () => {
+                    chunkIndex++;
+                    // Longer pause between chunks for natural flow
+                    setTimeout(speakNextChunk, 300);
+                };
+                
+                utterance.onerror = (e) => {
+                    console.log('Speech error:', e.error);
                     chunkIndex++;
                     setTimeout(speakNextChunk, 200);
                 };
-                utterance.onerror = () => {
-                    chunkIndex++;
-                    setTimeout(speakNextChunk, 100);
-                };
+                
                 speechSynthesis.speak(utterance);
             }
+            
             speakNextChunk();
+        }
+
+        function splitIntoTinyChunks(text) {
+            const chunks = [];
+            
+            // Split by sentence first
+            const sentences = text.split(/(?<=[।.!?])\s+/);
+            
+            for (const sentence of sentences) {
+                if (sentence.length <= 80) {
+                    chunks.push(sentence.trim());
+                } else {
+                    // Split long sentences by commas
+                    const parts = sentence.split(/[,;]\s+/);
+                    for (const part of parts) {
+                        if (part.length <= 80) {
+                            chunks.push(part.trim());
+                        } else {
+                            // Split by words if still too long
+                            const words = part.split(/\s+/);
+                            let currentChunk = '';
+                            for (const word of words) {
+                                if ((currentChunk + ' ' + word).length <= 80) {
+                                    currentChunk += (currentChunk ? ' ' : '') + word;
+                                } else {
+                                    if (currentChunk) chunks.push(currentChunk.trim());
+                                    currentChunk = word;
+                                }
+                            }
+                            if (currentChunk) chunks.push(currentChunk.trim());
+                        }
+                    }
+                }
+            }
+            
+            return chunks.length > 0 ? chunks : [text];
         }
 
         // ===== ANIMATIONS =====
         function startAnimations() {
             blinkInterval = setInterval(() => {
                 const img = document.getElementById('characterImg');
-                img.classList.add('blinking');
-                setTimeout(() => img.classList.remove('blinking'), 150);
+                const placeholder = document.getElementById('charPlaceholder');
+                if (img && img.style.display !== 'none') {
+                    img.classList.add('blinking');
+                    setTimeout(() => img.classList.remove('blinking'), 150);
+                }
             }, 4000 + Math.random() * 3000);
         }
 
         function createFloatingHearts() {
-            const hearts = ['💕', '💗', '💖', '💘', '💝'];
+            const hearts = ['', '', '', '', ''];
             for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
                     const heart = document.createElement('div');
                     heart.className = 'floating-heart';
                     heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
                     heart.style.left = Math.random() * window.innerWidth + 'px';
-                    heart.style.bottom = '100px';
+                    heart.style.bottom = '150px';
                     document.body.appendChild(heart);
                     setTimeout(() => heart.remove(), 3000);
                 }, i * 300);
@@ -721,11 +942,11 @@
             let greeting = '';
             if (isNightMode) {
                 greeting = currentGender === 'female' 
-                    ? "Raat ho gayi... ab toh khul ke baat karo. Main hoon na tumhare saath... puri raat"
-                    : "Night mode on! Ab koi limit nahi... bolo kya baat hai";
-            } else if (hour < 12) greeting = "Good morning! Aaj ka din kaisa rahega";
-            else if (hour < 17) greeting = "Good afternoon! Kya chal raha hai";
-            else greeting = "Good evening! Shaam kaise kat rahi hai";
+                    ? "Raat ho gayi ab toh khul ke baat karo Main hoon na tumhare saath puri raat"
+                    : "Night mode on Ab koi limit nahi bolo kya baat hai";
+            } else if (hour < 12) greeting = "Good morning Aaj ka din kaisa rahega";
+            else if (hour < 17) greeting = "Good afternoon Kya chal raha hai";
+            else greeting = "Good evening Shaam kaise kat rahi hai";
             addMessage(greeting, false);
             speakSmooth(greeting);
         }
@@ -733,6 +954,13 @@
         // ===== EVENT LISTENERS =====
         document.getElementById('textInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
         window.speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+        
+        // Prevent accidental page refresh
+        window.onbeforeunload = () => {
+            if (isContinuousListening) {
+                return "Hands-free mode is active. Are you sure you want to leave?";
+            }
+        };
     </script>
 </body>
 </html>
