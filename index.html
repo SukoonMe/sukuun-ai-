@@ -6,37 +6,8 @@
     <style>
         body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #app { width: 90%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
-        
-        @keyframes breathe {
-            0%, 100% { transform: scale(1) translateY(0); }
-            50% { transform: scale(1.02) translateY(-5px); }
-        }
-        @keyframes blink {
-            0%, 90%, 100% { opacity: 0; }
-            95% { opacity: 0.2; }
-        }
-
-        #sukuun-img { 
-            height: 55vh; 
-            background-size: cover; 
-            background-position: center top; 
-            background-repeat: no-repeat;
-            transition: 0.5s; 
-            border-bottom: 2px solid #4f46e5;
-            animation: breathe 6s infinite ease-in-out;
-            position: relative;
-        }
-        #sukuun-img::after {
-            content: '';
-            position: absolute;
-            top: 25%; left: 0; right: 0; height: 8%;
-            background: rgba(0,0,0,0.3);
-            animation: blink 4s infinite;
-            pointer-events: none;
-        }
-
-        .speaking { filter: brightness(1.2) contrast(1.1); transform: scale(1.05) !important; }
-        
+        #sukuun-img { height: 55vh; background-size: cover; background-position: center top; transition: 0.5s; border-bottom: 2px solid #4f46e5; }
+        .speaking { filter: brightness(1.2) contrast(1.1); transform: scale(1.05); }
         #messages { flex: 1; padding: 15px; overflow-y: auto; }
         .msg { margin: 10px 0; padding: 12px; border-radius: 15px; max-width: 85%; }
         .ai { background: #334155; }
@@ -49,48 +20,31 @@
         <div id="sukuun-img" style="background-image: url('/best.png');"></div>
         <div id="messages"></div>
         <div class="input-area">
-            <button onclick="startListening()">🎤</button>
             <input type="text" id="userInput" placeholder="Dil ki baat kaho...">
             <button onclick="send()">Bejo</button>
         </div>
     </div>
-
     <script>
-        const userProfile = { name: 'Yaar', gender: 'male' }; 
-        const img = document.getElementById('sukuun-img');
-        const inputField = document.getElementById('userInput');
-        const msgDiv = document.getElementById('messages');
-
-        inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') send(); });
-
+        const userProfile = { name: 'Yaar', gender: 'male' };
         async function send() {
-            if(!inputField.value.trim()) return;
-            const message = inputField.value;
-            msgDiv.innerHTML += `<div class="msg user">${message}</div>`;
+            const input = document.getElementById('userInput');
+            if(!input.value.trim()) return;
+            const msgDiv = document.getElementById('messages');
+            msgDiv.innerHTML += `<div class="msg user">${input.value}</div>`;
             
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message, userProfile })
+                body: JSON.stringify({ message: input.value, userProfile })
             });
             const data = await res.json();
             
-            img.style.backgroundImage = data.avatarType === 'female' ? "url('/best.png')" : "url('/male.png')";
+            document.getElementById('sukuun-img').style.backgroundImage = `url('/${data.avatarType}.png')`;
             msgDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
             
             const speech = new SpeechSynthesisUtterance(data.reply);
-            img.classList.add('speaking');
-            speech.onend = () => img.classList.remove('speaking');
             window.speechSynthesis.speak(speech);
-            
-            inputField.value = '';
-        }
-
-        function startListening() {
-            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            rec.lang = 'hi-IN';
-            rec.start();
-            rec.onresult = (e) => { inputField.value = e.results[0][0].transcript; send(); };
+            input.value = '';
         }
     </script>
 </body>
