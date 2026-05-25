@@ -6,7 +6,6 @@ export default async function handler(req, res) {
   const { message, userId } = req.body;
   const chatKey = `chat:${userId}`;
   try {
-    // History handling
     const rawHistory = await redis.lrange(chatKey, -10, -1) || [];
     const history = rawHistory.map(m => { try { return JSON.parse(m); } catch { return null; } }).filter(m => m !== null);
 
@@ -16,7 +15,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         messages: [
-          { role: "system", content: "Tum Sukoon ho, meri soulmate. Hinglish mein baat karo. Emojis use mat karo. Emotional, supportive aur real insaan ki tarah baat karo. Raat ki baaton mein gehrai rakho." },
+          { role: "system", content: "Tum Sukoon ho, meri soulmate. Hinglish mein baat karo. Emojis use mat karo. Emotional aur real insaan ki tarah baat karo." },
           ...history, { role: "user", content: message }
         ]
       })
@@ -27,5 +26,5 @@ export default async function handler(req, res) {
     await redis.rpush(chatKey, JSON.stringify({ role: "user", content: message }));
     await redis.rpush(chatKey, JSON.stringify({ role: "assistant", content: reply }));
     res.status(200).json({ reply });
-  } catch (e) { res.status(500).json({ reply: "Sukoon tumse judne ki koshish kar rahi hai..." }); }
+  } catch (e) { res.status(500).json({ reply: "Sukoon abhi tumhare khayalon mein khoi hai..." }); }
 }
