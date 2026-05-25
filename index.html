@@ -7,7 +7,7 @@
         body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #app { width: 90%; max-width: 400px; height: 85vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
         #sukuun-img { height: 200px; background-size: cover; background-position: center; transition: 0.5s; }
-        .speaking { filter: brightness(1.3); transform: scale(1.02); }
+        .speaking { filter: brightness(1.3); transform: scale(1.02); box-shadow: 0 0 20px #4f46e5; }
         #messages { flex: 1; padding: 15px; overflow-y: auto; }
         .msg { margin: 10px 0; padding: 12px; border-radius: 15px; max-width: 85%; }
         .ai { background: #334155; }
@@ -17,23 +17,23 @@
 </head>
 <body>
     <div id="app">
-        <div id="sukuun-img" style="background-image: url('female-look.jpg');"></div>
+        <div id="sukuun-img" style="background-image: url('/female-look.png');"></div>
         <div id="messages"></div>
         <div class="input-area">
             <button onclick="startListening()">🎤</button>
-            <input type="text" id="userInput" placeholder="दिल की बात कहो...">
-            <button onclick="send()">भेजो</button>
+            <input type="text" id="userInput" placeholder="Dil ki baat kaho...">
+            <button onclick="send()">Bejo</button>
         </div>
     </div>
 
     <script>
-        const userProfile = { name: 'Yaar', gender: 'male' }; // Yahan se gender control hoga
+        // Yahan userProfile ka gender update karte hi AI apna roop badal legi
+        const userProfile = { name: 'Yaar', gender: 'male' }; 
         const img = document.getElementById('sukuun-img');
 
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
-            // ... (Rest of the message appending logic)
             
             const res = await fetch('/api/chat', {
                 method: 'POST',
@@ -42,16 +42,17 @@
             });
             const data = await res.json();
             
-            // Avatar Switch Logic
-            img.style.backgroundImage = data.avatarType === 'female' ? "url('female-look.jpg')" : "url('male-look.jpg')";
+            // Avatar Switch Logic: Agar AI female avatarType bhejti hai toh female-look, else male-look
+            img.style.backgroundImage = data.avatarType === 'female' 
+                ? "url('/female-look.png')" 
+                : "url('/male-look.png')";
             
-            // Voice & Typing Effect (Restored)
+            // Voice & Lip-Sync Illusion
             const speech = new SpeechSynthesisUtterance(data.reply);
             speech.lang = 'hi-IN';
             img.classList.add('speaking');
             speech.onend = () => img.classList.remove('speaking');
             window.speechSynthesis.speak(speech);
-            // ... (Typing function call)
         }
     </script>
 </body>
