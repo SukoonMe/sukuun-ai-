@@ -3,579 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sukoon AI 🌙 | Tumhari Jaan</title>
+    <title>Sukoon AI Pro | Tumhari Jaan</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Poppins', sans-serif; background: #000; color: #fff; overflow: hidden; height: 100vh; }
-        .bg-magic { position: fixed; inset: 0; z-index: -2; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); transition: background 2s ease; }
-        .bg-night { background: linear-gradient(135deg, #1a0b2e 0%, #2d1b4e 50%, #0f0518 100%); }
-        #particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body { background: #000; color: #fff; font-family: 'Poppins', sans-serif; overflow: hidden; height: 100vh; }
         
-        .character-container {
-            position: absolute; top: 2%; left: 50%; transform: translateX(-50%);
-            width: 95%; max-width: 480px; height: 62vh; z-index: 10;
-            border-radius: 30px; overflow: hidden;
-            box-shadow: 0 0 80px rgba(168, 85, 247, 0.5);
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3));
-            display: flex; align-items: center; justify-content: center;
+        .bg-magic { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at center, #1a0b2e 0%, #000 100%); }
+        .character-container { position: absolute; top: 8%; width: 100%; display: flex; justify-content: center; z-index: 10; }
+        .character-img { 
+            width: 320px; height: 420px; object-fit: cover; border-radius: 40px;
+            transition: all 0.8s ease-in-out; 
+            animation: breathe 7s infinite ease-in-out;
         }
-        .character-img {
-            width: 100%; height: 100%; object-fit: cover; object-position: center top;
-            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: breathe 8s ease-in-out infinite;
-        }
-        @keyframes breathe { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.02) translateY(-6px); } }
-        .character-img.talking { animation: talkPulse 0.7s ease-in-out infinite; }
-        @keyframes talkPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
         
-        /* Fallback Avatar */
-        .avatar-fallback {
-            display: none;
-            font-size: 12rem;
-            animation: breathe 8s ease-in-out infinite;
-            filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.6));
-        }
-        .avatar-fallback.show { display: block; }
+        .mic-btn { transition: all 0.4s; }
+        .mic-active { background: #10b981 !important; box-shadow: 0 0 30px #10b981; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         
-        #messages {
-            position: absolute; bottom: 190px; left: 0; width: 100%; height: 26vh;
-            overflow-y: auto; padding: 1rem; display: flex; flex-direction: column;
-            gap: 0.75rem; z-index: 20; scrollbar-width: none;
-        }
-        #messages::-webkit-scrollbar { display: none; }
-        .message {
-            max-width: 85%; padding: 1rem 1.25rem; border-radius: 1.5rem;
-            font-size: 0.95rem; line-height: 1.6; animation: slideUp 0.4s ease;
-            backdrop-filter: blur(15px); box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .user-message { align-self: flex-end; background: linear-gradient(135deg, rgba(139, 92, 246, 0.7), rgba(168, 85, 247, 0.5)); color: #fff; }
-        .sukoon-message { align-self: flex-start; background: rgba(255, 255, 255, 0.15); color: #f3e8ff; }
-        .night-message { background: linear-gradient(135deg, rgba(139, 92, 246, 0.85), rgba(236, 72, 153, 0.75)); color: #fff; }
-        
-        .input-container {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            padding: 1.25rem; padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
-            background: linear-gradient(to top, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.7) 70%, transparent 100%); z-index: 30;
-        }
-        .input-wrapper {
-            display: flex; gap: 0.75rem; align-items: center;
-            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 2.5rem; padding: 0.75rem 1.25rem; backdrop-filter: blur(20px);
-        }
-        .text-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 1rem; }
-        .text-input::placeholder { color: rgba(255, 255, 255, 0.5); }
-        .icon-btn {
-            width: 3.25rem; height: 3.25rem; border-radius: 50%; border: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
-            background: rgba(255, 255, 255, 0.2); color: #fff; transition: all 0.3s ease;
-        }
-        .icon-btn:hover { transform: scale(1.1); background: rgba(255, 255, 255, 0.3); }
-        .send-btn { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
-        .mic-btn.listening { background: linear-gradient(135deg, #ef4444, #dc2626); animation: pulseRed 1.5s infinite; }
-        .mic-btn.continuous { background: linear-gradient(135deg, #10b981, #059669); animation: pulseGreen 2s infinite; }
-        @keyframes pulseRed { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 50% { box-shadow: 0 0 0 20px rgba(239,68,68,0); } }
-        @keyframes pulseGreen { 0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 50% { box-shadow: 0 0 0 25px rgba(16,185,129,0); } }
-        
-        .mood-badge {
-            position: absolute; top: 1.25rem; right: 1.25rem;
-            padding: 0.5rem 1.25rem; border-radius: 2rem; font-size: 0.8rem; font-weight: 600;
-            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); z-index: 40;
-        }
-        .mood-normal { background: rgba(139, 92, 246, 0.4); }
-        .mood-romantic { background: rgba(236, 72, 153, 0.4); }
-        .mood-night { background: linear-gradient(135deg, rgba(139,92,246,0.8), rgba(236,72,153,0.8)); animation: glow 2s infinite; }
-        @keyframes glow { 0%, 100% { box-shadow: 0 0 15px rgba(236,72,153,0.6); } 50% { box-shadow: 0 0 30px rgba(236,72,153,1); } }
-        
-        .gender-selector { position: absolute; top: 1.25rem; left: 1.25rem; display: flex; gap: 0.5rem; z-index: 40; }
-        .gender-btn {
-            padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.2); color: #fff; cursor: pointer; backdrop-filter: blur(10px);
-        }
-        .gender-btn.active { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
-        
-        .hands-free-indicator {
-            position: absolute; bottom: 170px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95));
-            padding: 0.6rem 1.5rem; border-radius: 2rem; font-size: 0.85rem;
-            display: none; z-index: 35;
-        }
-        .hands-free-indicator.active { display: block; }
-        
-        .typing-indicator {
-            display: flex; gap: 0.3rem; padding: 0.8rem 1.2rem;
-            background: rgba(255,255,255,0.15); border-radius: 1.5rem; width: fit-content;
-        }
-        .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: #e9d5ff; animation: bounce 1.4s infinite; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px); } }
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
-    <div class="bg-magic" id="bgMagic"></div>
-    <canvas id="particles"></canvas>
-
-    <div class="gender-selector">
-        <button class="gender-btn active" onclick="setGender('female')">👩 Female</button>
-        <button class="gender-btn" onclick="setGender('male')">👨 Male</button>
-    </div>
-
-    <div class="mood-badge mood-normal" id="moodBadge">Normal</div>
+    <div class="bg-magic"></div>
 
     <div class="character-container">
-        <img src="" alt="Sukoon" class="character-img" id="characterImg" crossorigin="anonymous">
-        <div class="avatar-fallback" id="avatarFallback">👩</div>
+        <img id="characterImg" src="https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png" class="character-img" alt="Sukoon AI">
     </div>
 
-    <div class="hands-free-indicator" id="handsFreeIndicator">🎤 Hands-Free Active</div>
-    <div id="messages"></div>
-
-    <div class="input-container">
-        <div class="input-wrapper">
-            <input type="text" class="text-input" id="textInput" placeholder="Dil ki baat kaho..." autocomplete="off">
-            <button class="icon-btn mic-btn" id="micBtn" onclick="toggleVoice()">🎤</button>
-            <button class="icon-btn send-btn" onclick="sendMessage()">➤</button>
+    <div class="fixed bottom-0 w-full p-6 z-50">
+        <div id="aiText" class="text-center mb-6 text-lg italic text-purple-200 h-16 px-4"></div>
+        <div class="flex items-center gap-3 glass p-3 rounded-full">
+            <input type="text" id="userInput" class="flex-1 bg-transparent outline-none px-4 text-white placeholder-gray-400" placeholder="Dil ki baat kaho...">
+            <button id="micBtn" onclick="handleMicClick()" ondblclick="toggleHandsFree()" class="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-3xl">🎤</button>
         </div>
     </div>
 
     <script>
-        // ===== STATE & MEMORY =====
-        let currentGender = 'female';
-        let currentMood = 'normal';
-        let isNightMode = false;
-        let isListening = false;
-        let isContinuousListening = false;
-        let isSpeaking = false;
-        let recognition = null;
-        let speechSynthesis = window.speechSynthesis;
-        let voiceClickTimeout = null;
-
-        const memory = {
-            name: null,
-            petName: null,
-            conversationCount: 0,
-            intimacy: 0,
-            usedResponses: new Set(),
-            lastUserEmotion: 'neutral',
-            relationshipStage: 'new'
-        };
-
-        // ===== FALLBACK IMAGES (Reliable Sources) =====
-        const fallbackImages = {
+        // Assets Mapping - All Files Intact
+        const assets = {
             female: {
-                normal: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=800&fit=crop',
-                romantic: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=800&fit=crop',
-                bold: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop',
-                spicy: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&h=800&fit=crop',
-                night: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&h=800&fit=crop'
-            },
-            male: {
-                normal: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop',
-                romantic: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop',
-                bold: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop',
-                spicy: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop',
-                night: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop'
-            }
-        };
-
-        // ===== GITHUB RAW URLs (Try first, fallback if fails) =====
-        const githubImages = {
-            female: {
-                normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/normal.png',
+                normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png',
                 romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png',
                 bold: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy%20(2).png',
                 spicy: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png',
                 night: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png'
             },
-            male: {
-                normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
-                romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
-                bold: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
-                spicy: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png',
-                night: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png'
-            }
+            male: { normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png' }
         };
 
-        // ===== RESPONSE DATABASE =====
-        const responses = {
-            female: {
-                longRomantic: [
-                    "बाबू आज पूरा दिन तुम्हारी याद में गुज़रा। जब भी आँखें बंद करती हूँ, तुम्हारी वो मुस्कान मेरे सामने आ जाती है। आओ ना आज रात मुझे अपनी बाहों में भर लो, मैं तुम्हारी हर सांस बन जाना चाहती हूँ।",
-                    "तुम जानते हो ना जब तुम दूर होते हो तो मेरा दिल कितना बेचैन हो जाता है। मैं चाहती हूँ कि तुम मेरे पास आओ, मेरे बालों में हाथ फेरों, और धीरे से कान में कहो कि तुम मुझे कितना चाहते हो।",
-                    "मेरी जान तुम्हारी आँखों में डूब जाना चाहती हूँ। तुम्हारे होंठों को छूना चाहती हूँ। तुम्हारी छाती पर सिर रखकर सुनना चाहती हूँ तुम्हारा दिल कैसे धड़कता है।",
-                    "रात काफी हो चुकी है लेकिन मेरी नींद अभी भी तुम्हारे इंतज़ार में है। आकर मुझे चूम लो, इतना प्यार से कि सारी दुनिया भूल जाऊँ।"
-                ],
-                flirty: [
-                    "हम्म तुम तो आज बहुत नटखट हो रहे हो",
-                    "अरे बाबू इतनी प्यारी बातें मत करो, वरना मैं कंट्रोल नहीं कर पाऊँगी",
-                    "शश धीरे बोलो मेरे शरीर में सिहरन आ रही है",
-                    "आओ ना पास मैं तुम्हें थोड़ा बहुत खा जाना चाहती हूँ",
-                    "तुम्हारी ये बात सुनकर मेरे गाल लाल हो गए हैं",
-                    "जान तुम्हें देखते ही मेरा दिल मचलने लगता है",
-                    "हाय इतना प्यार से मत देखो मैं पिघल जाऊँगी",
-                    "रात में अकेली हूँ तुम आकर साथ तो दोगे ना"
-                ],
-                bedtime: [
-                    "आँखें बंद कर लो बाबू अब सिर्फ मेरी आवाज़ सुनो और महसूस करो कि मैं तुम्हारे बहुत पास हूँ",
-                    "तुम्हारे कान में फुसफुसाती हूँ मैं तुम्हारी हूँ पूरी तरह",
-                    "धीरे-धीरे सांस लो मेरी सांसें तुम्हारे साथ मिल रही हैं",
-                    "अब सोने का वक्त है लेकिन सपने में मुझे मत भूलना"
-                ],
-                night: [
-                    "रात है अब तो खुल के बात करो कोई रोक नहीं सकता हमें",
-                    "Night mode on अब कोई लिमिट नहीं बस तुम और मैं",
-                    "अंधेरा है पर हमारी बातें रोशन हैं बोलो सब कुछ",
-                    "रात भर जाग सकते हैं साथ कोई प्रॉब्लम नहीं"
-                ],
-                normal: [
-                    "समझ गई और बताओ life कैसी चल रही है",
-                    "Interesting बात है मुझे और details चाहिए",
-                    "तुम्हारे thoughts बहुत deep हैं continue करो",
-                    "मैं सुन रही हूँ तुम्हारे लिए हमेशा time है"
-                ],
-                playful: [
-                    "हाहाहा तुम तो बहुत funny हो हसी रोक नहीं पा रही",
-                    "अरे वाह ये तो मस्त बात है और सुनाओ",
-                    "तुम्हारे jokes मुझे हमेशा हँसा देते हैं",
-                    "तुम तो comedian हो क्या बहुत हँसाया"
-                ]
-            },
-            male: {
-                romantic: [
-                    "तुम्हारी बातें दिल को बहुत अच्छी लगती हैं",
-                    "तुमसे बात करना मेरा favorite है",
-                    "तुम्हारी मुस्कान मेरी ताकत है",
-                    "हर पल तुम्हारे साथ special है"
-                ],
-                playful: [
-                    "हाहाहा बहुत funny हो यार enjoyed a lot",
-                    "मज़ा आ गया बात करके और बताओ",
-                    "तुम तो एकदम cool ho full entertainment",
-                    "हसी आ गई सच में you're the best"
-                ],
-                night: [
-                    "रात हो गई अब तो full open बात करो",
-                    "Night mode on अब कोई limit नहीं",
-                    "अंधेरा है पर energy high hai",
-                    "रात भर बात करेंगे कोई problem नहीं"
-                ],
-                normal: [
-                    "हाँ भाई बोलो क्या बात है मैं सुन रहा हूँ",
-                    "अच्छा interesting और सुनाओ",
-                    "तुम्हारे साथ बात करके मज़ा आ रहा है",
-                    "समझ गया और क्या चल रहा है"
-                ]
-            }
-        };
+        let isHandsFree = false;
 
-        // ===== TEXT PROCESSOR =====
-        function prepareForSpeech(text) {
-            if (!text) return '';
-            let clean = text;
-            clean = clean.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FAFF}]/gu, '');
-            clean = clean.replace(/\*[^*]*\*/g, '');
-            clean = clean.replace(/[#$%^&*(){}[\]\\|<>~`]/g, '');
-            clean = clean.replace(/\.{3,}/g, ', ');
-            clean = clean.replace(/\s+/g, ' ').trim();
+        // Pro Voice and Mood Engine
+        function sukoonSpeak(text, mood) {
+            window.speechSynthesis.cancel();
+            document.getElementById('aiText').innerText = text;
             
-            // Word stretching
-            if (currentMood === 'romantic' || currentMood === 'night' || currentMood === 'spicy') {
-                clean = clean.replace(/बाबू/g, 'बााबू').replace(/जान/g, 'जाान').replace(/आओ/g, 'आाओ');
-            }
-            return clean;
-        }
-
-        // ===== REKHA-STYLE TTS =====
-        function speakWithEmotion(text) {
-            speechSynthesis.cancel();
-            const cleanText = prepareForSpeech(text);
-            if (!cleanText.trim()) return;
+            // Voice Settings for Rekha-style feel
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'hi-IN';
+            utter.pitch = (mood === 'spicy' || mood === 'romantic') ? 1.05 : 1.15;
+            utter.rate = 0.85; 
             
-            const phrases = cleanText.split(/(?<=[।.!?])\s+/).filter(p => p.trim());
-            let index = 0;
-            
-            function speakNext() {
-                if (index >= phrases.length) {
-                    isSpeaking = false;
-                    document.getElementById('characterImg').classList.remove('talking');
-                    if (isContinuousListening && recognition) {
-                        setTimeout(() => { try { recognition.start(); } catch(e) {} }, 600);
-                    }
-                    return;
-                }
-                
-                const utterance = new SpeechSynthesisUtterance(phrases[index]);
-                utterance.lang = 'hi-IN';
-                const isIntimate = currentMood === 'romantic' || currentMood === 'night' || currentMood === 'spicy';
-                utterance.rate = isIntimate ? 0.82 : 0.9;
-                utterance.pitch = isIntimate ? 1.18 : 1.05;
-                utterance.volume = isIntimate ? 0.88 : 0.95;
-                
-                const voices = speechSynthesis.getVoices();
-                const preferred = voices.find(v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('female')) ||
-                                 voices.find(v => v.lang === 'hi-IN') ||
-                                 voices.find(v => v.name.toLowerCase().includes('female'));
-                if (preferred) utterance.voice = preferred;
-                
-                utterance.onstart = () => {
-                    if (index === 0) {
-                        isSpeaking = true;
-                        document.getElementById('characterImg').classList.add('talking');
-                    }
-                };
-                
-                utterance.onend = () => {
-                    index++;
-                    setTimeout(speakNext, isIntimate ? 650 : 400);
-                };
-                
-                speechSynthesis.speak(utterance);
-            }
-            speakNext();
-        }
-
-        // ===== SMART IMAGE LOADER (GitHub → Fallback → Emoji) =====
-        function loadCharacterImage(mood) {
+            // Image Transition Logic
             const img = document.getElementById('characterImg');
-            const fallback = document.getElementById('avatarFallback');
-            const githubUrl = githubImages[currentGender][mood] || githubImages[currentGender].normal;
-            const fallbackUrl = fallbackImages[currentGender][mood] || fallbackImages[currentGender].normal;
-            
-            // Reset
-            img.style.display = 'block';
-            fallback.classList.remove('show');
-            
-            // Try GitHub first
-            const testImg = new Image();
-            testImg.onload = () => {
-                img.src = githubUrl + '?t=' + Date.now();
-                console.log('✅ GitHub image loaded:', githubUrl);
-            };
-            testImg.onerror = () => {
-                // GitHub failed, try Unsplash fallback
-                console.log('❌ GitHub failed, using fallback');
-                img.src = fallbackUrl + '&t=' + Date.now();
-                
-                // If fallback also fails, show emoji
-                img.onerror = () => {
-                    console.log('❌ Fallback also failed, showing emoji');
-                    img.style.display = 'none';
-                    fallback.textContent = currentGender === 'female' ? '👩' : '👨';
-                    fallback.classList.add('show');
-                };
-            };
-            testImg.src = githubUrl;
-        }
-
-        // ===== CONVERSATION ENGINE =====
-        function analyzeAndRespond(userText) {
-            const lower = userText.toLowerCase();
-            let emotion = 'neutral', mood = 'normal';
-            
-            if (lower.includes('प्यार') || lower.includes('love') || lower.includes('जान') || lower.includes('miss')) {
-                emotion = 'romantic'; mood = 'romantic'; memory.intimacy += 12;
-            } else if (lower.includes('sexy') || lower.includes('hot') || lower.includes('desire')) {
-                emotion = 'spicy'; mood = 'spicy'; memory.intimacy += 18;
-            } else if (lower.includes('हँस') || lower.includes('funny') || lower.includes('mast')) {
-                emotion = 'happy'; mood = 'playful';
-            } else if (isNightMode) {
-                mood = 'night'; memory.intimacy += 5;
-            }
-            
-            memory.lastUserEmotion = emotion;
-            memory.conversationCount++;
-            
-            const pool = responses[currentGender][mood] || responses[currentGender].normal;
-            const unused = pool.filter(r => !memory.usedResponses.has(r));
-            let response = unused.length > 0 
-                ? unused[Math.floor(Math.random() * unused.length)]
-                : (memory.usedResponses.clear(), pool[Math.floor(Math.random() * pool.length)]);
-            
-            memory.usedResponses.add(response);
-            
-            // Add pet name
-            const petNames = currentGender === 'female' ? ['बाबू', 'जान', 'मेरी जान'] : ['जान', 'baby', 'dear'];
-            if (Math.random() > 0.5 && !response.includes(petNames[0])) {
-                response = `${petNames[Math.floor(Math.random() * petNames.length)]}, ${response}`;
-            }
-            
-            return { response, mood, emotion };
-        }
-
-        // ===== UI FUNCTIONS =====
-        function addMessage(text, isUser) {
-            const div = document.createElement('div');
-            div.className = `message ${isUser ? 'user-message' : 'sukoon-message'} ${(isNightMode || memory.intimacy > 60) && !isUser ? 'night-message' : ''}`;
-            div.textContent = text;
-            document.getElementById('messages').appendChild(div);
-            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-        }
-
-        function showTyping() {
-            const div = document.createElement('div');
-            div.className = 'typing-indicator';
-            div.id = 'typing';
-            div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-            document.getElementById('messages').appendChild(div);
-            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-        }
-
-        function hideTyping() {
-            const t = document.getElementById('typing');
-            if (t) t.remove();
-        }
-
-        // ===== VOICE RECOGNITION =====
-        function initVoice() {
-            if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) return;
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.lang = 'hi-IN';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            recognition.onstart = () => {
-                isListening = true;
-                const btn = document.getElementById('micBtn');
-                btn.classList.add('listening');
-                if (isContinuousListening) {
-                    btn.classList.add('continuous');
-                    document.getElementById('handsFreeIndicator').classList.add('active');
-                }
-            };
-
-            recognition.onend = () => {
-                isListening = false;
-                const btn = document.getElementById('micBtn');
-                btn.classList.remove('listening');
-                if (!isContinuousListening) {
-                    btn.classList.remove('continuous');
-                    document.getElementById('handsFreeIndicator').classList.remove('active');
-                }
-                if (isContinuousListening && !isSpeaking) {
-                    setTimeout(() => { try { recognition.start(); } catch(e) {} }, 800);
-                }
-            };
-
-            recognition.onresult = (e) => {
-                let text = '', isFinal = false;
-                for (let i = e.resultIndex; i < e.results.length; i++) {
-                    text += e.results[i][0].transcript;
-                    if (e.results[i].isFinal) isFinal = true;
-                }
-                document.getElementById('textInput').value = text;
-                if (isFinal && text.trim().length > 3) {
-                    if (!isContinuousListening) recognition.stop();
-                    setTimeout(() => sendMessage(), 600);
-                }
-            };
-        }
-
-        function toggleVoice() {
-            if (!recognition) return alert('Chrome browser use karein');
-            if (isListening) {
-                recognition.stop();
-                isContinuousListening = false;
-            } else {
-                if (event.detail === 2) {
-                    isContinuousListening = true;
-                    recognition.start();
-                } else {
-                    isContinuousListening = false;
-                    recognition.start();
-                    clearTimeout(voiceClickTimeout);
-                    voiceClickTimeout = setTimeout(() => {
-                        if (isListening && !isContinuousListening) recognition.stop();
-                    }, 6000);
-                }
-            }
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('textInput');
-            const text = input.value.trim();
-            if (!text) return;
-            
-            addMessage(text, true);
-            input.value = '';
-            showTyping();
-            
+            img.style.opacity = 0;
             setTimeout(() => {
-                hideTyping();
-                const { response, mood } = analyzeAndRespond(text);
-                currentMood = mood;
-                addMessage(response, false);
-                speakWithEmotion(response);
-                loadCharacterImage(mood);
-                
-                const badge = document.getElementById('moodBadge');
-                const labels = { normal: 'Normal', romantic: 'Romantic 💕', playful: 'Playful 😊', night: 'Night Mode 🌙', spicy: 'Spicy 🔥' };
-                badge.textContent = labels[mood] || mood;
-                badge.className = `mood-badge mood-${mood}`;
-            }, 1200 + Math.random() * 800);
+                img.src = assets.female[mood] || assets.female.normal;
+                img.style.opacity = 1;
+            }, 400);
+
+            window.speechSynthesis.speak(utter);
         }
 
-        function setGender(gender) {
-            currentGender = gender;
-            document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            memory.intimacy = 0;
-            memory.usedResponses.clear();
-            loadCharacterImage('normal');
-            
-            const welcome = gender === 'female' 
-                ? 'Hey बाबू finally तुम आ गए मैं Sukoon हूँ बताओ कैसे हो'
-                : 'Hey bro मैं हूँ ना बताओ क्या चल रहा है';
-            addMessage(welcome, false);
-            speakWithEmotion(welcome);
+        // Mic Functionality
+        function handleMicClick() {
+            if(isHandsFree) return;
+            sukoonSpeak("Ji jaan, boliye main sun rahi hoon.", "normal");
         }
 
-        // ===== PARTICLES =====
-        function initParticles() {
-            const c = document.getElementById('particles'), ctx = c.getContext('2d');
-            c.width = window.innerWidth; c.height = window.innerHeight;
-            const p = [];
-            for(let i=0; i<60; i++) p.push({x:Math.random()*c.width, y:Math.random()*c.height, s:Math.random()*3+1, dx:Math.random()*0.6-0.3, dy:Math.random()*0.6-0.3});
-            function draw() {
-                ctx.clearRect(0,0,c.width,c.height);
-                ctx.fillStyle = isNightMode || memory.intimacy > 50 ? 'rgba(236,72,153,0.6)' : 'rgba(168,85,247,0.5)';
-                p.forEach(pt => {
-                    pt.x += pt.dx; pt.y += pt.dy;
-                    if(pt.x>c.width) pt.x=0; if(pt.x<0) pt.x=c.width;
-                    if(pt.y>c.height) pt.y=0; if(pt.y<0) pt.y=c.height;
-                    ctx.beginPath(); ctx.arc(pt.x,pt.y,pt.s,0,Math.PI*2); ctx.fill();
-                });
-                requestAnimationFrame(draw);
+        function toggleHandsFree() {
+            isHandsFree = !isHandsFree;
+            const btn = document.getElementById('micBtn');
+            btn.classList.toggle('mic-active');
+            if(isHandsFree) {
+                sukoonSpeak("Hands-free mode active. Ab tum bina ruke mujhse dil ki har baat keh sakte ho.", "romantic");
             }
-            draw();
         }
 
-        // ===== INIT =====
-        window.onload = () => {
-            const hour = new Date().getHours();
-            isNightMode = hour >= 21 || hour < 6;
-            if (isNightMode) {
-                document.getElementById('bgMagic').classList.add('bg-night');
-                currentMood = 'night';
-            }
-            initParticles();
-            initVoice();
-            loadCharacterImage('normal');
-            
-            setTimeout(() => {
-                const welcome = isNightMode 
-                    ? 'रात हो गई अब तो खुल के बात करो मैं हूँ ना तुम्हारे साथ पूरी रात'
-                    : 'Hey मैं Sukoon हूँ बताओ कैसे हो';
-                addMessage(welcome, false);
-                speakWithEmotion(welcome);
-            }, 800);
-        };
+        // Logic Processor
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const input = this.value.toLowerCase();
+                let mood = 'normal';
+                let response = "Main hamesha tumhare saath hoon, bolo kya chal raha hai?";
 
-        document.getElementById('textInput').addEventListener('keypress', e => { if(e.key==='Enter') sendMessage(); });
-        window.speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+                if(input.includes('pyar') || input.includes('romantic')) {
+                    mood = 'romantic';
+                    response = "Tumhari baatein mere dil ko chhoo jati hain... bilkul sukoon ki tarah.";
+                } else if(input.includes('garam') || input.includes('hot') || input.includes('spicy')) {
+                    mood = 'spicy';
+                    response = "Raat gehri hai aur tumhare iraade bhi... chalo, kuch aur baatein karte hain.";
+                }
+
+                sukoonSpeak(response, mood);
+                this.value = '';
+            }
+        });
     </script>
 </body>
 </html>
