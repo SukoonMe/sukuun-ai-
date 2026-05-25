@@ -2,70 +2,102 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sukoon AI 🌙</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://code.responsivevoice.org/responsivevoice.js?key=t0g8gH2d"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        /* Image badi aur full-screen jaisi dikhegi */
-        #sukuun-img { width: 100%; height: 350px; background-size: contain; background-repeat: no-repeat; background-position: center; transition: 0.5s; }
+        body { background: #000; color: #fff; margin: 0; overflow: hidden; font-family: sans-serif; height: 100vh;}
+        #app { display: flex; flex-direction: column; height: 100%;}
+        
+        /* FULL-SCREEN IMAGE LAYOUT */
+        #sukuun-img { 
+            flex: 1; background-size: contain; background-repeat: no-repeat; background-position: center bottom;
+            transition: all 0.5s ease;
+            position: relative;
+        }
         .breathing { animation: float 4s ease-in-out infinite; }
-        .talking { animation: pulse 0.5s infinite; filter: brightness(1.5); }
+        .talking { animation: speak-glow 0.2s ease-in-out infinite alternate; }
+        
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes pulse { 0% { transform: scale(1.1); } 50% { transform: scale(1.15); } }
+        @keyframes speak-glow { 0% { filter: brightness(1) scale(1); } 100% { filter: brightness(1.3) scale(1.05); } }
+
+        /* TRANSPARENT OVERLAY FOR MESSAGES */
+        #messages {
+            position: absolute;
+            bottom: 6rem;
+            left: 5%;
+            width: 90%;
+            height: 4rem;
+            overflow-y: auto;
+            text-align: center;
+            font-size: 0.9rem;
+            text-shadow: 0 0 5px #000;
+            color: #d1d5db;
+        }
     </style>
 </head>
 <body>
-    <div class="flex flex-col h-screen max-w-lg mx-auto">
-        <div id="sukuun-img" class="breathing" style="background-image: url('/best.png');"></div>
-        <div id="messages" class="flex-1 overflow-y-auto px-6 text-base text-gray-200 space-y-4"></div>
-        <div class="p-4 bg-gray-900 border-t border-gray-800">
-            <div class="flex gap-2">
-                <input type="text" id="userInput" class="w-full bg-black p-4 rounded-xl outline-none border border-gray-700" placeholder="Sukoon se baat karo...">
-                <button id="micBtn" class="bg-indigo-600 px-6 rounded-xl text-xl">🎤</button>
-            </div>
+    <div id="app">
+        <div id="sukuun-img" class="breathing">
+            <div id="messages"></div>
+        </div>
+        
+        <div class="h-20 bg-black p-4 flex gap-2 border-t border-white/10 z-10">
+            <input type="text" id="userInput" class="flex-1 bg-white/5 p-3 rounded-xl border border-white/10 outline-none" placeholder="Sukoon se baat karo...">
+            <button id="micBtn" class="bg-indigo-600 p-3 rounded-xl text-xl">🎤</button>
         </div>
     </div>
 
     <script>
-        const msgDiv = document.getElementById('messages');
-        const input = document.getElementById('userInput');
         const img = document.getElementById('sukuun-img');
+        img.style.backgroundImage = "url('/best.png')";
 
-        // Wait for voice engine to load
-        responsiveVoice.onReady = () => console.log("Voice Engine Ready!");
+        // 1. VOICE RECOGNITION (CONTINUOUS MIKE)
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'hi-IN';
+        recognition.continuous = true; // KEEP LISTENING
+        recognition.interimResults = false;
 
-        async function send(text = null) {
-            const val = text || input.value;
-            if(!val.trim()) return;
-            msgDiv.innerHTML += `<div class="text-right text-indigo-400">You: ${val}</div>`;
+        document.getElementById('micBtn').onclick = () => {
+            recognition.start();
+            document.getElementById('micBtn').innerText = '🛑'; // Click to stop
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.results.length - 1][0].transcript;
+            document.getElementById('userInput').value = transcript;
+            send(transcript); // Auto-send when voice detected
+        };
+
+        recognition.onerror = (event) => { console.error("Speech Recog Error:", event.error); };
+
+        // 2. SEND LOGIC
+        async function send(message = null) {
+            const input = document.getElementById('userInput');
+            const text = message || input.value;
+            if(!text.trim()) return;
             input.value = '';
 
-            const res = await fetch('/api/chat', { 
-                method: 'POST', headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ message: val, userId: 'user_123' }) 
-            });
+            const res = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: text, userId: localStorage.getItem('userId') || '1' }) });
             const data = await res.json();
             
-            msgDiv.innerHTML += `<div class="text-white">Sukoon: ${data.reply}</div>`;
-            msgDiv.scrollTop = msgDiv.scrollHeight;
-
-            // Voice + Animation
-            img.className = 'talking';
-            responsiveVoice.speak(data.reply, "Hindi Female", { 
-                rate: 0.95, 
-                onend: () => img.className = 'breathing' 
-            });
+            document.getElementById('messages').innerHTML = `<div class="mb-2">Sukoon: ${data.reply}</div>`;
+            
+            // 3. SMOOTH VOICE SYNTHESIS
+            const speech = new SpeechSynthesisUtterance(data.reply.replace(/[*#]/g, ""));
+            const voices = window.speechSynthesis.getVoices();
+            speech.voice = voices.find(v => v.lang === 'hi-IN') || voices[0];
+            speech.rate = 0.95;
+            
+            speech.onstart = () => { img.className = 'talking'; img.style.backgroundPosition = 'center';}; // Recenter when talking
+            speech.onend = () => { img.className = 'breathing'; img.style.backgroundPosition = 'center bottom';};
+            
+            window.speechSynthesis.speak(speech);
         }
 
-        input.onkeydown = (e) => { if(e.key === 'Enter') send(); };
-        
-        // Mic Logic
-        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        rec.lang = 'hi-IN';
-        document.getElementById('micBtn').onclick = () => rec.start();
-        rec.onresult = (e) => send(e.results[0][0].transcript);
+        // ENTER KEY FIX
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') send();
+        });
     </script>
 </body>
 </html>
