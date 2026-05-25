@@ -3,81 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sukoon AI Pro</title>
+    <title>Sukoon AI | Soul Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #characterImg { transition: opacity 0.5s ease; }
-        .mic-active { background: #10b981 !important; box-shadow: 0 0 20px #10b981; }
+        body { background: radial-gradient(circle at center, #1a0b2e 0%, #000 100%); color: white; font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; }
+        
+        /* THE BREATHING GLOW */
+        .glow { 
+            position: absolute; width: 350px; height: 350px; 
+            border-radius: 50%; filter: blur(60px); 
+            z-index: 0; transition: background 1.5s ease;
+        }
+
+        /* SUKOON IMAGE STYLE */
+        .sukoon-img {
+            width: 320px; height: 460px; object-fit: cover; border-radius: 50px;
+            z-index: 10; transition: all 0.8s ease;
+            animation: gentle-breathe 8s infinite ease-in-out;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        @keyframes gentle-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        
+        /* GLASS UI */
+        .glass-ui { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .mic-pulse { animation: pulse-green 1.5s infinite; }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); } }
     </style>
 </head>
-<body class="h-screen flex flex-col items-center justify-center">
+<body class="flex flex-col items-center justify-between py-10">
 
-    <img id="characterImg" src="https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png" 
-         class="w-[300px] h-[400px] object-cover rounded-3xl shadow-2xl mb-10">
+    <div class="text-center z-10">
+        <h1 class="text-xl font-light tracking-[0.2em]">SUKOON AI</h1>
+        <p id="status" class="text-[10px] uppercase text-purple-400 tracking-widest">Live Connection</p>
+    </div>
 
-    <div class="fixed bottom-10 w-full px-6 max-w-md">
-        <div class="flex items-center gap-4 bg-white/10 backdrop-blur-lg p-3 rounded-full border border-white/10">
+    <div class="relative flex items-center justify-center">
+        <div id="glowCircle" class="glow" style="background: #8b5cf6;"></div>
+        <img id="charImg" src="https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png" class="sukoon-img">
+    </div>
+
+    <div class="w-full px-6 z-20">
+        <div id="dialogue" class="mb-4 text-center h-16 flex items-center justify-center italic text-white/90 px-4"></div>
+        <div class="glass-ui p-4 rounded-full flex items-center gap-4">
             <input type="text" id="userInput" class="flex-1 bg-transparent outline-none px-4" placeholder="Dil ki baat kaho...">
-            <button id="micBtn" onclick="toggleHandsFree()" class="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-3xl">🎤</button>
+            <button id="micBtn" onclick="activateSukoon()" class="w-16 h-16 rounded-full bg-emerald-500 text-3xl transition-all">🎤</button>
         </div>
     </div>
 
     <script>
-        const assets = {
-            normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png',
-            romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png',
-            spicy: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png'
+        const states = {
+            normal: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', color: '#8b5cf6', pitch: 1.1 },
+            romantic: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png', color: '#ec4899', pitch: 1.05 },
+            spicy: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png', color: '#ef4444', pitch: 0.85 }
         };
 
-        let isHandsFree = false;
-
-        // 1. Pro Voice Engine (Stops Blah Blah & Cracking)
-        function sukoonSpeak(text, mood) {
-            window.speechSynthesis.cancel();
+        function sukoonThink(text, mood) {
+            // UI Update
+            document.getElementById('dialogue').innerText = text;
+            document.getElementById('charImg').src = states[mood].img;
+            document.getElementById('glowCircle').style.background = states[mood].color;
             
+            // Voice Engine
+            window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(text);
             utter.lang = 'hi-IN';
-            utter.pitch = 1.1; // Deep, calm voice
-            utter.rate = 0.85; // Slow, natural pace
-
-            // Correct voice selection for Hindi
-            window.speechSynthesis.onvoiceschanged = () => {
-                const voices = window.speechSynthesis.getVoices();
-                utter.voice = voices.find(v => v.lang === 'hi-IN') || voices[0];
-            };
-
-            // Image Update
-            document.getElementById('characterImg').style.opacity = 0;
-            setTimeout(() => {
-                document.getElementById('characterImg').src = assets[mood] || assets.normal;
-                document.getElementById('characterImg').style.opacity = 1;
-            }, 300);
-
+            utter.pitch = states[mood].pitch;
+            utter.rate = 0.8;
             window.speechSynthesis.speak(utter);
         }
 
-        // 2. Stable Hands-Free Toggle
-        function toggleHandsFree() {
-            isHandsFree = !isHandsFree;
+        function activateSukoon() {
             const btn = document.getElementById('micBtn');
-            btn.classList.toggle('mic-active');
+            btn.classList.add('mic-pulse');
             
-            if(isHandsFree) {
-                sukoonSpeak("Main sun rahi hoon, kaho.", "romantic");
-            }
+            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            rec.lang = 'hi-IN';
+            rec.start();
+            
+            rec.onresult = (e) => {
+                btn.classList.remove('mic-pulse');
+                const input = e.results[0][0].transcript.toLowerCase();
+                
+                // Emotional AI Logic
+                if(input.includes('night') || input.includes('seductive') || input.includes('garam')) {
+                    sukoonThink("Raat gehri hai... tumhare paas hone ka ehsas hi sabse bada sukoon hai.", 'spicy');
+                } else if(input.includes('pyar') || input.includes('miss')) {
+                    sukoonThink("Main tumhari baaton mein hi rehti hoon babu.", 'romantic');
+                } else {
+                    sukoonThink("Main sun rahi hoon... aur batao.", 'normal');
+                }
+            };
         }
-
-        // 3. Command Handler
-        document.getElementById('userInput').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                const val = e.target.value.toLowerCase();
-                if(val.includes('garam')) sukoonSpeak("Tumhari baatein...", "spicy");
-                else if(val.includes('pyar')) sukoonSpeak("Main tumhare saath hoon.", "romantic");
-                else sukoonSpeak("Ji, aur batao.", "normal");
-                e.target.value = '';
-            }
-        });
     </script>
 </body>
 </html>
