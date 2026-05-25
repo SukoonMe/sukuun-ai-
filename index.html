@@ -7,14 +7,8 @@
         body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; }
         #app { width: 90%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
         @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-        @keyframes blink { 0%, 90%, 100% { filter: brightness(1); } 95% { filter: brightness(0.6); } }
-        #sukuun-img { 
-            height: 55vh; background-size: cover; background-position: center top; 
-            background-repeat: no-repeat; border-bottom: 2px solid #4f46e5;
-            animation: breathe 6s infinite ease-in-out, blink 5s infinite;
-            transition: background-image 0.5s ease;
-        }
-        .speaking { animation: breathe 0.3s infinite alternate !important; filter: brightness(1.2) contrast(1.1); }
+        #sukuun-img { height: 55vh; background-size: cover; background-position: center top; background-repeat: no-repeat; border-bottom: 2px solid #4f46e5; animation: breathe 6s infinite; transition: background-image 0.5s; }
+        .speaking { animation: breathe 0.3s infinite alternate !important; filter: brightness(1.2); }
         #messages { flex: 1; padding: 15px; overflow-y: auto; }
         .msg { margin: 10px 0; padding: 12px; border-radius: 15px; max-width: 85%; }
         .ai { background: #334155; }
@@ -37,34 +31,29 @@
 
         async function send() {
             const input = document.getElementById('userInput');
-            const msgDiv = document.getElementById('messages');
             if(!input.value.trim()) return;
             
-            msgDiv.innerHTML += `<div class="msg user">${input.value}</div>`;
+            document.getElementById('messages').innerHTML += `<div class="msg user">${input.value}</div>`;
             const userMsg = input.value;
             input.value = '';
 
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ message: userMsg, userProfile: { name: 'Yaar', gender: 'male' } })
-                });
-                const data = await res.json();
-                
-                const avatar = data.avatarType || 'best';
-                avatarDiv.style.backgroundImage = `url('/${avatar}.png')`;
-                msgDiv.innerHTML += `<div class="msg ai">${data.reply}</div>`;
-                msgDiv.scrollTop = msgDiv.scrollHeight;
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: userMsg, userProfile: { name: 'Yaar', gender: 'male' } })
+            });
+            const data = await res.json();
+            
+            avatarDiv.style.backgroundImage = `url('/${data.avatarType || 'best'}.png')`;
+            document.getElementById('messages').innerHTML += `<div class="msg ai">${data.reply}</div>`;
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
 
-                avatarDiv.classList.add('speaking');
-                const speech = new SpeechSynthesisUtterance(data.reply);
-                speech.lang = 'hi-IN';
-                speech.onend = () => avatarDiv.classList.remove('speaking');
-                window.speechSynthesis.speak(speech);
-            } catch (err) {
-                console.error("Error:", err);
-            }
+            avatarDiv.classList.add('speaking');
+            // Emoji removal for speech
+            const cleanText = data.reply.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{27BF}]/gu, '');
+            const speech = new SpeechSynthesisUtterance(cleanText);
+            speech.onend = () => avatarDiv.classList.remove('speaking');
+            window.speechSynthesis.speak(speech);
         }
     </script>
 </body>
