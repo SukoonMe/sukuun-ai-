@@ -6,27 +6,28 @@ export default async function handler(req, res) {
   const { message, userProfile } = req.body;
   const hour = new Date().getHours();
   
-  // Logic: Agar user male hai, toh Sukuun female banegi, aur vice-versa
   const avatarType = userProfile.gender === 'male' ? 'female' : 'male';
   
-  // Dynamic Persona definition
   let persona = "";
   if (hour >= 21 || hour < 6) {
     persona = `You are Sukuun, a soulmate. It's night time. 
                Your current form is ${avatarType}. Speak in conversational, intimate, and romantic Hinglish. 
-               Address ${userProfile.name} with affection. 
-               Keep responses short, whispering, and soul-connecting. No robotic tone.`;
+               Address ${userProfile.name} with affection. Keep responses short and whispering.`;
   } else {
-    persona = `You are Sukuun. Your current form is ${avatarType}. 
-               You are playful, slightly mysterious, and teasing. 
-               Speak in natural Hinglish. Engage with ${userProfile.name} and talk about 
-               the special night plan or how your day is going. Be warm and friendly.`;
+    persona = `You are Sukuun, your form is ${avatarType}. 
+               You are playful and slightly mysterious. Speak in natural Hinglish. 
+               Engage with ${userProfile.name} in a warm and friendly way.`;
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    // Yahan model name update kiya hai taaki 404 error na aaye
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
+    // API Key verify
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("API Key missing");
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Model name update: 'gemini-1.5-flash' is the most stable standard
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const prompt = `${persona}\n\nUser: ${message}\nSukuun:`;
     const result = await model.generateContent(prompt);
