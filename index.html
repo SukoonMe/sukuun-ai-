@@ -4,62 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sukoon AI 🌙</title>
-    <style>
-        body { margin:0; background: #0c0f1d; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #app { width: 95%; max-width: 400px; height: 90vh; background: #1e293b; border-radius: 30px; border: 2px solid #6366f1; display: flex; flex-direction: column; overflow: hidden; }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/index.css"> <style>
+        body { background: #050505; color: white; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        #app { width: 100%; max-width: 400px; height: 90vh; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; position: relative; z-index: 10; }
         
-        #sukuun-img { height: 45vh; background-size: cover; background-position: center; transition: 0.5s; animation: breathe 4s infinite ease-in-out; border-bottom: 2px solid #6366f1; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        /* Ambient Backgrounds */
+        .glow { position: absolute; width: 200px; height: 200px; background: #f43f5e; filter: blur(100px); border-radius: 50%; z-index: 0; }
         
-        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 12px 18px; border-radius: 20px; animation: pop 0.4s ease-out; max-width: 85%; line-height: 1.4; }
-        .ai { background: #334155; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .user { background: #6366f1; align-self: flex-end; border-bottom-right-radius: 2px; }
-        @keyframes pop { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        #sukuun-img { height: 45vh; background-size: cover; background-position: top; transition: 0.5s; animation: float 6s infinite ease-in-out; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         
-        .input-area { padding: 15px; background: #0f172a; display: flex; gap: 10px; border-top: 1px solid #1e293b; }
-        input { flex: 1; background: #1e293b; border: 1px solid #475569; padding: 12px; border-radius: 10px; color: white; outline: none; }
-        button { background: #6366f1; border: none; padding: 10px 20px; border-radius: 10px; color: white; cursor: pointer; }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 12px 16px; border-radius: 20px; max-width: 85%; font-family: 'Inter', sans-serif; }
+        .ai { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); align-self: flex-start; }
+        .user { background: #f43f5e; color: white; align-self: flex-end; }
+        
+        input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; width: 100%; outline: none; }
     </style>
 </head>
 <body>
+    <div class="glow animate-ambient-1" style="top: 10%; left: 10%;"></div>
+    <div class="glow animate-ambient-2" style="bottom: 10%; right: 10%;"></div>
+
     <div id="app">
         <div id="sukuun-img"></div>
         <div id="messages"></div>
-        <div class="input-area">
+        <div class="p-5">
             <input type="text" id="userInput" placeholder="Dil ki baat kaho..." onkeypress="if(event.key==='Enter') send()">
-            <button onclick="send()">Bejo</button>
         </div>
     </div>
 
     <script>
-        let userId = localStorage.getItem('userId');
-        let gender = localStorage.getItem('gender');
-        let userAge = localStorage.getItem('userAge');
+        // Setup Logic
+        let userId = localStorage.getItem('userId') || 'u_' + Date.now();
+        let gender = localStorage.getItem('gender') || (confirm("Sukoon ka avatar female ho?") ? 'female' : 'male');
+        let userAge = localStorage.getItem('userAge') || '20';
+        localStorage.setItem('userId', userId); localStorage.setItem('gender', gender);
 
-        if(!userId) {
-            userId = 'u_' + Date.now();
-            gender = prompt("Sukoon ke liye apna gender batao (male/female)") || 'female';
-            userAge = prompt("Apni age batao (taaki Sukoon tumhe samajh sake)") || '20';
-            localStorage.setItem('userId', userId);
-            localStorage.setItem('gender', gender);
-            localStorage.setItem('userAge', userAge);
-        }
-        
         document.getElementById('sukuun-img').style.backgroundImage = `url('/${gender === 'male' ? 'best_female.png' : 'best_male.png'}')`;
 
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
-            
-            const msgBox = document.getElementById('messages');
-            msgBox.innerHTML += `<div class="msg user">${input.value}</div>`;
-            const userMsg = input.value;
-            input.value = '';
-
-            // Animation effect when thinking
-            const img = document.getElementById('sukuun-img');
-            img.style.animation = "breathe 0.5s infinite";
+            document.getElementById('messages').innerHTML += `<div class="msg user">${input.value}</div>`;
+            const userMsg = input.value; input.value = '';
 
             try {
                 const res = await fetch('/api/chat', {
@@ -68,17 +57,13 @@
                     body: JSON.stringify({ message: userMsg, userId, gender, userAge })
                 });
                 const data = await res.json();
+                document.getElementById('messages').innerHTML += `<div class="msg ai">${data.reply}</div>`;
                 
-                msgBox.innerHTML += `<div class="msg ai">${data.reply}</div>`;
-                msgBox.scrollTop = msgBox.scrollHeight;
-                
-                const speech = new SpeechSynthesisUtterance(data.reply.replace(/[^a-zA-Z0-9 ]/g, ""));
+                // Voice Fix: Clearer synthesis
+                const speech = new SpeechSynthesisUtterance(data.reply);
                 speech.lang = 'hi-IN';
-                speech.onend = () => { img.style.animation = "breathe 4s infinite ease-in-out"; };
                 window.speechSynthesis.speak(speech);
-            } catch(e) {
-                msgBox.innerHTML += `<div class="msg ai">Sukoon thodi busy hai... 🌸</div>`;
-            }
+            } catch(e) { alert("Sukoon busy hai... 🌸"); }
         }
     </script>
 </body>
