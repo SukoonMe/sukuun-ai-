@@ -1,5 +1,10 @@
 {
+  "name": "sukuun-ai",
+  "version": "1.0.0",
+  "description": "Sukuun AI project",
+  "main": "index.html",
   "dependencies": {
-    "@google/generative-ai": "^0.11.1"
+    "@google/generative-ai": "^0.11.1",
+    "@upstash/redis": "^1.34.3"
   }
 }
