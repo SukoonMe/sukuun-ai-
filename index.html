@@ -4,70 +4,56 @@
     <meta charset="UTF-8">
     <title>Sukuun AI 🌙</title>
     <style>
-        body { margin:0; background: #0c0f1d; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #app { width: 90%; max-width: 400px; height: 80vh; background: #1e293b; border-radius: 30px; display: flex; flex-direction: column; overflow: hidden; border: 2px solid #4f46e5; }
-        /* Mood based look */
+        body { margin:0; background: #0c0f1d; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #app { width: 90%; max-width: 400px; height: 85vh; background: #1e293b; border-radius: 30px; border: 2px solid #4f46e5; display: flex; flex-direction: column; overflow: hidden; }
         .header { padding: 20px; text-align: center; background: rgba(79, 70, 229, 0.2); }
-        #sukuun-visual { height: 150px; background: center/cover; margin: 10px; border-radius: 20px; transition: 1s; }
-        #messages { flex: 1; overflow-y: auto; padding: 15px; }
-        .msg { margin: 10px 0; padding: 10px; border-radius: 15px; max-width: 80%; }
-        .ai { background: #334155; }
+        #sukuun-img { height: 150px; background: #334155; margin: 10px; border-radius: 20px; }
+        #messages { flex: 1; padding: 15px; overflow-y: auto; }
+        .msg { margin: 10px 0; padding: 12px; border-radius: 15px; max-width: 85%; }
+        .ai { background: #334155; align-self: flex-start; }
         .user { background: #4f46e5; align-self: flex-end; margin-left: auto; }
-        .input-area { padding: 15px; display: flex; gap: 5px; background: #0f172a; }
+        .input-area { padding: 15px; background: #0f172a; display: flex; gap: 10px; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div class="header">
-            <h2 id="vibe-text">Sukuun 🌸</h2>
-        </div>
-        <div id="sukuun-visual"></div> <div id="messages"></div>
+        <div class="header"><h3 id="vibe-text">Sukuun 🌸</h3></div>
+        <div id="sukuun-img"></div>
+        <div id="messages"></div>
         <div class="input-area">
             <button onclick="startListening()">🎤</button>
-            <input type="text" id="userInput" placeholder="दिल की बात कहो...">
+            <input type="text" id="userInput" placeholder="दिल की बात...">
             <button onclick="send()">भेजो</button>
         </div>
     </div>
 
     <script>
-        // Mood Logic
-        const hour = new Date().getHours();
-        const visual = document.getElementById('sukuun-visual');
-        const vibe = document.getElementById('vibe-text');
-
-        if(hour >= 21 || hour < 6) {
-            visual.style.backgroundImage = "url('night-look.png')"; // रात में रोमांटिक ड्रेस
-            vibe.innerText = "Sukuun: Night Soul 🌙";
-        } else {
-            visual.style.backgroundImage = "url('day-look.png')"; // दिन में थोड़ी playful dress
-            vibe.innerText = "Sukuun: Waiting for Night ✨";
-        }
-
         async function send() {
             const input = document.getElementById('userInput');
-            const msgBox = document.getElementById('messages');
+            const msgs = document.getElementById('messages');
             if(!input.value.trim()) return;
 
-            msgBox.innerHTML += `<div class="msg user">${input.value}</div>`;
-            const text = input.value;
+            msgs.innerHTML += `<div class="msg user">${input.value}</div>`;
+            const userText = input.value;
             input.value = '';
 
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: text, userProfile: {name: 'yaar'} })
+                body: JSON.stringify({ message: userText, userProfile: {name: 'yaar'} })
             });
             const data = await res.json();
             
-            // Speak & Type
+            // Speak
             const speech = new SpeechSynthesisUtterance(data.reply);
             speech.lang = 'hi-IN';
             window.speechSynthesis.speak(speech);
 
             const aiDiv = document.createElement('div');
             aiDiv.className = 'msg ai';
-            msgBox.appendChild(aiDiv);
+            msgs.appendChild(aiDiv);
             
+            // Typing effect
             let i = 0;
             function type() {
                 if(i < data.reply.length) { aiDiv.innerText += data.reply.charAt(i); i++; setTimeout(type, 40); }
