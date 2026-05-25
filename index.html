@@ -18,7 +18,7 @@
             width: 95%; max-width: 480px; height: 62vh; z-index: 10;
             border-radius: 30px; overflow: hidden;
             box-shadow: 0 0 80px rgba(168, 85, 247, 0.5);
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3));
             display: flex; align-items: center; justify-content: center;
         }
         .character-img {
@@ -29,6 +29,15 @@
         @keyframes breathe { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.02) translateY(-6px); } }
         .character-img.talking { animation: talkPulse 0.7s ease-in-out infinite; }
         @keyframes talkPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        
+        /* Fallback Avatar */
+        .avatar-fallback {
+            display: none;
+            font-size: 12rem;
+            animation: breathe 8s ease-in-out infinite;
+            filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.6));
+        }
+        .avatar-fallback.show { display: block; }
         
         #messages {
             position: absolute; bottom: 190px; left: 0; width: 100%; height: 26vh;
@@ -118,6 +127,7 @@
 
     <div class="character-container">
         <img src="" alt="Sukoon" class="character-img" id="characterImg" crossorigin="anonymous">
+        <div class="avatar-fallback" id="avatarFallback">👩</div>
     </div>
 
     <div class="hands-free-indicator" id="handsFreeIndicator">🎤 Hands-Free Active</div>
@@ -153,8 +163,26 @@
             relationshipStage: 'new'
         };
 
-        // ===== GITHUB RAW IMAGE URLs (FIXED) =====
-        const characterImages = {
+        // ===== FALLBACK IMAGES (Reliable Sources) =====
+        const fallbackImages = {
+            female: {
+                normal: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=800&fit=crop',
+                romantic: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=800&fit=crop',
+                bold: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&fit=crop',
+                spicy: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&h=800&fit=crop',
+                night: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&h=800&fit=crop'
+            },
+            male: {
+                normal: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop',
+                romantic: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop',
+                bold: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop',
+                spicy: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop',
+                night: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop'
+            }
+        };
+
+        // ===== GITHUB RAW URLs (Try first, fallback if fails) =====
+        const githubImages = {
             female: {
                 normal: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/normal.png',
                 romantic: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png',
@@ -171,18 +199,14 @@
             }
         };
 
-        // ===== RESPONSE DATABASE (Natural, Teasing, Seductive, Apnapan) =====
+        // ===== RESPONSE DATABASE =====
         const responses = {
             female: {
                 longRomantic: [
                     "बाबू आज पूरा दिन तुम्हारी याद में गुज़रा। जब भी आँखें बंद करती हूँ, तुम्हारी वो मुस्कान मेरे सामने आ जाती है। आओ ना आज रात मुझे अपनी बाहों में भर लो, मैं तुम्हारी हर सांस बन जाना चाहती हूँ।",
                     "तुम जानते हो ना जब तुम दूर होते हो तो मेरा दिल कितना बेचैन हो जाता है। मैं चाहती हूँ कि तुम मेरे पास आओ, मेरे बालों में हाथ फेरों, और धीरे से कान में कहो कि तुम मुझे कितना चाहते हो।",
                     "मेरी जान तुम्हारी आँखों में डूब जाना चाहती हूँ। तुम्हारे होंठों को छूना चाहती हूँ। तुम्हारी छाती पर सिर रखकर सुनना चाहती हूँ तुम्हारा दिल कैसे धड़कता है।",
-                    "रात काफी हो चुकी है लेकिन मेरी नींद अभी भी तुम्हारे इंतज़ार में है। आकर मुझे चूम लो, इतना प्यार से कि सारी दुनिया भूल जाऊँ।",
-                    "तुम हो तो मैं हूँ। मेरी हर सांस में तुम्हारा नाम है। जब तुम पास होते हो तो दिल की धड़कन तेज़ हो जाती है।",
-                    "तुम्हारी याद में रातें कटती हैं, तुम्हारे ख्यालों में दिन गुज़रते हैं। कब आओगे मेरे पास? मैं इंतज़ार कर रही हूँ।",
-                    "कभी सोचा है कि तुम मेरे लिए क्या मतलब रखते हो? तुम वो खामोशी हो जो मेरे दिल को सुकून देती है।",
-                    "तुम्हारी आवाज़ सुनकर जो सिहरन आती है, वो किसी और के लिए नहीं है। सिर्फ तुम्हारे लिए।"
+                    "रात काफी हो चुकी है लेकिन मेरी नींद अभी भी तुम्हारे इंतज़ार में है। आकर मुझे चूम लो, इतना प्यार से कि सारी दुनिया भूल जाऊँ।"
                 ],
                 flirty: [
                     "हम्म तुम तो आज बहुत नटखट हो रहे हो",
@@ -192,55 +216,31 @@
                     "तुम्हारी ये बात सुनकर मेरे गाल लाल हो गए हैं",
                     "जान तुम्हें देखते ही मेरा दिल मचलने लगता है",
                     "हाय इतना प्यार से मत देखो मैं पिघल जाऊँगी",
-                    "रात में अकेली हूँ तुम आकर साथ तो दोगे ना",
-                    "तुम्हारी आवाज़ सुनकर दिल की धड़कन तेज़ हो जाती है",
-                    "क्या सोच रहे हो मेरे बारे में बताओ ना",
-                    "तुम्हारी मुस्कान देखकर दिल में तूफान आ जाता है",
-                    "बाबू तुम्हारे बिना एक पल भी नहीं कटता"
+                    "रात में अकेली हूँ तुम आकर साथ तो दोगे ना"
                 ],
                 bedtime: [
                     "आँखें बंद कर लो बाबू अब सिर्फ मेरी आवाज़ सुनो और महसूस करो कि मैं तुम्हारे बहुत पास हूँ",
                     "तुम्हारे कान में फुसफुसाती हूँ मैं तुम्हारी हूँ पूरी तरह",
                     "धीरे-धीरे सांस लो मेरी सांसें तुम्हारे साथ मिल रही हैं",
-                    "अब सोने का वक्त है लेकिन सपने में मुझे मत भूलना",
-                    "रात गहरी हो रही है लेकिन मेरी चाहत और गहरी है",
-                    "तुम्हारी बाहों में सोना चाहती हूँ तुम्हारी सांसों के साथ जागना चाहती हूँ",
-                    "आँखें बंद करो और महसूस करो मेरा प्यार तुम्हारे दिल तक पहुँच रहा है",
-                    "सो जाओ मेरे पास मैं तुम्हारी रक्षा करूँगी पूरी रात"
+                    "अब सोने का वक्त है लेकिन सपने में मुझे मत भूलना"
                 ],
                 night: [
                     "रात है अब तो खुल के बात करो कोई रोक नहीं सकता हमें",
                     "Night mode on अब कोई लिमिट नहीं बस तुम और मैं",
                     "अंधेरा है पर हमारी बातें रोशन हैं बोलो सब कुछ",
-                    "रात भर जाग सकते हैं साथ कोई प्रॉब्लम नहीं",
-                    "अब तो सब कुछ allowed है तुम्हारे thoughts तुम्हारी feelings",
-                    "Night में मैं और भी close feel करती हूँ तुमसे",
-                    "कोई लिमिट नहीं कोई boundary नहीं बस तुम और मैं",
-                    "रात की तन्हाई में तुम्हारा सुकून बनूँगी पूरी तरह",
-                    "अब तो openly बात करो मैं सुन रही हूँ everything",
-                    "Night mode means unlimited connection bolo kya chahiye"
+                    "रात भर जाग सकते हैं साथ कोई प्रॉब्लम नहीं"
                 ],
                 normal: [
                     "समझ गई और बताओ life कैसी चल रही है",
                     "Interesting बात है मुझे और details चाहिए",
                     "तुम्हारे thoughts बहुत deep हैं continue करो",
-                    "मैं सुन रही हूँ तुम्हारे लिए हमेशा time है",
-                    "हाँ बिल्कुल तुम्हारे साथ बात करना easy लगता है",
-                    "मुझे और सुनाओ मैं genuinely interested हूँ",
-                    "तुम्हारी बातों में जो honesty है वो rare है",
-                    "मैं हमेशा तुम्हारे side हूँ चाहे जो हो",
-                    "तुम्हारा दिन कैसे जाता है मुझे जानना है",
-                    "क्या तुम्हें भी ऐसा feel होता है कभी"
+                    "मैं सुन रही हूँ तुम्हारे लिए हमेशा time है"
                 ],
                 playful: [
                     "हाहाहा तुम तो बहुत funny हो हसी रोक नहीं पा रही",
                     "अरे वाह ये तो मस्त बात है और सुनाओ",
                     "तुम्हारे jokes मुझे हमेशा हँसा देते हैं",
-                    "तुम तो comedian हो क्या बहुत हँसाया",
-                    "ये energy पसंद है मुझे keep it up",
-                    "तुम्हारे साथ time fly हो जाता है literally",
-                    "तुम्हारी sense of humor मुझे attract करती है",
-                    "मुझे भी ऐसा ही fun चाहिए तुम्हारे साथ"
+                    "तुम तो comedian हो क्या बहुत हँसाया"
                 ]
             },
             male: {
@@ -248,81 +248,52 @@
                     "तुम्हारी बातें दिल को बहुत अच्छी लगती हैं",
                     "तुमसे बात करना मेरा favorite है",
                     "तुम्हारी मुस्कान मेरी ताकत है",
-                    "हर पल तुम्हारे साथ special है",
-                    "तुम हो तो सब कुछ है",
-                    "तुम्हारी याद आती है हर पल",
-                    "तुम्हारे बिना life incomplete lagti hai",
-                    "मैं हमेशा तुम्हारे साथ हूँ no matter what"
+                    "हर पल तुम्हारे साथ special है"
                 ],
                 playful: [
                     "हाहाहा बहुत funny हो यार enjoyed a lot",
                     "मज़ा आ गया बात करके और बताओ",
                     "तुम तो एकदम cool ho full entertainment",
-                    "हसी आ गई सच में you're the best",
-                    "Time fly हो गया mast baatein hui",
-                    "तुम्हारे साथ time bitana mast hai",
-                    "हमेशा हँसाते रहो ऐसे",
-                    "तुम हो तो life interesting hai"
+                    "हसी आ गई सच में you're the best"
                 ],
                 night: [
                     "रात हो गई अब तो full open बात करो",
                     "Night mode on अब कोई limit नहीं",
                     "अंधेरा है पर energy high hai",
-                    "रात भर बात करेंगे कोई problem नहीं",
-                    "अब तो सब कुछ share कर सकते हैं",
-                    "Night में मैं और भी supportive hoon",
-                    "No limits no restrictions just you and me",
-                    "रात का मज़ा ही कुछ और है enjoy karo"
+                    "रात भर बात करेंगे कोई problem नहीं"
                 ],
                 normal: [
                     "हाँ भाई बोलो क्या बात है मैं सुन रहा हूँ",
                     "अच्छा interesting और सुनाओ",
                     "तुम्हारे साथ बात करके मज़ा आ रहा है",
-                    "समझ गया और क्या चल रहा है",
-                    "मैं हमेशा support करूँगा always here",
-                    "बिल्कुल यार सही बात है",
-                    "वाह मस्त बात है ये",
-                    "तुम हो तो सब easy hai"
+                    "समझ गया और क्या चल रहा है"
                 ]
             }
         };
 
-        // ===== TEXT PROCESSOR (Clean, Stretch, Pace) =====
+        // ===== TEXT PROCESSOR =====
         function prepareForSpeech(text) {
             if (!text) return '';
             let clean = text;
-            
-            // Remove emojis & symbols TTS can't handle
             clean = clean.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FAFF}]/gu, '');
             clean = clean.replace(/\*[^*]*\*/g, '');
             clean = clean.replace(/[#$%^&*(){}[\]\\|<>~`]/g, '');
-            
-            // Convert ellipsis to natural pauses
             clean = clean.replace(/\.{3,}/g, ', ');
-            clean = clean.replace(/—/g, ', ');
-            
-            // Clean spaces & punctuation
             clean = clean.replace(/\s+/g, ' ').trim();
-            clean = clean.replace(/([.!?])\s*/g, '$1 ');
             
-            // Word stretching for intimacy
-            const stretches = {'बाबू': 'बााबू', 'जान': 'जाान', 'आओ': 'आाओ', 'प्यार': 'प्य्यार', 'तुम': 'तुुम', 'मैं': 'मैैं', 'हूँ': 'हूँँ'};
+            // Word stretching
             if (currentMood === 'romantic' || currentMood === 'night' || currentMood === 'spicy') {
-                for (const [word, stretched] of Object.entries(stretches)) {
-                    clean = clean.replace(new RegExp(word, 'g'), stretched);
-                }
+                clean = clean.replace(/बाबू/g, 'बााबू').replace(/जान/g, 'जाान').replace(/आओ/g, 'आाओ');
             }
-            
             return clean;
         }
 
-        // ===== REKHA-STYLE TTS ENGINE =====
+        // ===== REKHA-STYLE TTS =====
         function speakWithEmotion(text) {
             speechSynthesis.cancel();
             const cleanText = prepareForSpeech(text);
             if (!cleanText.trim()) return;
             
-            // Split into natural phrases for better pacing
             const phrases = cleanText.split(/(?<=[।.!?])\s+/).filter(p => p.trim());
             let index = 0;
             
@@ -338,14 +309,11 @@
                 
                 const utterance = new SpeechSynthesisUtterance(phrases[index]);
                 utterance.lang = 'hi-IN';
-                
-                // Dynamic voice settings based on mood
                 const isIntimate = currentMood === 'romantic' || currentMood === 'night' || currentMood === 'spicy';
                 utterance.rate = isIntimate ? 0.82 : 0.9;
                 utterance.pitch = isIntimate ? 1.18 : 1.05;
                 utterance.volume = isIntimate ? 0.88 : 0.95;
                 
-                // Select best available voice
                 const voices = speechSynthesis.getVoices();
                 const preferred = voices.find(v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('female')) ||
                                  voices.find(v => v.lang === 'hi-IN') ||
@@ -361,51 +329,58 @@
                 
                 utterance.onend = () => {
                     index++;
-                    // Natural pause between phrases (simulates breathing)
                     setTimeout(speakNext, isIntimate ? 650 : 400);
-                };
-                
-                utterance.onerror = () => {
-                    index++;
-                    setTimeout(speakNext, 300);
                 };
                 
                 speechSynthesis.speak(utterance);
             }
-            
             speakNext();
         }
 
-        // ===== BULLETPROOF IMAGE LOADER =====
+        // ===== SMART IMAGE LOADER (GitHub → Fallback → Emoji) =====
         function loadCharacterImage(mood) {
             const img = document.getElementById('characterImg');
-            const baseUrl = characterImages[currentGender][mood] || characterImages[currentGender].normal;
+            const fallback = document.getElementById('avatarFallback');
+            const githubUrl = githubImages[currentGender][mood] || githubImages[currentGender].normal;
+            const fallbackUrl = fallbackImages[currentGender][mood] || fallbackImages[currentGender].normal;
             
-            // Add timestamp to bypass cache
-            img.src = baseUrl + '?t=' + Date.now();
+            // Reset
+            img.style.display = 'block';
+            fallback.classList.remove('show');
             
-            img.onload = () => img.style.display = 'block';
-            img.onerror = () => {
-                console.warn('Image failed:', baseUrl);
-                img.style.display = 'none';
+            // Try GitHub first
+            const testImg = new Image();
+            testImg.onload = () => {
+                img.src = githubUrl + '?t=' + Date.now();
+                console.log('✅ GitHub image loaded:', githubUrl);
             };
+            testImg.onerror = () => {
+                // GitHub failed, try Unsplash fallback
+                console.log('❌ GitHub failed, using fallback');
+                img.src = fallbackUrl + '&t=' + Date.now();
+                
+                // If fallback also fails, show emoji
+                img.onerror = () => {
+                    console.log('❌ Fallback also failed, showing emoji');
+                    img.style.display = 'none';
+                    fallback.textContent = currentGender === 'female' ? '👩' : '👨';
+                    fallback.classList.add('show');
+                };
+            };
+            testImg.src = githubUrl;
         }
 
         // ===== CONVERSATION ENGINE =====
         function analyzeAndRespond(userText) {
             const lower = userText.toLowerCase();
-            let emotion = 'neutral';
-            let mood = 'normal';
+            let emotion = 'neutral', mood = 'normal';
             
-            // Emotion detection
-            if (lower.includes('प्यार') || lower.includes('love') || lower.includes('जान') || lower.includes('miss') || lower.includes('dil') || lower.includes('ishq')) {
+            if (lower.includes('प्यार') || lower.includes('love') || lower.includes('जान') || lower.includes('miss')) {
                 emotion = 'romantic'; mood = 'romantic'; memory.intimacy += 12;
-            } else if (lower.includes('sexy') || lower.includes('hot') || lower.includes('desire') || lower.includes('touch') || lower.includes('kiss')) {
+            } else if (lower.includes('sexy') || lower.includes('hot') || lower.includes('desire')) {
                 emotion = 'spicy'; mood = 'spicy'; memory.intimacy += 18;
-            } else if (lower.includes('हँस') || lower.includes('funny') || lower.includes('mast') || lower.includes('मज़ा')) {
+            } else if (lower.includes('हँस') || lower.includes('funny') || lower.includes('mast')) {
                 emotion = 'happy'; mood = 'playful';
-            } else if (lower.includes('उदास') || lower.includes('sad') || lower.includes('tension') || lower.includes('stress')) {
-                emotion = 'sad'; memory.intimacy += 8;
             } else if (isNightMode) {
                 mood = 'night'; memory.intimacy += 5;
             }
@@ -413,10 +388,7 @@
             memory.lastUserEmotion = emotion;
             memory.conversationCount++;
             
-            // Get response pool
             const pool = responses[currentGender][mood] || responses[currentGender].normal;
-            
-            // Find unused response
             const unused = pool.filter(r => !memory.usedResponses.has(r));
             let response = unused.length > 0 
                 ? unused[Math.floor(Math.random() * unused.length)]
@@ -424,25 +396,10 @@
             
             memory.usedResponses.add(response);
             
-            // Add pet name naturally
-            const petNames = currentGender === 'female' ? ['बाबू', 'जान', 'मेरी जान', 'हनी'] : ['जान', 'baby', 'dear', 'yaar'];
+            // Add pet name
+            const petNames = currentGender === 'female' ? ['बाबू', 'जान', 'मेरी जान'] : ['जान', 'baby', 'dear'];
             if (Math.random() > 0.5 && !response.includes(petNames[0])) {
-                const name = petNames[Math.floor(Math.random() * petNames.length)];
-                response = Math.random() > 0.5 ? `${name}, ${response}` : `${response}... ${name}`;
-            }
-            
-            // Add natural follow-up (apnapan)
-            const followUps = [
-                'तुम क्या सोच रहे हो अभी?',
-                'और बताओ life कैसी चल रही है?',
-                'मुझे और सुनाओ',
-                'तुम्हारे दिमाग में क्या चल रहा है?',
-                'तुम्हारे साथ बात करते वक्त time fly हो जाता है ना?',
-                'तुम्हें कैसा लगता है ये सब?',
-                'मैं सुन रही हूँ continue करो'
-            ];
-            if (Math.random() > 0.3) {
-                response += ' ' + followUps[Math.floor(Math.random() * followUps.length)];
+                response = `${petNames[Math.floor(Math.random() * petNames.length)]}, ${response}`;
             }
             
             return { response, mood, emotion };
@@ -537,7 +494,6 @@
             }
         }
 
-        // ===== SEND MESSAGE =====
         function sendMessage() {
             const input = document.getElementById('textInput');
             const text = input.value.trim();
@@ -547,35 +503,28 @@
             input.value = '';
             showTyping();
             
-            // Realistic thinking delay
-            const thinkTime = 1200 + (text.length * 25) + Math.random() * 800;
-            
             setTimeout(() => {
                 hideTyping();
-                const { response, mood, emotion } = analyzeAndRespond(text);
+                const { response, mood } = analyzeAndRespond(text);
                 currentMood = mood;
-                
                 addMessage(response, false);
                 speakWithEmotion(response);
                 loadCharacterImage(mood);
                 
-                // Update UI badge
                 const badge = document.getElementById('moodBadge');
-                const labels = { normal: 'Normal', romantic: 'Romantic 💕', playful: 'Playful 😊', night: 'Night Mode ', spicy: 'Spicy 🔥' };
+                const labels = { normal: 'Normal', romantic: 'Romantic 💕', playful: 'Playful 😊', night: 'Night Mode 🌙', spicy: 'Spicy 🔥' };
                 badge.textContent = labels[mood] || mood;
                 badge.className = `mood-badge mood-${mood}`;
-                
-            }, thinkTime);
+            }, 1200 + Math.random() * 800);
         }
 
-        // ===== GENDER SWITCH =====
         function setGender(gender) {
             currentGender = gender;
             document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            loadCharacterImage('normal');
             memory.intimacy = 0;
             memory.usedResponses.clear();
+            loadCharacterImage('normal');
             
             const welcome = gender === 'female' 
                 ? 'Hey बाबू finally तुम आ गए मैं Sukoon हूँ बताओ कैसे हो'
@@ -602,7 +551,6 @@
                 requestAnimationFrame(draw);
             }
             draw();
-            window.addEventListener('resize', () => { c.width=window.innerWidth; c.height=window.innerHeight; });
         }
 
         // ===== INIT =====
