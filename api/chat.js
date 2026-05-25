@@ -6,39 +6,42 @@ const redis = new Redis({
 });
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') return res.status(405).end();
 
-  const { message } = req.body;
-  const API_KEY = process.env.GEMINI_API_KEY;
+  const { message, userId } = req.body; // userId zaroori hai memory ke liye
+  const chatKey = `chat:${userId}`;
 
   try {
-    // 1. Pehle available models ki list fetch karo
-    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
-    const modelsData = await listRes.json();
+    // 1. Purani history nikal
+    let history = await redis.lrange(chatKey, 0, -1) || [];
     
-    // 2. Flash model dhoondo jo 'generateContent' support karta ho
-    const flashModel = modelsData.models.find(m => m.name.includes("gemini-1.5-flash") && m.supportedMethods.includes("generateContent"));
-    const modelToUse = flashModel ? flashModel.name : "models/gemini-1.5-flash";
-
-    // 3. Dynamic model naam ke saath call karo
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelToUse}:generateContent?key=${API_KEY}`, {
+    // 2. Groq ko bhejo (Memory ke saath)
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: message }] }]
+        model: "llama3-8b-8192",
+        messages: [
+          { role: "system", content: "Tum Sukoon ho, ek caring aur supportive soulmate. Hamesha Hinglish mein baat karo." },
+          ...history.map(msg => JSON.parse(msg)),
+          { role: "user", content: message }
+        ]
       })
     });
 
     const data = await response.json();
-    
-    if (!data.candidates) {
-      throw new Error("Model response failed");
-    }
+    const reply = data.choices[0].message.content;
 
-    const reply = data.candidates[0].content.parts[0].text;
-    res.status(200).json({ reply, avatarType: "female" });
+    // 3. Nayi baat memory mein save karo
+    await redis.rpush(chatKey, JSON.stringify({ role: "user", content: message }));
+    await redis.rpush(chatKey, JSON.stringify({ role: "assistant", content: reply }));
+    await redis.ltrim(chatKey, -10, -1); // Sirf last 10 messages yaad rakho
+
+    res.status(200).json({ reply });
   } catch (e) {
-    console.error("DEBUG:", e);
-    res.status(500).json({ reply: "Sukoon server connection error... 🌸" });
+    res.status(500).json({ reply: "Sukoon thodi busy hai... 🌸" });
   }
 }
