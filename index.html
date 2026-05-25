@@ -24,7 +24,6 @@
         </div>
     </div>
     <script>
-        const avatarDiv = document.getElementById('sukuun-img');
         async function send() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
@@ -35,11 +34,13 @@
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: userMsg, userProfile: { name: 'Yaar', gender: 'male' } })
+                body: JSON.stringify({ message: userMsg })
             });
             const data = await res.json();
             
             document.getElementById('messages').innerHTML += `<div class="msg ai">${data.reply}</div>`;
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+            
             const cleanText = data.reply.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{2600}-\u{27BF}]/gu, '');
             const speech = new SpeechSynthesisUtterance(cleanText);
             window.speechSynthesis.speak(speech);
