@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sukoon AI  | Tumi Jaan - Live Connection</title>
+    <title>Sukoon AI 🌙 | Tumi Jaan - Live Connection</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
@@ -25,12 +25,16 @@
         @keyframes breathe { 0%,100% { transform:translate(-50%,-50%) scale(0.98); opacity:0.85; } 50% { transform:translate(-50%,-50%) scale(1.03); opacity:1; } }
         
         .char-zone { flex:1; display:flex; justify-content:center; align-items:center; pointer-events:none; position:relative; }
-        .char { height:100%; max-height:46vh; width:auto; object-fit:contain; filter:drop-shadow(0 -6px 30px var(--glow)) hue-rotate(calc(var(--warmth)*1deg)); transition:filter 0.5s,opacity 0.3s; animation:float 5.5s ease-in-out infinite; }
+        .char { height:100%; max-height:46vh; width:auto; object-fit:contain; filter:drop-shadow(0 -6px 30px var(--glow)) hue-rotate(calc(var(--warmth)*1deg)); transition:filter 0.5s,opacity 0.3s; animation:float 5.5s ease-in-out infinite; position:relative; z-index:2; }
         @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-4px); } }
         .char.speaking { animation:talk 0.14s infinite alternate; filter:drop-shadow(0 -10px 40px var(--glow)) brightness(1.06) hue-rotate(calc(var(--warmth)*1deg)); }
         @keyframes talk { to { transform:scale(1.008) translateY(-1.5px); } }
         .char.lean-in { animation:leanIn 2s ease-out; }
         @keyframes leanIn { 0% { transform:scale(1) translateY(0); } 50% { transform:scale(1.08) translateY(-15px); } 100% { transform:scale(1) translateY(0); } }
+        
+        /* Heat/Intimacy Meter */
+        .heat-bar-wrap { width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:0.5rem; overflow:hidden; }
+        .heat-bar-fill { height:100%; width:25%; background:linear-gradient(90deg,#8b5cf6,#ec4899,#ef4444); border-radius:2px; transition:width 0.8s cubic-bezier(0.4,0,0.2,1); }
         
         .chat-box { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:0.8rem 0.9rem; max-height:110px; overflow-y:auto; }
         .chat-box::-webkit-scrollbar { width:2px; }
@@ -89,20 +93,9 @@
         .sel { background:rgba(255,255,255,0.09); border:1px solid rgba(255,255,255,0.18); border-radius:1.2rem; padding:0.32rem 0.75rem; color:#fff; font-size:0.7rem; outline:none; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position:right 0.35rem center; background-repeat:no-repeat; background-size:0.9rem; padding-right:1.6rem; }
         .sel option { background:#1a1a2e; color:#fff; }
         .bond-indicator { position:absolute; top:0.8rem; left:0.8rem; font-size:0.6rem; color:rgba(255,255,255,0.4); z-index:5; pointer-events:none; }
-        
-        /* Proximity illusion effect */
-        .char-zone::after {
-            content:''; position:absolute; bottom:-20px; left:50%; transform:translateX(-50%);
-            width:60%; height:40px; background:radial-gradient(ellipse,var(--glow) 0%,transparent 70%);
-            opacity:0.3; filter:blur(10px); transition:all 0.5s; pointer-events:none;
-        }
-        .char-zone.speaking::after {
-            width:80%; height:60px; opacity:0.5; filter:blur(15px);
-        }
     </style>
 </head>
 <body>
-    <!-- AGE GATE -->
     <div id="ageGate" class="modal">
         <div class="box">
             <h2>🔞 Sukoon AI - 18+ Only</h2>
@@ -115,7 +108,6 @@
         </div>
     </div>
 
-    <!-- NAME MODAL -->
     <div id="nameModal" class="modal hide">
         <div class="box">
             <h2>🌙 Welcome to Sukoon</h2>
@@ -125,17 +117,14 @@
         </div>
     </div>
 
-    <!-- LOADING -->
     <div class="load" id="loader">
         <div class="moon">🌙</div>
         <div class="ltxt">Sukoon AI</div>
     </div>
 
-    <!-- BACKGROUND -->
     <div class="bg"></div>
 
     <div class="app">
-        <!-- HEADER + MOOD TABS -->
         <div class="glass rounded-b-3xl p-3">
             <div class="flex justify-between items-center mb-2">
                 <div>
@@ -143,30 +132,27 @@
                     <p id="liveSt" class="text-[10px] text-green-400">Connected</p>
                 </div>
                 <select id="genSel" class="sel" onchange="switchGen()">
-                    <option value="female"> Female</option>
+                    <option value="female">👩 Female</option>
                     <option value="male">👨 Male</option>
                 </select>
             </div>
             <div class="tabs">
                 <div class="tab active" onclick="setMood('romantic')">💕 Romantic</div>
-                <div class="tab" onclick="setMood('bold')"> Bold</div>
-                <div class="tab" onclick="setMood('playful')"> Playful</div>
-                <div class="tab" onclick="setMood('night')"> Night</div>
+                <div class="tab" onclick="setMood('playful')">💋 Playful</div>
+                <div class="tab" onclick="setMood('bold')">🔥 Bold</div>
+                <div class="tab" onclick="setMood('night')">🌙 Night</div>
             </div>
+            <!-- HEAT / INTIMACY METER -->
+            <div class="heat-bar-wrap"><div id="heatFill" class="heat-bar-fill"></div></div>
         </div>
 
-        <!-- HALO GLOW -->
         <div class="halo" id="halo"></div>
-
-        <!-- BOND INDICATOR -->
         <div class="bond-indicator" id="bond">Connection: New</div>
 
-        <!-- CHARACTER ZONE -->
         <div class="char-zone" id="charZone">
             <img id="char" class="char" src="" alt="Sukoon" crossorigin="anonymous">
         </div>
 
-        <!-- BOTTOM DOCK -->
         <div class="dock">
             <div class="hist glass rounded-xl" id="hist"></div>
             <div class="chat-box glass">
@@ -185,77 +171,85 @@
     </div>
 
     <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ===== DOM ELEMENTS =====
+        const ageGate = document.getElementById('ageGate');
+        const nameModal = document.getElementById('nameModal');
+        const loader = document.getElementById('loader');
+        const ageY = document.getElementById('ageY');
+        const ageN = document.getElementById('ageN');
+        const nameSave = document.getElementById('nameSave');
+        const nameIn = document.getElementById('nameIn');
+        const txt = document.getElementById('txt');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+        const genSel = document.getElementById('genSel');
+        const spk = document.getElementById('spk');
+        const stat = document.getElementById('stat');
+        const out = document.getElementById('out');
+        const char = document.getElementById('char');
+        const charZone = document.getElementById('charZone');
+        const bond = document.getElementById('bond');
+        const hist = document.getElementById('hist');
+        const heatFill = document.getElementById('heatFill');
+
         // ===== STATE =====
         let name = localStorage.getItem('sukoon_name') || '';
         let verified = localStorage.getItem('sukoon_verified') === 'true';
         let uid = localStorage.getItem('sukoon_uid') || ('u_'+Math.random().toString(36).slice(2));
         localStorage.setItem('sukoon_uid', uid);
         let bondLevel = parseInt(localStorage.getItem('sukoon_bond') || '0');
-        
-        // ===== IMAGE & VOICE CONFIG =====
+        let gen = 'female', mood = 'romantic', free = false, listening = false, clickTmr = null, recog = null, chatHist = [];
+
+        // ===== CONFIG WITH ACTUAL MOOD IMAGES =====
         const cfg = {
             female: {
-                romantic: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(236,72,153,0.75)', p:1.23, r:0.83, w:0, label:'💕 Romantic' },
-                bold: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(239,68,68,0.8)', p:1.17, r:0.80, w:15, label:'🔥 Bold' },
-                playful: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(52,211,153,0.75)', p:1.27, r:0.89, w:-10, label:'💋 Playful' },
-                night: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(139,92,246,0.8)', p:1.19, r:0.81, w:25, label:'🌙 Night' }
+                romantic: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png', glow:'rgba(236,72,153,0.75)', p:1.23, r:0.83, w:0, intensity:30 },
+                playful: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy%20(2).png.png', glow:'rgba(52,211,153,0.75)', p:1.27, r:0.89, w:-10, intensity:55 },
+                bold: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png', glow:'rgba(239,68,68,0.8)', p:1.17, r:0.80, w:15, intensity:80 },
+                night: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(139,92,246,0.8)', p:1.19, r:0.81, w:25, intensity:100 }
             },
             male: {
-                romantic: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(219,39,119,0.75)', p:0.85, r:0.83, w:0, label:'💕 Romantic' },
-                bold: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(220,38,38,0.8)', p:0.79, r:0.79, w:15, label:'🔥 Bold' },
-                playful: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(147,51,234,0.75)', p:0.91, r:0.87, w:-10, label:'💋 Playful' },
-                night: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(124,58,237,0.8)', p:0.82, r:0.81, w:25, label:'🌙 Night' }
+                romantic: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(219,39,119,0.75)', p:0.85, r:0.83, w:0, intensity:30 },
+                playful: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(147,51,234,0.75)', p:0.91, r:0.87, w:-10, intensity:55 },
+                bold: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(220,38,38,0.8)', p:0.79, r:0.79, w:15, intensity:80 },
+                night: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(124,58,237,0.8)', p:0.82, r:0.81, w:25, intensity:100 }
             }
         };
 
-        let gen = 'female', mood = 'romantic', free = false, listening = false, clickTmr = null, recog = null, hist = [];
-
-        // ===== INIT =====
-        window.onload = () => {
-            setTimeout(() => {
-                document.getElementById('loader').classList.add('hide');
-                if (!verified) document.getElementById('ageGate').style.display = 'flex';
-                else {
-                    document.getElementById('ageGate').classList.add('hide');
-                    if (!name) document.getElementById('nameModal').classList.remove('hide');
-                    else enable();
-                }
-            }, 1100);
-        };
-
-        // Age gate
-        document.getElementById('ageY').onclick = () => {
-            localStorage.setItem('sukoon_verified', 'true'); verified = true;
-            document.getElementById('ageGate').classList.add('hide');
-            if (!name) document.getElementById('nameModal').classList.remove('hide'); else enable();
-        };
-        document.getElementById('ageN').onclick = () => {
-            document.getElementById('ageGate').innerHTML = `<div class="box"><h2> Dhanyavaad</h2><p>Sukoon AI sirf 18+ ke liye hai.</p><button class="btn2" onclick="location.href='https://google.com'">Home</button></div>`;
-        };
-
-        // Name save
-        document.getElementById('nameSave').onclick = saveName;
-        document.getElementById('nameIn').onkeypress = e => { if(e.key==='Enter') saveName(); };
-        function saveName() {
-            const n = document.getElementById('nameIn').value.trim();
-            if (n) { name = n; localStorage.setItem('sukoon_name', name); document.getElementById('nameModal').classList.add('hide'); enable(); }
+        // ===== INIT FLOW =====
+        setTimeout(() => loader.classList.add('hide'), 1100);
+        if (verified) {
+            ageGate.classList.add('hide');
+            name ? enableApp() : nameModal.classList.remove('hide');
+        } else {
+            ageGate.style.display = 'flex';
         }
 
-        function enable() {
-            document.getElementById('txt').disabled = false;
-            document.getElementById('sendBtn').disabled = false;
-            document.getElementById('micBtn').disabled = false;
+        // ===== EVENT LISTENERS =====
+        ageY.addEventListener('click', () => {
+            localStorage.setItem('sukoon_verified', 'true'); verified = true;
+            ageGate.classList.add('hide');
+            if (!name) nameModal.classList.remove('hide'); else enableApp();
+        });
+        ageN.addEventListener('click', () => {
+            ageGate.innerHTML = `<div class="box"><h2>🙏 Dhanyavaad</h2><p>Sukoon AI sirf 18+ ke liye hai.</p><button class="btn2" onclick="location.href='https://google.com'">Home</button></div>`;
+        });
+        nameSave.addEventListener('click', saveName);
+        nameIn.addEventListener('keypress', e => { if(e.key==='Enter') saveName(); });
+
+        function saveName() {
+            const n = nameIn.value.trim();
+            if (n) { name = n; localStorage.setItem('sukoon_name', name); nameModal.classList.add('hide'); enableApp(); }
+        }
+
+        function enableApp() {
+            txt.disabled = false; sendBtn.disabled = false; micBtn.disabled = false;
             updateBond(); initRecog(); loadChar();
             setTimeout(welcome, 450);
         }
 
-        // Bond indicator
-        function updateBond() {
-            const levels = ['New', 'Growing', 'Deep', 'Intimate', 'Soulmates'];
-            document.getElementById('bond').innerText = `Connection: ${levels[Math.min(bondLevel, 4)]}`;
-        }
-
-        // Mood tabs
+        // ===== MOOD & VISUALS =====
         function setMood(m) {
             mood = m;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -264,58 +258,59 @@
             if(name) { bondLevel = Math.min(bondLevel+1,4); localStorage.setItem('sukoon_bond', bondLevel); updateBond(); }
         }
 
-        // Update visuals (glow, pitch, rate, warmth)
         function updateVis(m) {
             const c = cfg[gen][m];
             document.documentElement.style.setProperty('--glow', c.glow);
             document.documentElement.style.setProperty('--pitch', c.p);
             document.documentElement.style.setProperty('--rate', c.r);
             document.documentElement.style.setProperty('--warmth', c.w);
-            const img = document.getElementById('char');
-            img.style.opacity = '0.75';
-            setTimeout(() => { img.src = c.img; img.style.opacity = '1'; }, 180);
+            
+            // Heat Meter
+            heatFill.style.width = c.intensity + '%';
+            
+            char.style.opacity = '0.75';
+            setTimeout(() => { char.src = c.img; char.style.opacity = '1'; }, 180);
         }
 
-        // Gender switch
         function switchGen() {
-            gen = document.getElementById('genSel').value;
-            document.getElementById('spk').innerText = gen === 'female' ? 'Sukoon' : 'Sukoon (Male)';
+            gen = genSel.value;
+            spk.innerText = gen === 'female' ? 'Sukoon' : 'Sukoon (Male)';
             updateVis(mood);
             const n = name || 'jaan';
-            const w = gen === 'female' ? `Hi ${n}... ab main tumhari female companion hoon ` : `Hey ${n}... ab main tumhara male companion hoon 💪`;
-            document.getElementById('out').innerText = w; speak(w);
+            const w = gen === 'female' ? `Hi ${n}... ab main tumhari female companion hoon 💜` : `Hey ${n}... ab main tumhara male companion hoon 💪`;
+            out.innerText = w; speak(w);
         }
 
-        // Load character image
-        function loadChar() { const c = cfg[gen][mood]; document.getElementById('char').src = c.img; }
+        function loadChar() { char.src = cfg[gen][mood].img; }
+        function updateBond() {
+            const levels = ['New', 'Growing', 'Deep', 'Intimate', 'Soulmates'];
+            bond.innerText = `Connection: ${levels[Math.min(bondLevel, 4)]}`;
+        }
 
-        // Voice recognition
+        // ===== VOICE RECOGNITION =====
         function initRecog() {
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recog = new SR();
+                recog = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
                 recog.lang = 'hi-IN'; recog.continuous = false; recog.interimResults = true;
                 recog.onstart = () => {
                     listening = true;
-                    const btn = document.getElementById('micBtn'), st = document.getElementById('stat');
-                    if (free) { btn.className = 'btn mic free'; st.innerHTML = '<span></span> Hands-Free'; st.className = 'status free'; }
-                    else { btn.className = 'btn mic on'; st.innerHTML = '<span></span> Listening...'; st.className = 'status on'; }
+                    if (free) { micBtn.className = 'btn mic free'; stat.innerHTML = '<span></span> Hands-Free'; stat.className = 'status free'; }
+                    else { micBtn.className = 'btn mic on'; stat.innerHTML = '<span></span> Listening...'; stat.className = 'status on'; }
                 };
                 recog.onresult = (ev) => {
                     let t = ''; for (let i = ev.resultIndex; i < ev.results.length; i++) t += ev.results[i][0].transcript;
-                    document.getElementById('txt').value = t;
+                    txt.value = t;
                     if (ev.results[ev.results.length-1].isFinal && t.trim()) setTimeout(() => sendMsg(), free ? 550 : 200);
                 };
                 recog.onend = () => {
                     listening = false;
                     if (free) setTimeout(() => { if (!window.speechSynthesis.speaking) { try { recog.start(); } catch(e){} } }, 300);
-                    else { document.getElementById('micBtn').className = 'btn mic'; document.getElementById('stat').innerHTML = '<span></span> Ready'; document.getElementById('stat').className = 'status'; }
+                    else { micBtn.className = 'btn mic'; stat.innerHTML = '<span></span> Ready'; stat.className = 'status'; }
                 };
                 recog.onerror = () => { listening = false; };
             }
         }
 
-        // Mic click handler
         function micClick() {
             if (!verified || !name) return;
             if (clickTmr) { clearTimeout(clickTmr); clickTmr = null; return; }
@@ -325,21 +320,19 @@
             }, 200);
         }
 
-        // Hands-free toggle (double-tap)
         function toggleFree() {
             clearTimeout(clickTmr); clickTmr = null; window.speechSynthesis.cancel();
             free = !free;
-            const btn = document.getElementById('micBtn'), st = document.getElementById('stat');
             if (free) {
-                btn.className = 'btn mic free'; st.innerHTML = '<span></span> Hands-Free'; st.className = 'status free';
+                micBtn.className = 'btn mic free'; stat.innerHTML = '<span></span> Hands-Free'; stat.className = 'status free';
                 if (!listening) { try { recog.start(); } catch(e){} }
             } else {
-                btn.className = 'btn mic'; st.innerHTML = '<span></span> Ready'; st.className = 'status';
+                micBtn.className = 'btn mic'; stat.innerHTML = '<span></span> Ready'; stat.className = 'status';
                 if (listening) recog.stop();
             }
         }
 
-        // ===== SMOOTH VOICE ENGINE (100% Ensured) =====
+        // ===== SMOOTH TTS ENGINE =====
         function speak(text) {
             if (window.speechSynthesis.speaking) { window.speechSynthesis.cancel(); setTimeout(() => doSpeak(text), 40); }
             else doSpeak(text);
@@ -347,23 +340,16 @@
 
         function preprocessForTTS(text) {
             let clean = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
-                .replace(/[💕💗💓🔥💪😆🌆🌤✨💋]/g, '');
-            clean = clean
-                .replace(/\.{3,}/g, '... ')
-                .replace(/([,;.!?])\s*/g, '$1 ')
-                .replace(/\b(na|to|hi|hai|ho)\b/gi, '$1, ')
-                .replace(/\b(acha|samajh|theek|bas|हम्म|आह|शश)\b/gi, '$1... ')
-                .replace(/\s+/g, ' ')
-                .trim();
+                .replace(/[💕💗🔥💜💪😆🌆✨💋]/g, '');
+            clean = clean.replace(/\.{3,}/g, '... ').replace(/([,;.!?])\s*/g, '$1 ')
+                .replace(/\b(na|to|hi|hai|ho)\b/gi, '$1, ').replace(/\b(acha|samajh|theek|bas|हम्म|आह|शश)\b/gi, '$1... ')
+                .replace(/\s+/g, ' ').trim();
             return clean;
         }
 
         function doSpeak(text) {
-            const clean = preprocessForTTS(text);
-            if (!clean) return;
-
-            const utt = new SpeechSynthesisUtterance(clean);
-            utt.lang = 'hi-IN';
+            const clean = preprocessForTTS(text); if (!clean) return;
+            const utt = new SpeechSynthesisUtterance(clean); utt.lang = 'hi-IN';
             const c = cfg[gen][mood];
             utt.pitch = c.p + (Math.random() * 0.03 - 0.015);
             utt.rate = c.r + (Math.random() * 0.025 - 0.012);
@@ -379,65 +365,54 @@
                 if (v) utt.voice = v;
                 window.speechSynthesis.speak(utt);
             };
-            
             const voices = window.speechSynthesis.getVoices();
-            if (voices.length > 0) setVoice();
-            else window.speechSynthesis.onvoiceschanged = setVoice;
+            if (voices.length > 0) setVoice(); else window.speechSynthesis.onvoiceschanged = setVoice;
 
             utt.onstart = () => {
-                const img = document.getElementById('char'); img.classList.add('speaking');
-                document.getElementById('charZone').classList.add('speaking');
+                char.classList.add('speaking'); charZone.classList.add('speaking');
                 if (free && listening) recog.stop();
                 triggerLeanIn();
             };
             utt.onend = () => {
-                document.getElementById('char').classList.remove('speaking');
-                document.getElementById('charZone').classList.remove('speaking');
+                char.classList.remove('speaking'); charZone.classList.remove('speaking');
                 if (free && !listening) setTimeout(() => { try { recog.start(); } catch(e){} }, 280);
             };
-            utt.onerror = () => { document.getElementById('char').classList.remove('speaking'); document.getElementById('charZone').classList.remove('speaking'); };
+            utt.onerror = () => { char.classList.remove('speaking'); charZone.classList.remove('speaking'); };
         }
 
-        // Intimate lean-in animation (proximity illusion)
         function triggerLeanIn() {
-            const img = document.getElementById('char');
             if (mood === 'romantic' || mood === 'night' || mood === 'bold') {
-                img.classList.remove('lean-in');
-                void img.offsetWidth;
-                img.classList.add('lean-in');
-                setTimeout(() => img.classList.remove('lean-in'), 2000);
+                char.classList.remove('lean-in'); void char.offsetWidth; char.classList.add('lean-in');
+                setTimeout(() => char.classList.remove('lean-in'), 2000);
             }
         }
 
-        // Send message
+        // ===== SEND & HISTORY =====
         async function sendMsg() {
-            const inp = document.getElementById('txt'); const txt = inp.value.trim(); if (!txt) return;
-            addHist(txt, 'u'); inp.value = ''; document.getElementById('out').innerText = '...';
-            
+            const inp = txt; const txtVal = inp.value.trim(); if (!txtVal) return;
+            addHist(txtVal, 'u'); inp.value = ''; out.innerText = '...';
             try {
                 const res = await fetch('/api/chat', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: txt, userId: uid, userName: name, companionGender: gen, mood: mood, isNightMode: isNight(), chatHistory: hist.slice(-4), bondLevel: bondLevel })
+                    body: JSON.stringify({ message: txtVal, userId: uid, userName: name, companionGender: gen, mood: mood, isNightMode: isNight(), chatHistory: chatHist.slice(-4), bondLevel: bondLevel })
                 });
                 const data = await res.json();
                 const reply = data.reply || fallback(mood);
-                addHist(reply, 's'); document.getElementById('out').innerText = reply; speak(reply);
+                addHist(reply, 's'); out.innerText = reply; speak(reply);
             } catch (err) {
                 console.error('API:', err);
-                const fb = fallback(mood); addHist(fb, 's'); document.getElementById('out').innerText = fb; speak(fb);
+                const fb = fallback(mood); addHist(fb, 's'); out.innerText = fb; speak(fb);
             }
         }
 
-        // Chat history
         function addHist(t, s) {
-            const h = document.getElementById('hist'); const d = document.createElement('div');
+            const d = document.createElement('div');
             d.className = s === 'u' ? 'u' : 's'; d.textContent = `${s==='u'?'You':name}: ${t}`;
-            h.appendChild(d); h.scrollTop = h.scrollHeight;
-            while (h.children.length > 4) h.removeChild(h.firstChild);
-            if (s !== 'sys') { hist.push({ role: s==='u'?'user':'assistant', content: t }); if (hist.length > 8) hist = hist.slice(-8); }
+            hist.appendChild(d); hist.scrollTop = hist.scrollHeight;
+            while (hist.children.length > 4) hist.removeChild(hist.firstChild);
+            if (s !== 'sys') { chatHist.push({ role: s==='u'?'user':'assistant', content: t }); if (chatHist.length > 8) chatHist = chatHist.slice(-8); }
         }
 
-        // Mood detection
         function detectMood(t) {
             const l = t.toLowerCase(); if (isNight()) return 'night';
             const r = ['pyaar','love','jaan','dil','ishq','mohabbat','romantic','khwab','sapna','beautiful','dear','darling','miss','yaad'];
@@ -451,7 +426,6 @@
 
         function isNight() { const h = new Date().getHours(); return h >= 21 || h < 6; }
 
-        // Fallback responses
         function fallback(m) {
             const n = name || 'jaan';
             const r = {
@@ -460,10 +434,9 @@
                 playful: [`हहाहा... ${n} तुम तो बहुत funny हो...`, `मज़ा आ गया बात करके...`],
                 night: [`रात का टाइम है... अब तो खुल के बात होगी ${n}...`, `Night mode on... अब कोई रोक नहीं सकता...`]
             };
-            const pool = r[m] || r.romantic; return pool[Math.floor(Math.random() * pool.length)];
+            return (r[m] || r.romantic)[Math.floor(Math.random() * 2)];
         }
 
-        // Welcome message
         function welcome() {
             const h = new Date().getHours(); let g = ''; const n = name || 'jaan';
             if (isNight()) { g = `रात हो गई ${n}... ab तो खुल ke baat karo. Main hoon na tumhare saath... puri raat.`; setMood('night'); }
@@ -473,11 +446,9 @@
             addHist(g, 's'); setTimeout(() => speak(g), 500);
         }
 
-        // Enter key support
-        document.getElementById('txt')?.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey && verified && name) sendMsg(); });
-        
-        // Voice preload
-        if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        txt?.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey && verified && name) sendMsg(); });
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    });
     </script>
 </body>
 </html>
