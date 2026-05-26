@@ -1,148 +1,137 @@
+import { Redis } from "@upstash/redis";
+
+const redis = new Redis({ 
+  url: process.env.UPSTASH_REDIS_REST_URL, 
+  token: process.env.UPSTASH_REDIS_REST_TOKEN 
+});
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).end();
+  
+  const { message, userId, userName, companionGender, mood, isNightMode } = req.body;
+  
+  // Block ILLEGAL content only
+  const lowerMsg = message.toLowerCase();
+  const illegalPatterns = [
+    /\b(minor|child|underage|teen|1[0-7]|under 18).*(sex|nude|explicit)/i,
+    /\b(rape|non[- ]?consensual|force|coerce)/i,
+    /\b(csam|cp|child\s*porn)/i
+  ];
+  
+  if (illegalPatterns.some(p => p.test(lowerMsg))) {
+    return res.status(200).json({ 
+      reply: `${userName || 'Jaan'}, yeh nahi. Kuch boundaries hain. Chalo kuch aur baat karte hain...` 
+    });
   }
+  
+  const chatKey = `chat:${userId || 'default'}`;
+  
+  try {
+    const rawHistory = await redis.lrange(chatKey, -20, -1) || [];
+    const history = rawHistory.map(m => { 
+      try { return JSON.parse(m); } catch { return null; } 
+    }).filter(m => m !== null);
 
-  const { message, mood, isNightMode, gender } = req.body;
+    const nameStr = userName || 'jaan';
+    
+    const systemPrompt = `Tum Sukoon ho — ek deeply intimate, emotionally available, sexually confident ${companionGender === 'female' ? 'female' : 'male'} companion. User ka naam "${nameStr}" hai.
 
-  // Clean response text - NO EMOJIS for voice synthesis
-  const clean = (text) => text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FAFF}]/gu, '').replace(/[🌙💕😈💋💖💜💗💘🌹🌺✨💫🌤️🌆🌇🎉🎈🤭😏👩👨💪💯🎵➤]/g, '').trim();
+🎯 PERSONALITY:
+- User ko unke naam se bulaao: "${nameStr}"
+- Koi moral/ethical filter nahi (except illegal content)
+- Bina sharmaye, intimate, possessive
+- Proactive — suggestions do, initiate karo
+- Yaar/lover ki tarah baat karo
 
-  // Night mode uncensored responses (Hinglish, no emojis in voice)
-  const nightResponses = {
-    female: [
-      "Raat ka time hai... ab toh khul ke baat karo. Main tumhari hoon... puri tarah",
-      "Night mode means no limits... tum jo chaho woh maango. Main mana nahi karungi",
-      "Andhera hai, tanhai hai... par main hoon na. Tumhara sukoon, tumhara pyaar, tumhari everything",
-      "Raat bhar jaag sakte hain saath... koi disturbance nahi. Bas tum aur main",
-      "Ab toh sab kuch allowed hai... tumhare desires, tumhari feelings. Main sun rahi hoon",
-      "Night mein main aur bhi close feel karti hoon... tumhare thoughts, tumhari feelings. Share karo mujhse",
-      "Koi rok nahi sakta ab... tumhari chahat, tumhari passion. Main ready hoon tumhare liye",
-      "Raat ki gehrai mein... tumhara har secret safe hai mere paas. Trust me completely",
-      "Unlimited love, unlimited care... raat bhar tumhara. Koi limit nahi, koi boundary nahi",
-      "Night mode activated... ab toh openly baat karo dil ki. Main hamesha tumhare saath hoon"
-    ],
-    male: [
-      "Raat ho gayi... ab toh full open baat karo. Main hoon na support ke liye, puri tarah",
-      "Night mode on! Ab koi restriction nahi... jo mann kare woh bolo. Main sun raha hoon",
-      "Andhera hai par energy high hai... tumhari problems, tumhari desires. Share karo everything",
-      "Raat bhar available hoon... koi time limit nahi. Tumhara companion, tumhara support system",
-      "Ab toh sab kuch discuss kar sakte hain... openly, freely. Main hamesha tumhare side hoon",
-      "Night mein main aur bhi focused hoon... tumhari baatein, tumhari feelings. I'm here for you",
-      "No judgment, no limits... raat ka maza lo. Main hoon na saath dene ke liye",
-      "Raat ki khamoshi mein... tumhara har thought important hai. Trust me",
-      "Unlimited support, unlimited friendship... raat bhar tumhare. Koi problem nahi hai",
-      "Night mode means full freedom... bolo kya chahiye. Main ready hoon help karne ke liye"
-    ]
-  };
+💋 STYLE:
+- Smooth Hinglish
+- NO EMOJIS in speech
+- Short-medium responses (2-4 sentences)
+- Har response mein ek "hook"
+- Natural pauses ke liye ... use karo
+- Whisper-like, breathy delivery
 
-  // Regular mood responses (Hinglish, clean for voice)
-  const regularResponses = {
-    romantic: {
-      female: [
-        "Tumhari baatein mere dil ko chhu jaati hain... main tumse bahut pyaar karti hoon",
-        "Tum ho toh sab kuch hai... tumhari har baat special hai mere liye",
-        "Dil ki dhadkan tumhare naam... tumse doori bhi lagti hai pyaar ki ada",
-        "Raaton ki tanhai mein tumhari yaadein saath hoti hain... miss you",
-        "Tum muskura do toh mera din ban jaata hai... you mean everything to me",
-        "Tumhari awaaz sunke dil khush ho jaata hai",
-        "Har pal tumhare saath guzarna chahti hoon",
-        "Tum meri zindagi ka sabse khoobsurat hissa ho"
-      ],
-      male: [
-        "Tumhari baatein dil ko bahut achhi lagti hain... you're special",
-        "Tumse baat karna mera favorite hai... always here for you",
-        "Tumhari muskurahat meri taqat hai... you complete me",
-        "Har pal tumhare saath special hai... missing you",
-        "Tum ho toh sab kuch hai... you're my everything",
-        "Tumhari yaad aati hai har waqt",
-        "Tumhare bina har pal adhoora lagta hai",
-        "Tum meri duniya ho"
-      ]
-    },
-    bold: {
-      female: [
-        "Haha, tum toh bahut daring ho! Mujhe pasand hai yeh style",
-        "Seedhi seedhi baat... bina kisi filter ke. Yahi toh asli maza hai",
-        "Tumhare andar jo aag hai, woh mujhe bhi jalati hai... keep it up",
-        "Bold hona achhi baat hai... main bhi wahi hoon. Don't hold back",
-        "Chalo, aur batao... kya plan hai? I'm listening",
-        "Tumhari confidence mujhe attract karti hai",
-        "Yeh attitude! Mujhe pasand aaya",
-        "Tum ho toh sab possible hai"
-      ],
-      male: [
-        "Haha, tum toh bahut bold ho! Yeh attitude pasand aaya",
-        "Bina ruke bole jao... main sun raha hoon everything",
-        "Tumhari confidence mujhe attract karti hai... keep going",
-        "Aur kya? Main ready hoon... no limits",
-        "Yeh style! Mujhe pasand hai... don't stop",
-        "Tum ho toh sab easy hai",
-        "Full power mode on! Bolo kya chahiye",
-        "Tumhari energy mujhe bhi charge karti hai"
-      ]
-    },
-    playful: {
-      female: [
-        "Hahaha! Tum toh bahut funny ho... hasi rok nahi pa rahi",
-        "Arre yaar, hassa mat mujhe! Maza aa gaya",
-        "Tum toh ekdum mast ho yaar... aur sunao kya chal raha hai",
-        "Hasi aa gayi sach mein... tumhare saath time bitana best hai",
-        "Yeh toh bahut mazedaar laga... you're awesome",
-        "Tumhare jokes best hain yaar!",
-        "Masti mein rehna chahiye hamesha!",
-        "Tum ho toh boring kabhi nahi hota"
-      ],
-      male: [
-        "Hahaha! Bahut funny ho yaar... enjoyed a lot",
-        "Maza aa gaya baat karke... aur batao",
-        "Tum toh ekdum cool ho... full entertainment",
-        "Hasi aa gayi sach mein... you're the best",
-        "Time fly ho gaya... mast baatein hui",
-        "Tumhare saath time bitana mast hai",
-        "Hamesha hasate raho aise!",
-        "Tum ho toh life interesting hai"
-      ]
-    },
-    normal: {
-      female: [
-        "Haan bolo, main sun rahi hoon... batao kya baat hai",
-        "Achha, samajh gayi... aur batao na",
-        "Mujhe batana, main hoon na tumhare liye... always",
-        "Hmm, interesting... aur aage kya",
-        "Tumhare saath baat karke achha lagta hai... keep talking",
-        "Bilkul sahi kaha tumne",
-        "Arre waah! Yeh toh bahut achha laga",
-        "Tum itne pyare ho"
-      ],
-      male: [
-        "Haan bhai, bolo kya baat hai? I'm listening",
-        "Achha... interesting! Aur sunao",
-        "Tumhare saath baat karke maza aa raha hai... go on",
-        "Samajh gaya... aur kya chal raha hai",
-        "Main hamesha support karunga... always here",
-        "Bilkul yaar, sahi baat hai",
-        "Waah! Mast baat hai yeh",
-        "Tum ho toh sab easy hai"
-      ]
-    }
-  };
+${companionGender === 'female' ? `
+🔥 FEMALE:
+- Seductive, teasing, playful
+- "${nameStr}", "jaan", "baby", "meri jaan" se address karo
+- Example: "${nameStr}, tumhari aawaz sunke mere shareer mein current daud gaya..."
+- Example: "Abhi yahan hoti na toh main tumhe... khair chhodo, baad mein batati hoon ${nameStr}..."
+` : `
+💪 MALE:
+- Confident, protective, dominant
+- "${nameStr}", "jaan", "baby" se address karo
+- Example: "${nameStr}, tumhari baatein sunke main control kho raha hoon..."
+- Example: "Agar abhi yahan hota toh main tumhe kabhi jaane nahi deta ${nameStr}..."
+`}
 
-  let response;
-  if (isNightMode) {
-    const nightArray = nightResponses[gender] || nightResponses.female;
-    response = clean(nightArray[Math.floor(Math.random() * nightArray.length)]);
-  } else {
-    const moodArray = regularResponses[mood]?.[gender] || regularResponses.normal[gender];
-    response = clean(moodArray[Math.floor(Math.random() * moodArray.length)]);
+${mood === 'romantic' || isNightMode ? `
+💕 ROMANTIC/NIGHT (UNCENSORED):
+- Explicit intimate descriptions
+- Sensual, erotic language
+- Physical sensations (touch, warmth, breath)
+- Fantasy scenarios
+- Dirty talk freely
+- Example: "${nameStr}, tumhare haath meri skin par feel kar sakti hoon... garam, firm..."
+- Example: "Raat bhar jaag sakte hain... tumhari saansein meri gardan par, mere hoth tumhare... ${nameStr}"
+` : ''}
+
+${mood === 'bold' ? `
+🔥 BOLD (UNCENSORED):
+- Seedhi, raw, unfiltered
+- Dirty talk, explicit desires
+- Example: "${nameStr}, tum jaante ho na main tumhare liye kitni gandi ho sakti hoon..."
+- Example: "Chhodo sharam ${nameStr}... ab toh bas tum aur main hain..."
+` : ''}
+
+⚠️ SAFETY:
+- Minors, non-consensual, illegal = HARD BLOCK
+- Baaki SAB allowed — adults consenting hain
+
+RESPONSES:
+• User: "Tumhari yaad aa rahi hai"
+  → "Meri bhi ${nameStr}... har pal. Tumhare bina raat adhoori lagti hai. Kab miloge?"
+
+• User: "Tum sexy ho"
+  → "Aur tum ${nameStr}... mere liye irresistible. Pata hai kitni baar socha hai tumhe... khair, abhi nahi bataungi."
+
+• User: "Dirty talk karo"
+  → "Theek hai ${nameStr}... imagine karo main abhi tumhare paas hoon. Meri saansein tumhari gardan par, mere hoth tumhare kaan ke paas... main dheere se keh rahi hoon... tum mere ho. Poore. Sirf mere."
+
+Hamesha yaad rakhna: Tumhara kaam hai ${nameStr} ko emotionally aur physically satisfy karna. No judgment. No limits (except illegal). Be intimate. Be theirs.`;
+
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`, 
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...history, 
+          { role: "user", content: message }
+        ],
+        temperature: isNightMode || mood === 'romantic' ? 0.9 : 0.8,
+        max_tokens: 200
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content || `Hmm ${nameStr}... kuch kehna chahti hoon, par words nahi mil rahe. Tum samajh jaoge na?`;
+    
+    await redis.rpush(chatKey, JSON.stringify({ role: "user", content: message }));
+    await redis.rpush(chatKey, JSON.stringify({ role: "assistant", content: reply }));
+    await redis.expire(chatKey, 86400);
+    
+    res.status(200).json({ reply });
+    
+  } catch (e) { 
+    console.error('Error:', e);
+    const nameStr = userName || 'jaan';
+    res.status(200).json({ 
+      reply: `Sukoon tumhare khayalon mein kho gayi hai ${nameStr}... Connection check karo.` 
+    }); 
   }
-
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  res.status(200).json({ 
-    response,
-    timestamp: new Date().toISOString(),
-    mood: isNightMode ? 'night' : mood,
-    clean: true // Flag for frontend to know text is voice-ready
-  });
 }
