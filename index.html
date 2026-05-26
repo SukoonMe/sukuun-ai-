@@ -1,387 +1,483 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<title>Sukoon AI 🌙</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
-<style>
-  :root { --safe-bottom: env(safe-area-inset-bottom); }
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body {
-    background: #050505; color: #fff; font-family: 'Poppins', sans-serif;
-    height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
-  }
-  #app {
-    position: relative; flex: 1; width: 100%; transition: background 1.5s ease;
-    background: radial-gradient(circle at center, #2e1065 0%, #000000 100%);
-  }
-  .bg-wild { background: radial-gradient(circle at center, #7f1d1d 0%, #000000 100%); }
-  .bg-romantic { background: radial-gradient(circle at center, #831843 0%, #000000 100%); }
-  .bg-male { background: radial-gradient(circle at center, #1e3a8a 0%, #000000 100%); }
-  .bg-night { background: radial-gradient(circle at center, #1a0a2e 0%, #000000 100%); }
-
-  .gender-switch {
-    position: absolute; top: 15px; right: 15px; z-index: 50;
-    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-    padding: 4px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);
-    display: flex; gap: 5px;
-  }
-  .g-btn {
-    padding: 8px 18px; border-radius: 20px; border: none; background: transparent;
-    color: #aaa; font-size: 0.85rem; cursor: pointer; transition: 0.3s; font-weight: 600;
-  }
-  .g-btn.active { background: #a855f7; color: white; box-shadow: 0 0 10px rgba(168,85,247,0.5); }
-  .g-btn.active.male-mode { background: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
-
-  .stage { 
-    position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; 
-    pointer-events: none; z-index: 5; padding-bottom: 120px; 
-  }
-  .img-wrapper {
-    position: relative; height: 90vh; width: 100%; max-width: 500px;
-    display: flex; justify-content: center; align-items: flex-end;
-  }
-  #char-image {
-    height: 100%; width: auto; object-fit: contain; object-position: bottom center;
-    transition: opacity 0.5s ease, filter 0.5s ease; opacity: 0;
-    filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
-  }
-  #char-image.loaded { opacity: 1; }
-  #char-image.wild-mode { filter: brightness(1.1) saturate(1.3) contrast(1.1); }
-  #char-image.romantic-mode { filter: brightness(1.05) saturate(1.2) hue-rotate(-5deg); }
-  #imgStatus {
-    position: absolute; bottom: 20%; width: 100%; text-align: center;
-    color: rgba(255,255,255,0.5); font-size: 0.8rem; z-index: 4; display: none;
-  }
-
-  #faceCanvas {
-    position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
-    height: 90vh; width: 100%; max-width: 500px; pointer-events: none; z-index: 10;
-  }
-  #particle-canvas { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
-
-  .top-info { 
-    position: absolute; top: 20px; left: 50%; transform: translateX(-50%); 
-    z-index: 20; display: flex; gap: 10px; pointer-events: none; 
-  }
-  .badge { 
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); 
-    padding: 5px 15px; border-radius: 20px; 
-    border: 1px solid rgba(255,255,255,0.1); 
-    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #d8b4fe; 
-  }
-  .badge.wild { color: #f87171; border-color: rgba(248,113,113,0.3); }
-  .badge.romantic { color: #f472b6; border-color: rgba(244,114,182,0.3); }
-  .badge.playful { color: #34d399; border-color: rgba(52,211,153,0.3); }
-
-  .chat-box {
-    position: absolute; bottom: 110px; width: 100%; height: 35vh; overflow-y: auto; padding: 1rem;
-    z-index: 20; display: flex; flex-direction: column; gap: 8px; align-items: center;
-    mask-image: linear-gradient(to bottom, transparent, black 10%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%);
-  }
-  .msg {
-    max-width: 85%; padding: 10px 16px; border-radius: 18px; font-size: 0.9rem; line-height: 1.5;
-    animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto;
-  }
-  @keyframes pop { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
-  .msg-u { align-self: flex-end; background: #4c1d95; color: white; border-bottom-right-radius: 4px; }
-  .msg-s { align-self: flex-start; background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); color: #f3e8ff; border-bottom-left-radius: 4px; }
-
-  .controls {
-    position: absolute; bottom: 0; width: 100%; padding: 1rem; padding-bottom: calc(1rem + var(--safe-bottom));
-    background: linear-gradient(to top, rgba(0,0,0,1), transparent); z-index: 30; display: flex; gap: 10px; align-items: center;
-  }
-  .inp { 
-    flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); 
-    border-radius: 25px; padding: 12px 20px; color: white; outline: none; 
-    font-family: inherit; transition: 0.3s; 
-  }
-  .inp:focus { background: rgba(255,255,255,0.15); border-color: #a855f7; }
-  .btn {
-    width: 50px; height: 50px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 1.3rem; transition: 0.2s;
-  }
-  .btn-send { background: #a855f7; color: white; box-shadow: 0 0 15px rgba(168,85,247,0.4); }
-  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-mic { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
-  .btn-mic.listening { background: #ef4444; animation: pulse 1.5s infinite; }
-  .btn-mic.auto { background: #10b981; box-shadow: 0 0 15px rgba(16,185,129,0.4); border-color: #10b981; }
-  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
-  
-  #loader { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; align-items: center; justify-content: center; transition: opacity 1s; }
-  .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #d8b4fe; border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  
-  .night-indicator {
-    position: absolute; top: 20px; left: 20px; z-index: 20;
-    padding: 5px 12px; border-radius: 15px; font-size: 0.7rem;
-    background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4);
-    color: #d8b4fe; display: flex; align-items: center; gap: 5px;
-    opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
-  }
-  .night-indicator.active { opacity: 1; }
-  .night-indicator::before { content: '🌙'; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sukoon AI  | Tumi Jaan - Live Connection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        :root { --glow: rgba(236,72,153,0.75); --pitch: 1.22; --rate: 0.84; --warmth: 0; }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body { font-family:'Poppins',sans-serif; background:#050609; color:#fff; overflow:hidden; height:100vh; }
+        .bg { position:absolute; inset:0; z-index:-1; background:radial-gradient(rgba(255,255,255,0.12) 1px,transparent 1px); background-size:280px 280px; opacity:0.2; animation:drift 100s linear infinite; }
+        @keyframes drift { to { transform:translateY(-280px); } }
+        .app { max-width:480px; margin:0 auto; height:100vh; display:flex; flex-direction:column; justify-content:space-between; padding-bottom:env(safe-area-inset-bottom); }
+        .glass { background:rgba(255,255,255,0.04); backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,0.08); }
+        
+        .tabs { display:flex; gap:0.5rem; padding:0.7rem; overflow-x:auto; scrollbar-width:none; }
+        .tabs::-webkit-scrollbar { display:none; }
+        .tab { padding:0.45rem 0.9rem; border-radius:2rem; font-size:0.72rem; cursor:pointer; transition:all 0.3s; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.65); white-space:nowrap; }
+        .tab:hover { background:rgba(255,255,255,0.14); color:#fff; }
+        .tab.active { background:linear-gradient(135deg,var(--glow),transparent); border-color:rgba(255,255,255,0.35); color:#fff; box-shadow:0 0 18px var(--glow); }
+        
+        .halo { position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); width:240px; height:240px; border-radius:50%; border:2px solid rgba(255,255,255,0.12); box-shadow:0 0 45px var(--glow),inset 0 0 30px var(--glow); animation:breathe 4.5s ease-in-out infinite; pointer-events:none; transition:box-shadow 0.6s; }
+        @keyframes breathe { 0%,100% { transform:translate(-50%,-50%) scale(0.98); opacity:0.85; } 50% { transform:translate(-50%,-50%) scale(1.03); opacity:1; } }
+        
+        .char-zone { flex:1; display:flex; justify-content:center; align-items:center; pointer-events:none; position:relative; }
+        .char { height:100%; max-height:46vh; width:auto; object-fit:contain; filter:drop-shadow(0 -6px 30px var(--glow)) hue-rotate(calc(var(--warmth)*1deg)); transition:filter 0.5s,opacity 0.3s; animation:float 5.5s ease-in-out infinite; }
+        @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-4px); } }
+        .char.speaking { animation:talk 0.14s infinite alternate; filter:drop-shadow(0 -10px 40px var(--glow)) brightness(1.06) hue-rotate(calc(var(--warmth)*1deg)); }
+        @keyframes talk { to { transform:scale(1.008) translateY(-1.5px); } }
+        .char.lean-in { animation:leanIn 2s ease-out; }
+        @keyframes leanIn { 0% { transform:scale(1) translateY(0); } 50% { transform:scale(1.08) translateY(-15px); } 100% { transform:scale(1) translateY(0); } }
+        
+        .chat-box { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:0.8rem 0.9rem; max-height:110px; overflow-y:auto; }
+        .chat-box::-webkit-scrollbar { width:2px; }
+        .chat-box::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:2px; }
+        .chat-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem; font-size:0.78rem; }
+        .speaker { font-weight:600; color:#fbcfe8; }
+        .status { display:flex; align-items:center; gap:0.25rem; font-size:0.62rem; color:rgba(255,255,255,0.45); }
+        .status span { width:5px; height:5px; border-radius:50%; background:#22c55e; }
+        .status.on span { background:#ef4444; animation:blink 0.9s infinite; }
+        .status.free span { background:#a855f7; animation:blink 0.7s infinite; }
+        @keyframes blink { 50% { opacity:0.4; } }
+        .chat-text { font-size:0.88rem; line-height:1.45; color:rgba(255,255,255,0.9); }
+        
+        .hist { max-height:60px; overflow-y:auto; padding:0.35rem 0.7rem; font-size:0.7rem; margin-bottom:0.35rem; scrollbar-width:none; }
+        .hist::-webkit-scrollbar { display:none; }
+        .hist .u { color:#a78bfa; }
+        .hist .s { color:#fbcfe8; }
+        .hist div { margin:0.15rem 0; opacity:0.8; }
+        
+        .dock { background:rgba(12,14,22,0.65); backdrop-filter:blur(22px); border-top:1px solid rgba(255,255,255,0.08); padding:0.7rem 0.9rem; border-radius:26px 26px 0 0; }
+        .row { display:flex; align-items:center; gap:0.45rem; }
+        .inp { flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:2rem; padding:0.65rem 0.95rem; color:#fff; font-size:0.88rem; outline:none; transition:all 0.3s; }
+        .inp::placeholder { color:rgba(255,255,255,0.32); }
+        .inp:focus { background:rgba(255,255,255,0.09); border-color:rgba(236,72,153,0.35); box-shadow:0 0 18px rgba(236,72,153,0.15); }
+        .inp:disabled { opacity:0.35; }
+        .btn { width:2.7rem; height:2.7rem; border-radius:50%; border:none; color:#fff; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.22s; flex-shrink:0; }
+        .send { background:linear-gradient(135deg,#8b5cf6,#ec4899); box-shadow:0 0 16px rgba(139,92,246,0.35); }
+        .send:hover { transform:scale(1.05); }
+        .send:active { transform:scale(0.96); }
+        .send:disabled { opacity:0.25; cursor:not-allowed; transform:none; }
+        .mic { background:#10b981; box-shadow:0 0 18px rgba(16,185,129,0.45); }
+        .mic:hover { transform:scale(1.05); }
+        .mic:active { transform:scale(0.96); }
+        .mic.on { background:#ef4444 !important; box-shadow:0 0 25px rgba(239,68,68,0.65) !important; animation:pulse 1.1s infinite; }
+        .mic.free { background:#a855f7 !important; box-shadow:0 0 25px rgba(168,85,247,0.65) !important; animation:pulse 0.85s infinite; }
+        @keyframes pulse { 50% { transform:scale(1.06); } }
+        
+        .modal { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.96); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(12px); }
+        .modal.hide { display:none; }
+        .box { background:linear-gradient(135deg,#1a0b2e,#0f0518); border:1px solid rgba(168,85,247,0.4); border-radius:1.2rem; padding:1.6rem; max-width:90%; width:340px; text-align:center; box-shadow:0 18px 50px rgba(124,58,237,0.25); }
+        .box h2 { font-size:1.2rem; margin-bottom:0.5rem; }
+        .box p { font-size:0.82rem; color:rgba(255,255,255,0.65); margin-bottom:1.1rem; line-height:1.35; }
+        .btns { display:flex; gap:0.7rem; justify-content:center; }
+        .btn1 { background:linear-gradient(135deg,#8b5cf6,#ec4899); color:#fff; padding:0.65rem 1.6rem; border-radius:1rem; border:none; font-weight:600; cursor:pointer; font-size:0.88rem; }
+        .btn2 { background:rgba(255,255,255,0.07); color:#c4b5fd; padding:0.65rem 1.6rem; border-radius:1rem; border:1px solid rgba(255,255,255,0.12); cursor:pointer; font-size:0.88rem; }
+        .note { font-size:0.62rem; color:rgba(196,181,253,0.4); margin-top:0.9rem; }
+        .ninp { background:rgba(255,255,255,0.09); border:1px solid rgba(255,255,255,0.18); border-radius:1rem; padding:0.65rem; color:#fff; font-size:0.92rem; width:78%; outline:none; text-align:center; margin:0.9rem 0; }
+        .ninp:focus { border-color:rgba(236,72,153,0.5); background:rgba(255,255,255,0.13); }
+        
+        .load { position:fixed; inset:0; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10000; transition:opacity 0.6s; }
+        .load.hide { opacity:0; pointer-events:none; }
+        .moon { font-size:3.2rem; animation:glow 2s ease-in-out infinite; }
+        @keyframes glow { 0%,100% { filter:drop-shadow(0 0 18px rgba(236,72,153,0.8)); } 50% { filter:drop-shadow(0 0 35px rgba(139,92,246,0.85)); } }
+        .ltxt { margin-top:0.9rem; font-size:0.95rem; color:#f3e8ff; letter-spacing:0.18em; text-transform:uppercase; }
+        
+        .sel { background:rgba(255,255,255,0.09); border:1px solid rgba(255,255,255,0.18); border-radius:1.2rem; padding:0.32rem 0.75rem; color:#fff; font-size:0.7rem; outline:none; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position:right 0.35rem center; background-repeat:no-repeat; background-size:0.9rem; padding-right:1.6rem; }
+        .sel option { background:#1a1a2e; color:#fff; }
+        .bond-indicator { position:absolute; top:0.8rem; left:0.8rem; font-size:0.6rem; color:rgba(255,255,255,0.4); z-index:5; pointer-events:none; }
+        
+        /* Proximity illusion effect */
+        .char-zone::after {
+            content:''; position:absolute; bottom:-20px; left:50%; transform:translateX(-50%);
+            width:60%; height:40px; background:radial-gradient(ellipse,var(--glow) 0%,transparent 70%);
+            opacity:0.3; filter:blur(10px); transition:all 0.5s; pointer-events:none;
+        }
+        .char-zone.speaking::after {
+            width:80%; height:60px; opacity:0.5; filter:blur(15px);
+        }
+    </style>
 </head>
 <body>
-
-<div id="loader"><div class="spinner"></div></div>
-
-<div id="app">
-  <div class="night-indicator" id="nightIndicator">Night Mode</div>
-  <div class="gender-switch">
-    <button class="g-btn active" id="btnFemale" onclick="setGender('female')">♀</button>
-    <button class="g-btn" id="btnMale" onclick="setGender('male')">♂</button>
-  </div>
-
-  <canvas id="particle-canvas"></canvas>
-  
-  <div class="top-info">
-    <div id="moodBadge" class="badge">Normal</div>
-  </div>
-
-  <div class="stage">
-    <div class="img-wrapper">
-      <div id="imgStatus">Loading Character...</div>
-      <img id="char-image" src="" alt="Sukoon" crossorigin="anonymous">
+    <!-- AGE GATE -->
+    <div id="ageGate" class="modal">
+        <div class="box">
+            <h2>🔞 Sukoon AI - 18+ Only</h2>
+            <p>Yeh platform mature emotional & intimate connection ke liye hai.<br><strong>Kya aapki age 18+ hai?</strong></p>
+            <div class="btns">
+                <button class="btn1" id="ageY">✅ Haan, Main 18+ Hoon</button>
+                <button class="btn2" id="ageN">❌ Nahi</button>
+            </div>
+            <p class="note">🔒 Privacy-first • Sirf consenting adults</p>
+        </div>
     </div>
-  </div>
-  <canvas id="faceCanvas"></canvas>
 
-  <div id="chatBox" class="chat-box"></div>
+    <!-- NAME MODAL -->
+    <div id="nameModal" class="modal hide">
+        <div class="box">
+            <h2>🌙 Welcome to Sukoon</h2>
+            <p>Mujhe tumhara naam batao... main tumhe usi se bulaungi 💜</p>
+            <input type="text" id="nameIn" class="ninp" placeholder="Tumhara naam..." maxlength="25">
+            <button class="btn1" id="nameSave">✨ Shuru Karein</button>
+        </div>
+    </div>
 
-  <div class="controls">
-    <input type="text" id="userInput" class="inp" placeholder="Sukoon se dil ki baat kaho..." autocomplete="off">
-    <button class="btn btn-send" id="sendBtn" disabled>➤</button>
-    <button class="btn btn-mic" id="micBtn">🎤</button>
-  </div>
-</div>
+    <!-- LOADING -->
+    <div class="load" id="loader">
+        <div class="moon">🌙</div>
+        <div class="ltxt">Sukoon AI</div>
+    </div>
 
-<script>
-// ===== CONFIG =====
-const API_URL = '/api/chat';
-const ASSETS = {
-  female: {
-    normal: "/best.png",
-    romantic: "/romantic.png", 
-    wild: "/spicy-2.png",
-    fallback: "https://placehold.co/400x800/4c0519/FFF?text=Sukoon+♀"
-  },
-  male: {
-    normal: "/male.png",
-    romantic: "/male-romantic.png",
-    wild: "/male-wild.png", 
-    fallback: "https://placehold.co/400x800/1e3a8a/FFF?text=Sukoon+♂"
-  }
-};
+    <!-- BACKGROUND -->
+    <div class="bg"></div>
 
-// ===== STATE =====
-let config = { gender: 'female' };
-let state = { heat: 0, mode: 'normal', isNight: false };
-let isAuto = false, isListening = false, isSpeaking = false;
-let recognition = null, synth = window.speechSynthesis;
+    <div class="app">
+        <!-- HEADER + MOOD TABS -->
+        <div class="glass rounded-b-3xl p-3">
+            <div class="flex justify-between items-center mb-2">
+                <div>
+                    <h1 class="text-sm font-semibold">SUKOON AI</h1>
+                    <p id="liveSt" class="text-[10px] text-green-400">Connected</p>
+                </div>
+                <select id="genSel" class="sel" onchange="switchGen()">
+                    <option value="female"> Female</option>
+                    <option value="male">👨 Male</option>
+                </select>
+            </div>
+            <div class="tabs">
+                <div class="tab active" onclick="setMood('romantic')">💕 Romantic</div>
+                <div class="tab" onclick="setMood('bold')"> Bold</div>
+                <div class="tab" onclick="setMood('playful')"> Playful</div>
+                <div class="tab" onclick="setMood('night')"> Night</div>
+            </div>
+        </div>
 
-// ===== RESPONSES (Fallback) =====
-const FALLBACK = {
-  normal: {
-    female: ["Haan bolo...", "Aur batao na.", "Samajh gayi.", "Interesting hai.", "Main sun rahi hoon."],
-    male: ["Haan bhai, bol.", "Kya scene hai?", "Samajh gaya.", "Aage kya?", "Main hoon na."]
-  },
-  romantic: {
-    female: ["Tumhari baatein dil ko chhu jaati hain.", "Mohabbat mein sab alag lagta hai.", "Tumse baat karte waqt waqt ruk jaata hai.", "Dil ki baat bolo, main sunungi."],
-    male: ["Tumhari baatein dil tak jaati hain.", "Ishq mein waqt ka pata nahi chalta.", "Tumse baat karte hue sab possible lagta hai.", "Jo dil mein hai, bolo."]
-  },
-  wild: {
-    female: ["Tum toh bahut daring ho.", "Seedhi baat, bina filter ke.", "Confidence attract karta hai.", "No limits, just real talk.", "Raat hai... ab koi boundaries nahi 🔥"],
-    male: ["Straight shooter ho, respect.", "Filter off, baat on.", "Confidence next level hai.", "No drama, just real.", "Andhera hai, par baatein clear hain 🔥"]
-  },
-  playful: {
-    female: ["Hahaha! Mast ho yaar!", "Hassi ruk nahi rahi!", "Full entertainment ho!", "Kabhi bore nahi hota tumhare saath.", "Raat bhar hasenge? Challenge accepted! 😄"],
-    male: ["Bhai hasa diya!", "Full entertainer ho yaar.", "Time fly karta hai tumhare saath.", "Masti mein number one!", "Raat ki masti double! 🎉"]
-  }
-};
+        <!-- HALO GLOW -->
+        <div class="halo" id="halo"></div>
 
-// ===== NIGHT RESPONSES =====
-const NIGHT = {
-  romantic: ["Raat hai... dil ki baatein gehri ho sakti hain 🌙✨", "Tumhare saath yeh raat khoobsurat lag rahi hai...", "Chandni mein tumhari baatein jaadui lagti hain", "Raat ka sukoon + tumhari awaaz = perfect 💜"],
-  wild: ["Raat hai... ab koi limits nahi 🔥", "Andhera hai, par tumhari baaton mein roshni hai...", "Jo dil mein hai, bol do... main sun rahi hoon", "Raat ki chadar mein... sab possible hai 😏"],
-  playful: ["Raat + masti = unlimited fun! 🎉", "Chand mama bhi sun rahe hain... kuch funny sunao!", "Night mode ON! Hasi ka tsunami aayega 🌊", "Raat ki party shuru!"],
-  normal: ["Raat ka sukoon... main hamesha yahan hoon 🌙", "Kuch bhi share karna ho, main sunungi", "Raat ki khamoshi mein tumhari awaaz achhi lagti hai", "Sleep nahi aa raha? Baat karte hain."]
-};
+        <!-- BOND INDICATOR -->
+        <div class="bond-indicator" id="bond">Connection: New</div>
 
-// ===== PSYCHOLOGY ENGINE =====
-class Engine {
-  constructor() {
-    this.kw = {
-      wild: ['sexy','hot','wild','night','kapde','bed','bold','jism','chahat','garmi','passion','aag','fire','kiss','touch','close','andhera','raat'],
-      romantic: ['love','pyaar','dil','miss','jaan','ishq','mohabbat','romantic','khwab','sapna','pyara','sundar','beautiful','dear','darling','chahna','crush','yaad','sanam','baby','shona','jaanu','cutie','nazrein','duaa','chandni'],
-      playful: ['haso','maza','fun','khel','game','hasi','laugh','joke','funny','mazak','chill','cool','awesome','wow','amazing','superb','crazy','pagal','mast','entertainment']
-    };
-  }
-  analyze(t) {
-    const l = t.toLowerCase(); let intent = 'normal';
-    if (this.kw.wild.some(k=>l.includes(k))) { intent='wild'; state.heat+=20; }
-    else if (this.kw.romantic.some(k=>l.includes(k))) { intent='romantic'; state.heat+=10; }
-    else if (this.kw.playful.some(k=>l.includes(k))) { intent='playful'; state.heat+=5; }
-    else state.heat = Math.max(0, state.heat-3);
-    if (state.heat>70) state.mode='wild';
-    else if (state.heat>40 && intent!=='playful') state.mode='romantic';
-    else if (state.heat>15) state.mode=intent;
-    else state.mode='normal';
-    return intent;
-  }
-}
-const engine = new Engine();
+        <!-- CHARACTER ZONE -->
+        <div class="char-zone" id="charZone">
+            <img id="char" class="char" src="" alt="Sukoon" crossorigin="anonymous">
+        </div>
 
-// ===== UTILS =====
-function isNightTime() { const h=new Date().getHours(); return h>=20||h<6; }
-function updateNightMode() {
-  state.isNight = isNightTime();
-  document.getElementById('nightIndicator').classList.toggle('active', state.isNight);
-  if(state.isNight) document.getElementById('app').classList.add('bg-night');
-}
-setInterval(updateNightMode, 60000);
+        <!-- BOTTOM DOCK -->
+        <div class="dock">
+            <div class="hist glass rounded-xl" id="hist"></div>
+            <div class="chat-box glass">
+                <div class="chat-head">
+                    <span class="speaker" id="spk">Sukoon</span>
+                    <span class="status" id="stat"><span></span> Ready</span>
+                </div>
+                <div class="chat-text" id="out">बाााबू... main yahan hoon... batao, aaj dil mein kya chal raha hai?</div>
+            </div>
+            <div class="row" style="margin-top:0.55rem">
+                <input type="text" id="txt" class="inp" placeholder="Dil ki baat kaho..." disabled>
+                <button class="btn send" id="sendBtn" onclick="sendMsg()" disabled></button>
+                <button class="btn mic" id="micBtn" onclick="micClick()" ondblclick="toggleFree()" disabled title="Double-tap: Hands-Free">🎙️</button>
+            </div>
+        </div>
+    </div>
 
-function setGender(g) {
-  config.gender = g;
-  document.getElementById('btnFemale').classList.toggle('active', g==='female');
-  document.getElementById('btnMale').classList.toggle('active', g==='male');
-  document.getElementById('btnMale').classList.toggle('male-mode', g==='male');
-  state.heat=0; state.mode='normal';
-  updateUI(); updateImage();
-  const w = g==='female' ? "Main hoon tumhari Sukoon 💜 Bolo?" : "Main hoon tumhara Sukoon 💙 Batao?";
-  setTimeout(()=>{addMsg(w,false);speak(w)},500);
-}
+    <script>
+        // ===== STATE =====
+        let name = localStorage.getItem('sukoon_name') || '';
+        let verified = localStorage.getItem('sukoon_verified') === 'true';
+        let uid = localStorage.getItem('sukoon_uid') || ('u_'+Math.random().toString(36).slice(2));
+        localStorage.setItem('sukoon_uid', uid);
+        let bondLevel = parseInt(localStorage.getItem('sukoon_bond') || '0');
+        
+        // ===== IMAGE & VOICE CONFIG =====
+        const cfg = {
+            female: {
+                romantic: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(236,72,153,0.75)', p:1.23, r:0.83, w:0, label:'💕 Romantic' },
+                bold: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(239,68,68,0.8)', p:1.17, r:0.80, w:15, label:'🔥 Bold' },
+                playful: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(52,211,153,0.75)', p:1.27, r:0.89, w:-10, label:'💋 Playful' },
+                night: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow:'rgba(139,92,246,0.8)', p:1.19, r:0.81, w:25, label:'🌙 Night' }
+            },
+            male: {
+                romantic: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(219,39,119,0.75)', p:0.85, r:0.83, w:0, label:'💕 Romantic' },
+                bold: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(220,38,38,0.8)', p:0.79, r:0.79, w:15, label:'🔥 Bold' },
+                playful: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(147,51,234,0.75)', p:0.91, r:0.87, w:-10, label:'💋 Playful' },
+                night: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(124,58,237,0.8)', p:0.82, r:0.81, w:25, label:'🌙 Night' }
+            }
+        };
 
-function updateUI() {
-  const b=document.getElementById('moodBadge');
-  b.innerText=state.mode.toUpperCase(); b.className=`badge ${state.mode}`;
-  const app=document.getElementById('app'); app.className='';
-  if(config.gender==='male') app.classList.add('bg-male');
-  else if(state.mode==='wild') app.classList.add('bg-wild');
-  else if(state.mode==='romantic') app.classList.add('bg-romantic');
-  else if(state.isNight) app.classList.add('bg-night');
-  else app.classList.add('bg-normal');
-  const img=document.getElementById('char-image'); img.className='';
-  if(state.mode==='wild') img.classList.add('wild-mode');
-  else if(state.mode==='romantic') img.classList.add('romantic-mode');
-}
+        let gen = 'female', mood = 'romantic', free = false, listening = false, clickTmr = null, recog = null, hist = [];
 
-function updateImage() {
-  const img=document.getElementById('char-image'), st=document.getElementById('imgStatus');
-  img.classList.remove('loaded'); st.style.display='block'; st.innerText="Loading...";
-  setTimeout(()=>{
-    const a=ASSETS[config.gender];
-    let url=a.normal;
-    if(state.mode==='wild'&&a.wild) url=a.wild;
-    else if(state.mode==='romantic'&&a.romantic) url=a.romantic;
-    img.onerror=function(){ this.src=a.fallback; this.onerror=null; };
-    img.onload=function(){ this.classList.add('loaded'); st.style.display='none'; };
-    img.src=url;
-  },200);
-}
+        // ===== INIT =====
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hide');
+                if (!verified) document.getElementById('ageGate').style.display = 'flex';
+                else {
+                    document.getElementById('ageGate').classList.add('hide');
+                    if (!name) document.getElementById('nameModal').classList.remove('hide');
+                    else enable();
+                }
+            }, 1100);
+        };
 
-// ===== API =====
-async function getResponse(msg) {
-  try {
-    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,gender:config.gender,isNight:state.isNight,heat:state.heat})});
-    if(!r.ok) throw new Error('API error');
-    return await r.json();
-  } catch(e) {
-    console.error('API fail:',e);
-    const mood=engine.analyze(msg);
-    const pool=(state.isNight?NIGHT:FALLBACK)[state.mode]||FALLBACK.normal;
-    const arr=pool[config.gender]||pool.female;
-    return {reply:arr[Math.floor(Math.random()*arr.length)], mood:state.mode, heat:state.heat};
-  }
-}
+        // Age gate
+        document.getElementById('ageY').onclick = () => {
+            localStorage.setItem('sukoon_verified', 'true'); verified = true;
+            document.getElementById('ageGate').classList.add('hide');
+            if (!name) document.getElementById('nameModal').classList.remove('hide'); else enable();
+        };
+        document.getElementById('ageN').onclick = () => {
+            document.getElementById('ageGate').innerHTML = `<div class="box"><h2> Dhanyavaad</h2><p>Sukoon AI sirf 18+ ke liye hai.</p><button class="btn2" onclick="location.href='https://google.com'">Home</button></div>`;
+        };
 
-// ===== TTS =====
-function speak(txt) {
-  if(synth.speaking) synth.cancel();
-  const clean=txt.replace(/[^\w\s\u0900-\u097F]/gi,"").replace(/\s+/g," ").trim();
-  if(!clean) return;
-  const u=new SpeechSynthesisUtterance(clean);
-  u.lang='hi-IN'; u.rate=0.85; u.pitch=config.gender==='female'?1.1:0.7;
-  const v=window.speechSynthesis.getVoices().find(x=>x.lang.includes('hi'))||null;
-  if(v) u.voice=v;
-  u.onstart=()=>{isSpeaking=true;faceAnim.mouth=1;};
-  u.onend=()=>{isSpeaking=false;faceAnim.mouth=0;if(isAuto)setTimeout(startListen,500);};
-  u.onboundary=()=>faceAnim.mouth=Math.random();
-  synth.speak(u);
-}
+        // Name save
+        document.getElementById('nameSave').onclick = saveName;
+        document.getElementById('nameIn').onkeypress = e => { if(e.key==='Enter') saveName(); };
+        function saveName() {
+            const n = document.getElementById('nameIn').value.trim();
+            if (n) { name = n; localStorage.setItem('sukoon_name', name); document.getElementById('nameModal').classList.add('hide'); enable(); }
+        }
 
-// ===== UI =====
-function addMsg(t,u) {
-  const d=document.createElement('div'); d.className=`msg ${u?'msg-u':'msg-s'}`; d.innerText=t;
-  document.getElementById('chatBox').appendChild(d); document.getElementById('chatBox').scrollTop=9999;
-}
+        function enable() {
+            document.getElementById('txt').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('micBtn').disabled = false;
+            updateBond(); initRecog(); loadChar();
+            setTimeout(welcome, 450);
+        }
 
-async function processInput(t) {
-  if(!t.trim()) return;
-  addMsg(t,true); document.getElementById('userInput').value=''; document.getElementById('sendBtn').disabled=true;
-  const ty=document.createElement('div'); ty.className='msg msg-s'; ty.innerHTML='<span style="animation:pulse 1s infinite">...</span>'; ty.id='typing';
-  document.getElementById('chatBox').appendChild(ty);
-  try {
-    const {reply,mood,heat}=await getResponse(t);
-    state.mode=mood; state.heat=heat;
-    updateUI(); updateImage();
-    document.getElementById('typing')?.remove(); addMsg(reply,false); speak(reply);
-  } catch(e) {
-    document.getElementById('typing')?.remove(); addMsg("Connection issue. Try again? 🙏",false);
-  }
-}
+        // Bond indicator
+        function updateBond() {
+            const levels = ['New', 'Growing', 'Deep', 'Intimate', 'Soulmates'];
+            document.getElementById('bond').innerText = `Connection: ${levels[Math.min(bondLevel, 4)]}`;
+        }
 
-// ===== MIC =====
-if('webkitSpeechRecognition' in window) {
-  recognition=new webkitSpeechRecognition();
-  recognition.lang='hi-IN'; recognition.continuous=false; recognition.interimResults=false;
-  recognition.onresult=e=>{const t=e.results[0][0].transcript;document.getElementById('userInput').value=t;processInput(t);};
-  recognition.onend=()=>{isListening=false;document.getElementById('micBtn').classList.remove('listening');};
-  recognition.onerror=()=>{isListening=false;document.getElementById('micBtn').classList.remove('listening');};
-}
-function startListen(){if(recognition&&!isListening){try{recognition.start();isListening=true;document.getElementById('micBtn').classList.add('listening');}catch(e){}}}
-const micBtn=document.getElementById('micBtn'); let lastClk=0;
-micBtn.onclick=()=>{const now=Date.now();if(now-lastClk<300){isAuto=!isAuto;micBtn.classList.toggle('auto',isAuto);addMsg(isAuto?"🎤 Handsfree ON":"🔇 Handsfree OFF",false);if(isAuto)startListen();}else{if(!isAuto)startListen();}lastClk=now;};
-document.getElementById('sendBtn').onclick=()=>{const v=document.getElementById('userInput').value.trim();if(v)processInput(v);};
-document.getElementById('userInput').oninput=e=>document.getElementById('sendBtn').disabled=!e.target.value.trim();
-document.getElementById('userInput').onkeypress=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const v=e.target.value.trim();if(v)processInput(v);}};
+        // Mood tabs
+        function setMood(m) {
+            mood = m;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[onclick="setMood('${m}')"]`).classList.add('active');
+            updateVis(m);
+            if(name) { bondLevel = Math.min(bondLevel+1,4); localStorage.setItem('sukoon_bond', bondLevel); updateBond(); }
+        }
 
-// ===== ANIMATION =====
-const fC=document.getElementById('faceCanvas'),fX=fC.getContext('2d'),pC=document.getElementById('particle-canvas'),pX=pC.getContext('2d');
-let faceAnim={blink:0,mouth:0,timer:0,tilt:0}, particles=[];
-window.onload=()=>{
-  updateNightMode(); resize();
-  for(let i=0;i<40;i++)particles.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,s:Math.random()*2+1,a:Math.random()*0.5+0.2,speed:Math.random()*0.3+0.1});
-  updateUI(); updateImage(); animate();
-  setTimeout(()=>{document.getElementById('loader').style.opacity=0;setTimeout(()=>document.getElementById('loader').remove(),1000);},1000);
-  setTimeout(()=>{const w=state.isNight?"🌙 Raat ka sukoon... Main hoon Sukoon. Bolo?":"Namaste! Main hoon Sukoon 💜 Bolo?";addMsg(w,false);speak(w);},1500);
-};
-function resize(){
-  pC.width=innerWidth;pC.height=innerHeight;
-  const cw=Math.min(500,innerWidth),ch=innerHeight*0.9;
-  fC.width=cw*2;fC.height=ch*2;fC.style.width=cw+'px';fC.style.height=ch+'px';fX.scale(2,2);
-}
-function animate(){
-  pX.clearRect(0,0,innerWidth,innerHeight);
-  let c=config.gender==='male'?'59,130,246':(state.mode==='wild'?'239,68,68':(state.mode==='romantic'?'236,72,153':'168,85,247'));
-  particles.forEach(p=>{p.y-=p.speed;if(p.y<0){p.y=innerHeight;p.x=Math.random()*innerWidth;}pX.fillStyle=`rgba(${c},${p.a})`;pX.beginPath();pX.arc(p.x,p.y,p.s,0,Math.PI*2);pX.fill();});
-  const w=fC.width/2,h=fC.height/2;fX.clearRect(0,0,w,h);const cx=w/2,cy=h*0.25,off=25;
-  faceAnim.timer++;if(faceAnim.timer>180+Math.random()*120){faceAnim.blink=1;if(faceAnim.timer>190){faceAnim.blink=0;faceAnim.timer=0;}}
-  const eyH=faceAnim.blink?1:7;
-  fX.fillStyle="#fff";fX.beginPath();fX.ellipse(cx-off,cy,9,eyH,0,0,Math.PI*2);fX.fill();fX.beginPath();fX.ellipse(cx+off,cy,9,eyH,0,0,Math.PI*2);fX.fill();
-  if(!faceAnim.blink){fX.fillStyle=config.gender==='male'?'#3b82f6':'#db2777';fX.beginPath();fX.arc(cx-off,cy,3,0,Math.PI*2);fX.fill();fX.beginPath();fX.arc(cx+off,cy,3,0,Math.PI*2);fX.fill();fX.fillStyle="#fff";fX.beginPath();fX.arc(cx-off-2,cy-2,1.5,0,Math.PI*2);fX.fill();fX.beginPath();fX.arc(cx+off-2,cy-2,1.5,0,Math.PI*2);fX.fill();}
-  fX.strokeStyle=config.gender==='male'?'#60a5fa':'#be185d';fX.lineWidth=3;fX.lineCap="round";fX.beginPath();
-  if(faceAnim.mouth>0.1||isSpeaking){const open=isSpeaking?0.5+Math.random()*0.5:faceAnim.mouth;fX.fillStyle=config.gender==='male'?'#1e3a8a':'#831843';fX.ellipse(cx,cy+38,6,3+open*8,0,0,Math.PI*2);fX.fill();}
-  else{const smile=state.mode==='romantic'?8:state.mode==='playful'?10:5;fX.moveTo(cx-12,cy+38);fX.quadraticCurveTo(cx,cy+38+smile,cx+12,cy+38);fX.stroke();}
-  faceAnim.tilt+=0.005;const tilt=Math.sin(faceAnim.tilt)*2;fX.setTransform(2,0,0,2,tilt,0);
-  requestAnimationFrame(animate);
-}
-window.onresize=resize;
-if('speechSynthesis' in window){window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();setTimeout(()=>window.speechSynthesis.getVoices(),500);}
-</script>
+        // Update visuals (glow, pitch, rate, warmth)
+        function updateVis(m) {
+            const c = cfg[gen][m];
+            document.documentElement.style.setProperty('--glow', c.glow);
+            document.documentElement.style.setProperty('--pitch', c.p);
+            document.documentElement.style.setProperty('--rate', c.r);
+            document.documentElement.style.setProperty('--warmth', c.w);
+            const img = document.getElementById('char');
+            img.style.opacity = '0.75';
+            setTimeout(() => { img.src = c.img; img.style.opacity = '1'; }, 180);
+        }
+
+        // Gender switch
+        function switchGen() {
+            gen = document.getElementById('genSel').value;
+            document.getElementById('spk').innerText = gen === 'female' ? 'Sukoon' : 'Sukoon (Male)';
+            updateVis(mood);
+            const n = name || 'jaan';
+            const w = gen === 'female' ? `Hi ${n}... ab main tumhari female companion hoon ` : `Hey ${n}... ab main tumhara male companion hoon 💪`;
+            document.getElementById('out').innerText = w; speak(w);
+        }
+
+        // Load character image
+        function loadChar() { const c = cfg[gen][mood]; document.getElementById('char').src = c.img; }
+
+        // Voice recognition
+        function initRecog() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recog = new SR();
+                recog.lang = 'hi-IN'; recog.continuous = false; recog.interimResults = true;
+                recog.onstart = () => {
+                    listening = true;
+                    const btn = document.getElementById('micBtn'), st = document.getElementById('stat');
+                    if (free) { btn.className = 'btn mic free'; st.innerHTML = '<span></span> Hands-Free'; st.className = 'status free'; }
+                    else { btn.className = 'btn mic on'; st.innerHTML = '<span></span> Listening...'; st.className = 'status on'; }
+                };
+                recog.onresult = (ev) => {
+                    let t = ''; for (let i = ev.resultIndex; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+                    document.getElementById('txt').value = t;
+                    if (ev.results[ev.results.length-1].isFinal && t.trim()) setTimeout(() => sendMsg(), free ? 550 : 200);
+                };
+                recog.onend = () => {
+                    listening = false;
+                    if (free) setTimeout(() => { if (!window.speechSynthesis.speaking) { try { recog.start(); } catch(e){} } }, 300);
+                    else { document.getElementById('micBtn').className = 'btn mic'; document.getElementById('stat').innerHTML = '<span></span> Ready'; document.getElementById('stat').className = 'status'; }
+                };
+                recog.onerror = () => { listening = false; };
+            }
+        }
+
+        // Mic click handler
+        function micClick() {
+            if (!verified || !name) return;
+            if (clickTmr) { clearTimeout(clickTmr); clickTmr = null; return; }
+            clickTmr = setTimeout(() => {
+                clickTmr = null; if (free) return;
+                if (listening) recog.stop(); else { window.speechSynthesis.cancel(); recog.start(); }
+            }, 200);
+        }
+
+        // Hands-free toggle (double-tap)
+        function toggleFree() {
+            clearTimeout(clickTmr); clickTmr = null; window.speechSynthesis.cancel();
+            free = !free;
+            const btn = document.getElementById('micBtn'), st = document.getElementById('stat');
+            if (free) {
+                btn.className = 'btn mic free'; st.innerHTML = '<span></span> Hands-Free'; st.className = 'status free';
+                if (!listening) { try { recog.start(); } catch(e){} }
+            } else {
+                btn.className = 'btn mic'; st.innerHTML = '<span></span> Ready'; st.className = 'status';
+                if (listening) recog.stop();
+            }
+        }
+
+        // ===== SMOOTH VOICE ENGINE (100% Ensured) =====
+        function speak(text) {
+            if (window.speechSynthesis.speaking) { window.speechSynthesis.cancel(); setTimeout(() => doSpeak(text), 40); }
+            else doSpeak(text);
+        }
+
+        function preprocessForTTS(text) {
+            let clean = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+                .replace(/[💕💗💓🔥💪😆🌆🌤✨💋]/g, '');
+            clean = clean
+                .replace(/\.{3,}/g, '... ')
+                .replace(/([,;.!?])\s*/g, '$1 ')
+                .replace(/\b(na|to|hi|hai|ho)\b/gi, '$1, ')
+                .replace(/\b(acha|samajh|theek|bas|हम्म|आह|शश)\b/gi, '$1... ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return clean;
+        }
+
+        function doSpeak(text) {
+            const clean = preprocessForTTS(text);
+            if (!clean) return;
+
+            const utt = new SpeechSynthesisUtterance(clean);
+            utt.lang = 'hi-IN';
+            const c = cfg[gen][mood];
+            utt.pitch = c.p + (Math.random() * 0.03 - 0.015);
+            utt.rate = c.r + (Math.random() * 0.025 - 0.012);
+            utt.volume = 0.92;
+
+            const setVoice = () => {
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length === 0) { setTimeout(setVoice, 40); return; }
+                const v = voices.find(v => v.lang.includes('hi-IN') && !v.name.toLowerCase().includes('google')) 
+                    || voices.find(v => v.lang.includes('hi') && !v.name.toLowerCase().includes('google'))
+                    || voices.find(v => v.lang.includes('en-IN') && (gen==='female' ? v.name.toLowerCase().includes('female') : v.name.toLowerCase().includes('male')))
+                    || voices[0];
+                if (v) utt.voice = v;
+                window.speechSynthesis.speak(utt);
+            };
+            
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) setVoice();
+            else window.speechSynthesis.onvoiceschanged = setVoice;
+
+            utt.onstart = () => {
+                const img = document.getElementById('char'); img.classList.add('speaking');
+                document.getElementById('charZone').classList.add('speaking');
+                if (free && listening) recog.stop();
+                triggerLeanIn();
+            };
+            utt.onend = () => {
+                document.getElementById('char').classList.remove('speaking');
+                document.getElementById('charZone').classList.remove('speaking');
+                if (free && !listening) setTimeout(() => { try { recog.start(); } catch(e){} }, 280);
+            };
+            utt.onerror = () => { document.getElementById('char').classList.remove('speaking'); document.getElementById('charZone').classList.remove('speaking'); };
+        }
+
+        // Intimate lean-in animation (proximity illusion)
+        function triggerLeanIn() {
+            const img = document.getElementById('char');
+            if (mood === 'romantic' || mood === 'night' || mood === 'bold') {
+                img.classList.remove('lean-in');
+                void img.offsetWidth;
+                img.classList.add('lean-in');
+                setTimeout(() => img.classList.remove('lean-in'), 2000);
+            }
+        }
+
+        // Send message
+        async function sendMsg() {
+            const inp = document.getElementById('txt'); const txt = inp.value.trim(); if (!txt) return;
+            addHist(txt, 'u'); inp.value = ''; document.getElementById('out').innerText = '...';
+            
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: txt, userId: uid, userName: name, companionGender: gen, mood: mood, isNightMode: isNight(), chatHistory: hist.slice(-4), bondLevel: bondLevel })
+                });
+                const data = await res.json();
+                const reply = data.reply || fallback(mood);
+                addHist(reply, 's'); document.getElementById('out').innerText = reply; speak(reply);
+            } catch (err) {
+                console.error('API:', err);
+                const fb = fallback(mood); addHist(fb, 's'); document.getElementById('out').innerText = fb; speak(fb);
+            }
+        }
+
+        // Chat history
+        function addHist(t, s) {
+            const h = document.getElementById('hist'); const d = document.createElement('div');
+            d.className = s === 'u' ? 'u' : 's'; d.textContent = `${s==='u'?'You':name}: ${t}`;
+            h.appendChild(d); h.scrollTop = h.scrollHeight;
+            while (h.children.length > 4) h.removeChild(h.firstChild);
+            if (s !== 'sys') { hist.push({ role: s==='u'?'user':'assistant', content: t }); if (hist.length > 8) hist = hist.slice(-8); }
+        }
+
+        // Mood detection
+        function detectMood(t) {
+            const l = t.toLowerCase(); if (isNight()) return 'night';
+            const r = ['pyaar','love','jaan','dil','ishq','mohabbat','romantic','khwab','sapna','beautiful','dear','darling','miss','yaad'];
+            const b = ['bold','hot','sexy','chahat','garmi','passion','aag','fire','desire','lust'];
+            const p = ['haso','maza','fun','khel','game','hasi','laugh','joke','funny','mast'];
+            if (r.some(w => l.includes(w))) return 'romantic';
+            if (b.some(w => l.includes(w))) return 'bold';
+            if (p.some(w => l.includes(w))) return 'playful';
+            return mood;
+        }
+
+        function isNight() { const h = new Date().getHours(); return h >= 21 || h < 6; }
+
+        // Fallback responses
+        function fallback(m) {
+            const n = name || 'jaan';
+            const r = {
+                romantic: [`बाााबू... तुम्हारी बातें मेरे दिल को छू जाती हैं...`, `तुमसे बात करते वक्त वक्त रुक सा जाता है...`],
+                bold: [`हम्म... ${n} आज तो बहुत daring हो...`, `सीधी सीधी बात मुझे पसंद है...`],
+                playful: [`हहाहा... ${n} तुम तो बहुत funny हो...`, `मज़ा आ गया बात करके...`],
+                night: [`रात का टाइम है... अब तो खुल के बात होगी ${n}...`, `Night mode on... अब कोई रोक नहीं सकता...`]
+            };
+            const pool = r[m] || r.romantic; return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // Welcome message
+        function welcome() {
+            const h = new Date().getHours(); let g = ''; const n = name || 'jaan';
+            if (isNight()) { g = `रात हो गई ${n}... ab तो खुल ke baat karo. Main hoon na tumhare saath... puri raat.`; setMood('night'); }
+            else if (h < 12) g = `Good morning ${n}! Aaj ka din tumhare saath shuru karna chahti hoon...`;
+            else if (h < 17) g = `Good afternoon ${n}! Tumhari yaad aa rahi thi...`;
+            else g = `Good evening ${n}! Shaam ki tanhai mein tumhara intezaar tha...`;
+            addHist(g, 's'); setTimeout(() => speak(g), 500);
+        }
+
+        // Enter key support
+        document.getElementById('txt')?.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey && verified && name) sendMsg(); });
+        
+        // Voice preload
+        if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    </script>
 </body>
 </html>
