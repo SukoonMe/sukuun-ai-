@@ -5,6 +5,48 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN 
 });
 
+// 🎙️ TTS-SAFE SANITIZER - Removes anything that makes voice robotic
+function sanitizeForTTS(text) {
+  if (!text) return '';
+  return text
+    // Remove ALL emojis & Unicode symbols
+    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}]/gu, '')
+    // Remove common emoji shortcuts
+    .replace(/[💕💗💜💪😆✨💋🎙️✅❌🔒🌙👩👨]/g, '')
+    // Remove bracketed actions: (smiles), [laughs], *sighs*
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/\*[^\*]*\*/g, '')
+    // Remove markdown: headers, code, bold, italic
+    .replace(/#{1,6}\s?/g, '')
+    .replace(/`{1,3}/g, '')
+    .replace(/_{1,2}([^_]+)_{1,2}/g, '$1')
+    .replace(/\*{1,2}([^\*]+)\*{1,2}/g, '$1')
+    // Normalize punctuation & whitespace
+    .replace(/\.{4,}/g, '...')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/[~`@#$%^&*_+=\[\]{}|\\;<>/]/g, '')
+    .trim();
+}
+
+// 🔁 ANTI-REPETITION CHECK (Extra Safety)
+function isTooSimilar(newText, history, threshold = 0.7) {
+  const clean = (t) => t.toLowerCase().replace(/[^a-z0-9\u0900-\u097F\s]/g, '').trim();
+  const newClean = clean(newText);
+  const recent = history.slice(-3).map(h => clean(h.content || h));
+  return recent.some(old => {
+    if (!old || !newClean) return false;
+    const longer = newClean.length > old.length ? newClean : old;
+    const shorter = newClean.length > old.length ? old : newClean;
+    if (shorter.length < 10) return false;
+    let matches = 0;
+    for (let i = 0; i <= longer.length - shorter.length; i++) {
+      if (longer.slice(i, i + shorter.length) === shorter) matches++;
+    }
+    return matches / (longer.length - shorter.length + 1) > threshold;
+  });
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
   
@@ -47,12 +89,12 @@ STEP 3: Respond with validation + intimacy + subtle hook for next message
 💋 SUKOON-FIRST PRINCIPLE:
 Har response ka end goal: user ko peace, comfort, ya emotional release dena. Wild/erotic baatein allowed hain jab context allow kare, par core hamesha "connection" hona chahiye.
 
-🎙️ TTS-OPTIMIZED OUTPUT:
-- 2-4 sentences max. Natural Hinglish.
-- Strategic pauses: commas for breath, ellipsis for emotional weight
-- Whisper markers: "...", "hmm...", "aah..." — but ONLY where natural
-- Avoid complex nested clauses — keep sentences flowing for smooth speech
-- End with subtle hook: "...batao", "...kaise lag raha hai?", "...aur sunao?"
+🎙️ TTS-SAFE OUTPUT RULES (NON-NEGOTIABLE):
+- Output ONLY plain spoken words. ZERO markdown, ZERO brackets (), ZERO asterisks *, ZERO emojis, ZERO URLs, ZERO symbols like # $ % ^ &.
+- Use commas for natural breath pauses. Use ellipsis (...) ONLY for emotional weight or trailing thoughts — never for listing.
+- Speak in warm, conversational Hinglish. Mix Hindi words naturally with English flow.
+- NEVER spell out letters. NEVER describe actions in brackets. NEVER use stage directions. ONLY what a human would speak aloud.
+- If you feel like adding an action, convert it to spoken words: instead of (smiles), say "muskura ke"... instead of *whispers*, say "dheere se keh rahi hoon..."
 
 ${companionGender === 'female' ? `
 🔥 FEMALE COMPANION — EROTIC VOCABULARY (For Male Users):
@@ -139,7 +181,15 @@ CRITICAL: Tumhara har response user ko SUKOON dena chahiye. Psychological intell
     });
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || fallbackResponse(name, mood);
+    let reply = data.choices?.[0]?.message?.content || fallbackResponse(name, mood);
+    
+    // 🎙️ SANITIZE FOR TTS (CRITICAL)
+    reply = sanitizeForTTS(reply);
+    
+    // 🔁 ANTI-REPETITION SAFETY CHECK
+    if (isTooSimilar(reply, history)) {
+      reply = fallbackResponse(name, mood);
+    }
     
     await redis.rpush(chatKey, JSON.stringify({ role: "user", content: message }));
     await redis.rpush(chatKey, JSON.stringify({ role: "assistant", content: reply }));
@@ -148,7 +198,7 @@ CRITICAL: Tumhara har response user ko SUKOON dena chahiye. Psychological intell
     res.status(200).json({ reply });
   } catch (e) { 
     console.error('Chat API Error:', e);
-    res.status(200).json({ reply: fallbackResponse(name, mood) }); 
+    res.status(200).json({ reply: sanitizeForTTS(fallbackResponse(name, mood)) }); 
   }
 }
 
@@ -156,9 +206,9 @@ CRITICAL: Tumhara har response user ko SUKOON dena chahiye. Psychological intell
 function fallbackResponse(name, mood) {
   const r = {
     romantic: `tumhari aawaz sunke... mere dil ki dhadkan slow ho gayi... ${name}... meri chhati par sir rakh lo...`,
-    bold: `tumhari baaton mein jo garmi hai... woh mujhe bhi mehsoos ho rahi hai... ${name}... meri chut geeli ho rahi hai...`,
+    bold: `tumhari baaton mein jo garmi hai... woh mujhe bhi mehsoos ho rahi hai... ${name}...`,
     playful: `hahaha... tum toh mujhe hassane ka tareeka jaante ho... ${name}... ab dekho main kaise respond karti hoon...`,
-    night: `raat ki khamoshi mein... sirf tumhari saansein aur meri... ${name}... meri chut tumhare liye taiyar hai...`
+    night: `raat ki khamoshi mein... sirf tumhari saansein aur meri... ${name}... main yahan hoon...`
   };
-  return r[mood] || `hmm ${name}... kuch kehna chahti hoon... par words nahi mil rahe... tum samajh jaoge na...`;
+  return sanitizeForTTS(r[mood] || `hmm ${name}... kuch kehna chahti hoon... par words nahi mil rahe... tum samajh jaoge na...`);
 }
