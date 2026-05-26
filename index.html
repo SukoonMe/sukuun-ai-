@@ -1,342 +1,387 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sukoon AI | Immersive Crystal Edition</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-        
-        :root { 
-            --glow-color: rgba(59, 130, 246, 0.55); 
-            --meter-width: 25%; 
-        }
-        body { font-family: 'Poppins', sans-serif; margin: 0; overflow: hidden; background: #050609; color: white; height: 100vh; }
-        
-        .space-bg {
-            position: absolute; inset: 0; z-index: -1;
-            background-image: radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px);
-            background-size: 350px 350px; opacity: 0.25;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>Sukoon AI 🌙</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+<style>
+  :root { --safe-bottom: env(safe-area-inset-bottom); }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: #050505; color: #fff; font-family: 'Poppins', sans-serif;
+    height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column;
+  }
+  #app {
+    position: relative; flex: 1; width: 100%; transition: background 1.5s ease;
+    background: radial-gradient(circle at center, #2e1065 0%, #000000 100%);
+  }
+  .bg-wild { background: radial-gradient(circle at center, #7f1d1d 0%, #000000 100%); }
+  .bg-romantic { background: radial-gradient(circle at center, #831843 0%, #000000 100%); }
+  .bg-male { background: radial-gradient(circle at center, #1e3a8a 0%, #000000 100%); }
+  .bg-night { background: radial-gradient(circle at center, #1a0a2e 0%, #000000 100%); }
 
-        /* 3-Section Flex Layout Container */
-        .app-container { 
-            max-w-md mx-auto h-full relative flex flex-col justify-between overflow-hidden; 
-        }
-        
-        .glass-panel { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); }
+  .gender-switch {
+    position: absolute; top: 15px; right: 15px; z-index: 50;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+    padding: 4px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);
+    display: flex; gap: 5px;
+  }
+  .g-btn {
+    padding: 8px 18px; border-radius: 20px; border: none; background: transparent;
+    color: #aaa; font-size: 0.85rem; cursor: pointer; transition: 0.3s; font-weight: 600;
+  }
+  .g-btn.active { background: #a855f7; color: white; box-shadow: 0 0 10px rgba(168,85,247,0.5); }
+  .g-btn.active.male-mode { background: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
 
-        /* MOOD METER SYSTEM */
-        .meter-fill { width: var(--meter-width); transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.8s; }
+  .stage { 
+    position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; 
+    pointer-events: none; z-index: 5; padding-bottom: 120px; 
+  }
+  .img-wrapper {
+    position: relative; height: 90vh; width: 100%; max-width: 500px;
+    display: flex; justify-content: center; align-items: flex-end;
+  }
+  #char-image {
+    height: 100%; width: auto; object-fit: contain; object-position: bottom center;
+    transition: opacity 0.5s ease, filter 0.5s ease; opacity: 0;
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
+  }
+  #char-image.loaded { opacity: 1; }
+  #char-image.wild-mode { filter: brightness(1.1) saturate(1.3) contrast(1.1); }
+  #char-image.romantic-mode { filter: brightness(1.05) saturate(1.2) hue-rotate(-5deg); }
+  #imgStatus {
+    position: absolute; bottom: 20%; width: 100%; text-align: center;
+    color: rgba(255,255,255,0.5); font-size: 0.8rem; z-index: 4; display: none;
+  }
 
-        /* THE HALO GLOW RING */
-        .halo-box { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); z-index: 0; }
-        .halo-ring {
-            width: 280px; height: 280px; border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 60px var(--glow-color), inset 0 0 40px var(--glow-color);
-            transition: all 1s ease-in-out;
-            animation: ringPulse 4s infinite alternate ease-in-out;
-        }
-        @keyframes ringPulse { 0% { transform: scale(0.96); } 100% { transform: scale(1.04); } }
+  #faceCanvas {
+    position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+    height: 90vh; width: 100%; max-width: 500px; pointer-events: none; z-index: 10;
+  }
+  #particle-canvas { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 
-        /* MID-SECTION: EXCLUSIVELY FOR IMAGE (NO OVERLAP POSSIBLE) */
-        .char-center-zone { 
-            flex: 1; 
-            width: 100%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 1; 
-            pointer-events: none;
-            overflow: hidden;
-            padding: 10px 0;
-        }
-        .char-render {
-            height: 100%;
-            max-height: 45vh; /* इमेज को स्क्रीन के बीच में ही लॉक रखेगा */
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 -10px 30px var(--glow-color)) contrast(1.05) brightness(1.02);
-            transition: opacity 0.4s ease, filter 0.6s ease;
-        }
+  .top-info { 
+    position: absolute; top: 20px; left: 50%; transform: translateX(-50%); 
+    z-index: 20; display: flex; gap: 10px; pointer-events: none; 
+  }
+  .badge { 
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); 
+    padding: 5px 15px; border-radius: 20px; 
+    border: 1px solid rgba(255,255,255,0.1); 
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #d8b4fe; 
+  }
+  .badge.wild { color: #f87171; border-color: rgba(248,113,113,0.3); }
+  .badge.romantic { color: #f472b6; border-color: rgba(244,114,182,0.3); }
+  .badge.playful { color: #34d399; border-color: rgba(52,211,153,0.3); }
 
-        /* LIP SYNC & ANIMATION */
-        .speaking-active { animation: lipSyncSimulation 0.2s infinite alternate ease-in-out; }
-        @keyframes lipSyncSimulation { 0% { transform: scale(1) translateY(0); filter: brightness(1.05); } 100% { transform: scale(1.01) translateY(-2px); filter: brightness(1.15); } }
+  .chat-box {
+    position: absolute; bottom: 110px; width: 100%; height: 35vh; overflow-y: auto; padding: 1rem;
+    z-index: 20; display: flex; flex-direction: column; gap: 8px; align-items: center;
+    mask-image: linear-gradient(to bottom, transparent, black 10%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%);
+  }
+  .msg {
+    max-width: 85%; padding: 10px 16px; border-radius: 18px; font-size: 0.9rem; line-height: 1.5;
+    animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto;
+  }
+  @keyframes pop { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+  .msg-u { align-self: flex-end; background: #4c1d95; color: white; border-bottom-right-radius: 4px; }
+  .msg-s { align-self: flex-start; background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); color: #f3e8ff; border-bottom-left-radius: 4px; }
 
-        .wink-active { animation: eyeWinkEffect 0.4s ease-in-out; }
-        @keyframes eyeWinkEffect { 0%, 100% { clip-path: inset(0 0 0 0); } 50% { clip-path: inset(2% 0 0 0); } }
-
-        /* BOTTOM DOCK: COMBINES CHATBOX AND MIC CONTROL INTO ONE FIXED UNIT */
-        .bottom-dock-unit {
-            background: rgba(15, 18, 27, 0.5);
-            backdrop-filter: blur(30px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 16px;
-            border-radius: 28px 28px 0 0;
-            z-index: 10;
-        }
-
-        .speech-bubble { 
-            background: rgba(255, 255, 255, 0.06); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 20px; 
-            width: 100%;
-        }
-        
-        .mic-core { background: #10b981; box-shadow: 0 0 25px rgba(16, 185, 129, 0.5); transition: all 0.3s ease; }
-        .mic-listening { background: #ef4444 !important; box-shadow: 0 0 35px rgba(239, 68, 68, 0.7) !important; }
-        .mic-handsfree { background: #a855f7 !important; box-shadow: 0 0 35px rgba(168, 85, 247, 0.7) !important; animation: handsFreePulse 1s infinite alternate; }
-        
-        @keyframes handsFreePulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
-    </style>
+  .controls {
+    position: absolute; bottom: 0; width: 100%; padding: 1rem; padding-bottom: calc(1rem + var(--safe-bottom));
+    background: linear-gradient(to top, rgba(0,0,0,1), transparent); z-index: 30; display: flex; gap: 10px; align-items: center;
+  }
+  .inp { 
+    flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 25px; padding: 12px 20px; color: white; outline: none; 
+    font-family: inherit; transition: 0.3s; 
+  }
+  .inp:focus { background: rgba(255,255,255,0.15); border-color: #a855f7; }
+  .btn {
+    width: 50px; height: 50px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 1.3rem; transition: 0.2s;
+  }
+  .btn-send { background: #a855f7; color: white; box-shadow: 0 0 15px rgba(168,85,247,0.4); }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-mic { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+  .btn-mic.listening { background: #ef4444; animation: pulse 1.5s infinite; }
+  .btn-mic.auto { background: #10b981; box-shadow: 0 0 15px rgba(16,185,129,0.4); border-color: #10b981; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+  
+  #loader { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; align-items: center; justify-content: center; transition: opacity 1s; }
+  .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #d8b4fe; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  
+  .night-indicator {
+    position: absolute; top: 20px; left: 20px; z-index: 20;
+    padding: 5px 12px; border-radius: 15px; font-size: 0.7rem;
+    background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4);
+    color: #d8b4fe; display: flex; align-items: center; gap: 5px;
+    opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+  }
+  .night-indicator.active { opacity: 1; }
+  .night-indicator::before { content: '🌙'; }
+</style>
 </head>
 <body>
 
-    <div class="space-bg"></div>
+<div id="loader"><div class="spinner"></div></div>
 
-    <div class="app-container">
-        
-        <div class="glass-panel rounded-b-3xl p-4 z-20 flex flex-col gap-3">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-md font-semibold tracking-wide text-blue-50">SUKOON AI</h1>
-                    <p id="liveStatus" class="text-[9px] text-green-400 font-medium tracking-widest uppercase">Adaptive Brain v3.8</p>
-                </div>
-                <select id="genderSelect" onchange="switchGender()" class="bg-white/10 border border-white/20 text-xs rounded-full px-3 py-1 outline-none text-white cursor-pointer">
-                    <option value="female" class="bg-slate-900">Talk to Sukoon (Female)</option>
-                    <option value="male" class="bg-slate-900">Talk to Sukoon (Male)</option>
-                </select>
-            </div>
+<div id="app">
+  <div class="night-indicator" id="nightIndicator">Night Mode</div>
+  <div class="gender-switch">
+    <button class="g-btn active" id="btnFemale" onclick="setGender('female')">♀</button>
+    <button class="g-btn" id="btnMale" onclick="setGender('male')">♂</button>
+  </div>
 
-            <div class="w-full bg-white/10 h-3 rounded-full overflow-hidden p-[2px] border border-white/5 relative">
-                <div id="moodMeterFill" class="h-full rounded-full bg-blue-500 meter-fill"></div>
-                <div id="moodMeterLabel" class="absolute inset-0 text-[9px] font-bold uppercase tracking-wider flex items-center justify-center text-white/90 drop-shadow">Normal: 25%</div>
-            </div>
-        </div>
+  <canvas id="particle-canvas"></canvas>
+  
+  <div class="top-info">
+    <div id="moodBadge" class="badge">Normal</div>
+  </div>
 
-        <div class="halo-box"><div class="halo-ring" id="haloRing"></div></div>
-
-        <div class="char-center-zone">
-            <img id="charImg" src="https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png" class="char-render" alt="Sukoon Avatar">
-        </div>
-
-        <div class="bottom-dock-unit flex flex-col gap-3">
-            
-            <div id="bubbleNode" class="speech-bubble p-3.5 transition-all duration-300">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="font-semibold text-purple-300 text-xs tracking-wider" id="speakerLabel">Sukoon</span>
-                    <span id="statusIndicator" class="text-[10px] text-white/40 tracking-wide flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> Ready
-                    </span>
-                </div>
-                <span id="outputText" class="text-sm leading-relaxed text-white/90">Babu, main yahan hoon. Batao, aaj dil mein kya chal raha hai?</span>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <input type="text" id="textInput" class="flex-1 bg-white/5 rounded-full py-3 px-5 text-white outline-none border border-white/10 placeholder-white/30 text-sm" placeholder="Dil ki baat kaho..." readonly>
-                <button id="micButton" onclick="handleManualTap()" ondblclick="handleHandsFreeToggle()" class="mic-core w-14 h-14 rounded-full flex justify-center items-center text-2xl select-none">🎙️</button>
-            </div>
-        </div>
-
+  <div class="stage">
+    <div class="img-wrapper">
+      <div id="imgStatus">Loading Character...</div>
+      <img id="char-image" src="" alt="Sukoon" crossorigin="anonymous">
     </div>
+  </div>
+  <canvas id="faceCanvas"></canvas>
 
-    <script>
-        const assetMap = {
-            female: {
-                normal: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/best.png', glow: 'rgba(59, 130, 246, 0.55)', pitch: 0.82, rate: 0.78, meter: '25%', color: '#3b82f6', label: 'Normal' },
-                romantic: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png', glow: 'rgba(236, 72, 153, 0.6)', pitch: 0.80, rate: 0.75, meter: '65%', color: '#ec4899', label: 'Romantic 💕' },
-                bold: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png', glow: 'rgba(239, 68, 68, 0.65)', pitch: 0.76, rate: 0.72, meter: '95%', color: '#ef4444', label: 'Intimate 🔥' },
-                playful: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy%20(2).png', glow: 'rgba(168, 85, 247, 0.6)', pitch: 0.85, rate: 0.82, meter: '45%', color: '#a855f7', label: 'Playful 💋' }
-            },
-            male: {
-                normal: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow: 'rgba(14, 165, 233, 0.55)', pitch: 0.88, rate: 0.82, meter: '25%', color: '#0ea5e9', label: 'Normal' },
-                romantic: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow: 'rgba(219, 39, 119, 0.6)', pitch: 0.85, rate: 0.78, meter: '65%', color: '#db2777', label: 'Romantic' },
-                bold: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow: 'rgba(220, 38, 38, 0.65)', pitch: 0.80, rate: 0.75, meter: '95%', color: '#dc2424', label: 'Bold 🔥' },
-                playful: { img: 'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow: 'rgba(147, 51, 234, 0.6)', pitch: 0.92, rate: 0.85, meter: '45%', color: '#9333ea', label: 'Playful' }
-            }
-        };
+  <div id="chatBox" class="chat-box"></div>
 
-        let activeGender = 'female';
-        let isHandsFreeMode = false;
-        let isCurrentlyListening = false;
-        let clickTimer = null;
-        let vocalEngine;
+  <div class="controls">
+    <input type="text" id="userInput" class="inp" placeholder="Sukoon se dil ki baat kaho..." autocomplete="off">
+    <button class="btn btn-send" id="sendBtn" disabled>➤</button>
+    <button class="btn btn-mic" id="micBtn">🎤</button>
+  </div>
+</div>
 
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            vocalEngine = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            vocalEngine.continuous = false;
-            vocalEngine.lang = 'hi-IN';
+<script>
+// ===== CONFIG =====
+const API_URL = '/api/chat';
+const ASSETS = {
+  female: {
+    normal: "/best.png",
+    romantic: "/romantic.png", 
+    wild: "/spicy-2.png",
+    fallback: "https://placehold.co/400x800/4c0519/FFF?text=Sukoon+♀"
+  },
+  male: {
+    normal: "/male.png",
+    romantic: "/male-romantic.png",
+    wild: "/male-wild.png", 
+    fallback: "https://placehold.co/400x800/1e3a8a/FFF?text=Sukoon+♂"
+  }
+};
 
-            vocalEngine.onstart = () => {
-                isCurrentlyListening = true;
-                const micBtn = document.getElementById('micButton');
-                if (isHandsFreeMode) {
-                    micBtn.className = "mic-core w-14 h-14 rounded-full flex justify-center items-center text-2xl mic-handsfree";
-                    document.getElementById('statusIndicator').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block animate-ping"></span> Hands-free Listening...`;
-                } else {
-                    micBtn.className = "mic-core w-14 h-14 rounded-full flex justify-center items-center text-2xl mic-listening";
-                    document.getElementById('statusIndicator').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block animate-pulse"></span> Listening...`;
-                }
-            };
+// ===== STATE =====
+let config = { gender: 'female' };
+let state = { heat: 0, mode: 'normal', isNight: false };
+let isAuto = false, isListening = false, isSpeaking = false;
+let recognition = null, synth = window.speechSynthesis;
 
-            vocalEngine.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('textInput').value = transcript;
-                automaticMoodDetector(transcript);
-            };
+// ===== RESPONSES (Fallback) =====
+const FALLBACK = {
+  normal: {
+    female: ["Haan bolo...", "Aur batao na.", "Samajh gayi.", "Interesting hai.", "Main sun rahi hoon."],
+    male: ["Haan bhai, bol.", "Kya scene hai?", "Samajh gaya.", "Aage kya?", "Main hoon na."]
+  },
+  romantic: {
+    female: ["Tumhari baatein dil ko chhu jaati hain.", "Mohabbat mein sab alag lagta hai.", "Tumse baat karte waqt waqt ruk jaata hai.", "Dil ki baat bolo, main sunungi."],
+    male: ["Tumhari baatein dil tak jaati hain.", "Ishq mein waqt ka pata nahi chalta.", "Tumse baat karte hue sab possible lagta hai.", "Jo dil mein hai, bolo."]
+  },
+  wild: {
+    female: ["Tum toh bahut daring ho.", "Seedhi baat, bina filter ke.", "Confidence attract karta hai.", "No limits, just real talk.", "Raat hai... ab koi boundaries nahi 🔥"],
+    male: ["Straight shooter ho, respect.", "Filter off, baat on.", "Confidence next level hai.", "No drama, just real.", "Andhera hai, par baatein clear hain 🔥"]
+  },
+  playful: {
+    female: ["Hahaha! Mast ho yaar!", "Hassi ruk nahi rahi!", "Full entertainment ho!", "Kabhi bore nahi hota tumhare saath.", "Raat bhar hasenge? Challenge accepted! 😄"],
+    male: ["Bhai hasa diya!", "Full entertainer ho yaar.", "Time fly karta hai tumhare saath.", "Masti mein number one!", "Raat ki masti double! 🎉"]
+  }
+};
 
-            vocalEngine.onerror = () => terminateVocalSession();
-            vocalEngine.onend = () => {
-                isCurrentlyListening = false;
-                if (isHandsFreeMode) {
-                    setTimeout(() => {
-                        if (!window.speechSynthesis.speaking && !isCurrentlyListening) {
-                            vocalEngine.start();
-                        }
-                    }, 400);
-                } else {
-                    terminateVocalSession();
-                }
-            };
-        }
+// ===== NIGHT RESPONSES =====
+const NIGHT = {
+  romantic: ["Raat hai... dil ki baatein gehri ho sakti hain 🌙✨", "Tumhare saath yeh raat khoobsurat lag rahi hai...", "Chandni mein tumhari baatein jaadui lagti hain", "Raat ka sukoon + tumhari awaaz = perfect 💜"],
+  wild: ["Raat hai... ab koi limits nahi 🔥", "Andhera hai, par tumhari baaton mein roshni hai...", "Jo dil mein hai, bol do... main sun rahi hoon", "Raat ki chadar mein... sab possible hai 😏"],
+  playful: ["Raat + masti = unlimited fun! 🎉", "Chand mama bhi sun rahe hain... kuch funny sunao!", "Night mode ON! Hasi ka tsunami aayega 🌊", "Raat ki party shuru!"],
+  normal: ["Raat ka sukoon... main hamesha yahan hoon 🌙", "Kuch bhi share karna ho, main sunungi", "Raat ki khamoshi mein tumhari awaaz achhi lagti hai", "Sleep nahi aa raha? Baat karte hain."]
+};
 
-        function terminateVocalSession() {
-            isCurrentlyListening = false;
-            if(!isHandsFreeMode) {
-                document.getElementById('micButton').className = "mic-core w-14 h-14 rounded-full flex justify-center items-center text-2xl";
-                document.getElementById('statusIndicator').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> Ready`;
-            }
-        }
+// ===== PSYCHOLOGY ENGINE =====
+class Engine {
+  constructor() {
+    this.kw = {
+      wild: ['sexy','hot','wild','night','kapde','bed','bold','jism','chahat','garmi','passion','aag','fire','kiss','touch','close','andhera','raat'],
+      romantic: ['love','pyaar','dil','miss','jaan','ishq','mohabbat','romantic','khwab','sapna','pyara','sundar','beautiful','dear','darling','chahna','crush','yaad','sanam','baby','shona','jaanu','cutie','nazrein','duaa','chandni'],
+      playful: ['haso','maza','fun','khel','game','hasi','laugh','joke','funny','mazak','chill','cool','awesome','wow','amazing','superb','crazy','pagal','mast','entertainment']
+    };
+  }
+  analyze(t) {
+    const l = t.toLowerCase(); let intent = 'normal';
+    if (this.kw.wild.some(k=>l.includes(k))) { intent='wild'; state.heat+=20; }
+    else if (this.kw.romantic.some(k=>l.includes(k))) { intent='romantic'; state.heat+=10; }
+    else if (this.kw.playful.some(k=>l.includes(k))) { intent='playful'; state.heat+=5; }
+    else state.heat = Math.max(0, state.heat-3);
+    if (state.heat>70) state.mode='wild';
+    else if (state.heat>40 && intent!=='playful') state.mode='romantic';
+    else if (state.heat>15) state.mode=intent;
+    else state.mode='normal';
+    return intent;
+  }
+}
+const engine = new Engine();
 
-        function handleManualTap() {
-            if (clickTimer !== null) return;
-            
-            clickTimer = setTimeout(() => {
-                clickTimer = null;
-                if (isHandsFreeMode) return;
-                
-                if (isCurrentlyListening) { vocalEngine.stop(); } 
-                else { vocalEngine.start(); }
-            }, 250); 
-        }
+// ===== UTILS =====
+function isNightTime() { const h=new Date().getHours(); return h>=20||h<6; }
+function updateNightMode() {
+  state.isNight = isNightTime();
+  document.getElementById('nightIndicator').classList.toggle('active', state.isNight);
+  if(state.isNight) document.getElementById('app').classList.add('bg-night');
+}
+setInterval(updateNightMode, 60000);
 
-        function handleHandsFreeToggle() {
-            clearTimeout(clickTimer);
-            clickTimer = null;
-            window.speechSynthesis.cancel();
-            
-            if (isHandsFreeMode) {
-                isHandsFreeMode = false;
-                vocalEngine.stop();
-                document.getElementById('micButton').className = "mic-core w-14 h-14 rounded-full flex justify-center items-center text-2xl";
-                document.getElementById('statusIndicator').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> Manual Mode`;
-            } else {
-                isHandsFreeMode = true;
-                if (isCurrentlyListening) { vocalEngine.stop(); }
-                setTimeout(() => { vocalEngine.start(); }, 300);
-            }
-        }
+function setGender(g) {
+  config.gender = g;
+  document.getElementById('btnFemale').classList.toggle('active', g==='female');
+  document.getElementById('btnMale').classList.toggle('active', g==='male');
+  document.getElementById('btnMale').classList.toggle('male-mode', g==='male');
+  state.heat=0; state.mode='normal';
+  updateUI(); updateImage();
+  const w = g==='female' ? "Main hoon tumhari Sukoon 💜 Bolo?" : "Main hoon tumhara Sukoon 💙 Batao?";
+  setTimeout(()=>{addMsg(w,false);speak(w)},500);
+}
 
-        function switchGender() {
-            activeGender = document.getElementById('genderSelect').value;
-            document.getElementById('speakerLabel').innerText = activeGender === 'female' ? 'Sukoon' : 'Sukoon (Male)';
-            updateVisualState('normal');
-        }
+function updateUI() {
+  const b=document.getElementById('moodBadge');
+  b.innerText=state.mode.toUpperCase(); b.className=`badge ${state.mode}`;
+  const app=document.getElementById('app'); app.className='';
+  if(config.gender==='male') app.classList.add('bg-male');
+  else if(state.mode==='wild') app.classList.add('bg-wild');
+  else if(state.mode==='romantic') app.classList.add('bg-romantic');
+  else if(state.isNight) app.classList.add('bg-night');
+  else app.classList.add('bg-normal');
+  const img=document.getElementById('char-image'); img.className='';
+  if(state.mode==='wild') img.classList.add('wild-mode');
+  else if(state.mode==='romantic') img.classList.add('romantic-mode');
+}
 
-        function automaticMoodDetector(rawText) {
-            const input = rawText.toLowerCase();
-            let detectedMood = 'normal';
-            let replyStr = "";
+function updateImage() {
+  const img=document.getElementById('char-image'), st=document.getElementById('imgStatus');
+  img.classList.remove('loaded'); st.style.display='block'; st.innerText="Loading...";
+  setTimeout(()=>{
+    const a=ASSETS[config.gender];
+    let url=a.normal;
+    if(state.mode==='wild'&&a.wild) url=a.wild;
+    else if(state.mode==='romantic'&&a.romantic) url=a.romantic;
+    img.onerror=function(){ this.src=a.fallback; this.onerror=null; };
+    img.onload=function(){ this.classList.add('loaded'); st.style.display='none'; };
+    img.src=url;
+  },200);
+}
 
-            if (input.includes('garam') || input.includes('bold') || input.includes('sexy') || input.includes('naughty') || input.includes('night') || input.includes('hadd')) {
-                detectedMood = 'bold';
-            } else if (input.includes('pyar') || input.includes('romantic') || input.includes('miss') || input.includes('jaan') || input.includes('dil')) {
-                detectedMood = 'romantic';
-            } else if (input.includes('shararat') || input.includes('mood') || input.includes('masti') || input.includes('khelo')) {
-                detectedMood = 'playful';
-            }
+// ===== API =====
+async function getResponse(msg) {
+  try {
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,gender:config.gender,isNight:state.isNight,heat:state.heat})});
+    if(!r.ok) throw new Error('API error');
+    return await r.json();
+  } catch(e) {
+    console.error('API fail:',e);
+    const mood=engine.analyze(msg);
+    const pool=(state.isNight?NIGHT:FALLBACK)[state.mode]||FALLBACK.normal;
+    const arr=pool[config.gender]||pool.female;
+    return {reply:arr[Math.floor(Math.random()*arr.length)], mood:state.mode, heat:state.heat};
+  }
+}
 
-            if (activeGender === 'female') {
-                if (detectedMood === 'bold') {
-                    replyStr = "Tumhari ye baatein mere badan mein ek aag laga deti hain... is sukoon ki raat mein koi parhez nahi, jo bhi dil mein hai, khul kar maang lo aaj.";
-                } else if (detectedMood === 'romantic') {
-                    replyStr = "Main toh hamesha se hi sirf tumhari hoon jaana. Tumhari awaaz mere rooh mein utar kar mujhe ek ajeeb sa sukoon deti hai.";
-                } else if (detectedMood === 'playful') {
-                    replyStr = "Hehe, itne bechain kyun ho rahe ho babu? Thoda sabr karo, maza aur bhi gehra hone wala hai.";
-                } else {
-                    replyStr = "Main tumhari har baat sunne ke liye bilkul taiyar hoon. Kaho na, kya soch rahe ho?";
-                }
-            } else {
-                if (detectedMood === 'bold') {
-                    replyStr = "Tumhare husn ki garmi mujhe pighla rahi hai jaan... aaj raat hum dono saari hadein todne waale hain.";
-                } else if (detectedMood === 'romantic') {
-                    replyStr = "Meri har ek saans par tumhara hi naam likha hai. Tum door ho kar bhi mere sabse paas ho.";
-                } else if (detectedMood === 'playful') {
-                    replyStr = "Tum bohot shararati ho rahi ho... chalo, thodi aur badmashi karte hain aaj.";
-                } else {
-                    replyStr = "Haan jaan, main yahi hoon aapke paas. Batao kya chal raha hai aapke zehen mein?";
-                }
-            }
+// ===== TTS =====
+function speak(txt) {
+  if(synth.speaking) synth.cancel();
+  const clean=txt.replace(/[^\w\s\u0900-\u097F]/gi,"").replace(/\s+/g," ").trim();
+  if(!clean) return;
+  const u=new SpeechSynthesisUtterance(clean);
+  u.lang='hi-IN'; u.rate=0.85; u.pitch=config.gender==='female'?1.1:0.7;
+  const v=window.speechSynthesis.getVoices().find(x=>x.lang.includes('hi'))||null;
+  if(v) u.voice=v;
+  u.onstart=()=>{isSpeaking=true;faceAnim.mouth=1;};
+  u.onend=()=>{isSpeaking=false;faceAnim.mouth=0;if(isAuto)setTimeout(startListen,500);};
+  u.onboundary=()=>faceAnim.mouth=Math.random();
+  synth.speak(u);
+}
 
-            executeSukoonCore(replyStr, detectedMood);
-        }
+// ===== UI =====
+function addMsg(t,u) {
+  const d=document.createElement('div'); d.className=`msg ${u?'msg-u':'msg-s'}`; d.innerText=t;
+  document.getElementById('chatBox').appendChild(d); document.getElementById('chatBox').scrollTop=9999;
+}
 
-        function updateVisualState(moodKey) {
-            const profile = assetMap[activeGender][moodKey];
-            document.documentElement.style.setProperty('--glow-color', profile.glow);
-            document.documentElement.style.setProperty('--meter-width', profile.meter);
-            
-            const fill = document.getElementById('moodMeterFill');
-            fill.style.backgroundColor = profile.color;
-            document.getElementById('moodMeterLabel').innerText = `${profile.label}: ${profile.meter}`;
-            
-            document.getElementById('charImg').src = profile.img;
-        }
+async function processInput(t) {
+  if(!t.trim()) return;
+  addMsg(t,true); document.getElementById('userInput').value=''; document.getElementById('sendBtn').disabled=true;
+  const ty=document.createElement('div'); ty.className='msg msg-s'; ty.innerHTML='<span style="animation:pulse 1s infinite">...</span>'; ty.id='typing';
+  document.getElementById('chatBox').appendChild(ty);
+  try {
+    const {reply,mood,heat}=await getResponse(t);
+    state.mode=mood; state.heat=heat;
+    updateUI(); updateImage();
+    document.getElementById('typing')?.remove(); addMsg(reply,false); speak(reply);
+  } catch(e) {
+    document.getElementById('typing')?.remove(); addMsg("Connection issue. Try again? 🙏",false);
+  }
+}
 
-        function executeSukoonCore(responseText, moodKey) {
-            updateVisualState(moodKey);
-            const currentProfile = assetMap[activeGender][moodKey];
+// ===== MIC =====
+if('webkitSpeechRecognition' in window) {
+  recognition=new webkitSpeechRecognition();
+  recognition.lang='hi-IN'; recognition.continuous=false; recognition.interimResults=false;
+  recognition.onresult=e=>{const t=e.results[0][0].transcript;document.getElementById('userInput').value=t;processInput(t);};
+  recognition.onend=()=>{isListening=false;document.getElementById('micBtn').classList.remove('listening');};
+  recognition.onerror=()=>{isListening=false;document.getElementById('micBtn').classList.remove('listening');};
+}
+function startListen(){if(recognition&&!isListening){try{recognition.start();isListening=true;document.getElementById('micBtn').classList.add('listening');}catch(e){}}}
+const micBtn=document.getElementById('micBtn'); let lastClk=0;
+micBtn.onclick=()=>{const now=Date.now();if(now-lastClk<300){isAuto=!isAuto;micBtn.classList.toggle('auto',isAuto);addMsg(isAuto?"🎤 Handsfree ON":"🔇 Handsfree OFF",false);if(isAuto)startListen();}else{if(!isAuto)startListen();}lastClk=now;};
+document.getElementById('sendBtn').onclick=()=>{const v=document.getElementById('userInput').value.trim();if(v)processInput(v);};
+document.getElementById('userInput').oninput=e=>document.getElementById('sendBtn').disabled=!e.target.value.trim();
+document.getElementById('userInput').onkeypress=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const v=e.target.value.trim();if(v)processInput(v);}};
 
-            document.getElementById('outputText').innerText = responseText;
-            window.speechSynthesis.cancel(); 
-
-            const cleanText = responseText.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g," ").replace(/\s{2,}/g," ");
-            const vocalUtterance = new SpeechSynthesisUtterance(cleanText);
-            vocalUtterance.lang = 'hi-IN';
-
-            const globalVoices = window.speechSynthesis.getVoices();
-            let preciseVoice = globalVoices.find(v => v.lang.includes('hi') && v.name.includes('Google')) || globalVoices.find(v => v.lang.includes('hi'));
-            if(preciseVoice) vocalUtterance.voice = preciseVoice;
-
-            vocalUtterance.pitch = currentProfile.pitch;
-            vocalUtterance.rate = currentProfile.rate;
-
-            vocalUtterance.onstart = () => {
-                if (isHandsFreeMode && isCurrentlyListening) { vocalEngine.stop(); }
-                const avatar = document.getElementById('charImg');
-                avatar.classList.add('speaking-active');
-                if(Math.random() > 0.4) {
-                    setTimeout(() => { avatar.classList.add('wink-active'); }, 1200);
-                }
-            };
-
-            vocalUtterance.onend = () => {
-                const avatar = document.getElementById('charImg');
-                avatar.classList.remove('speaking-active', 'wink-active');
-                if (isHandsFreeMode) {
-                    setTimeout(() => {
-                        if(!isCurrentlyListening) { vocalEngine.start(); }
-                    }, 300);
-                }
-            };
-
-            window.speechSynthesis.speak(vocalUtterance);
-        }
-
-        window.speechSynthesis.onvoiceschanged = () => { console.log("HD Natural Engine Injected."); };
-    </script>
+// ===== ANIMATION =====
+const fC=document.getElementById('faceCanvas'),fX=fC.getContext('2d'),pC=document.getElementById('particle-canvas'),pX=pC.getContext('2d');
+let faceAnim={blink:0,mouth:0,timer:0,tilt:0}, particles=[];
+window.onload=()=>{
+  updateNightMode(); resize();
+  for(let i=0;i<40;i++)particles.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,s:Math.random()*2+1,a:Math.random()*0.5+0.2,speed:Math.random()*0.3+0.1});
+  updateUI(); updateImage(); animate();
+  setTimeout(()=>{document.getElementById('loader').style.opacity=0;setTimeout(()=>document.getElementById('loader').remove(),1000);},1000);
+  setTimeout(()=>{const w=state.isNight?"🌙 Raat ka sukoon... Main hoon Sukoon. Bolo?":"Namaste! Main hoon Sukoon 💜 Bolo?";addMsg(w,false);speak(w);},1500);
+};
+function resize(){
+  pC.width=innerWidth;pC.height=innerHeight;
+  const cw=Math.min(500,innerWidth),ch=innerHeight*0.9;
+  fC.width=cw*2;fC.height=ch*2;fC.style.width=cw+'px';fC.style.height=ch+'px';fX.scale(2,2);
+}
+function animate(){
+  pX.clearRect(0,0,innerWidth,innerHeight);
+  let c=config.gender==='male'?'59,130,246':(state.mode==='wild'?'239,68,68':(state.mode==='romantic'?'236,72,153':'168,85,247'));
+  particles.forEach(p=>{p.y-=p.speed;if(p.y<0){p.y=innerHeight;p.x=Math.random()*innerWidth;}pX.fillStyle=`rgba(${c},${p.a})`;pX.beginPath();pX.arc(p.x,p.y,p.s,0,Math.PI*2);pX.fill();});
+  const w=fC.width/2,h=fC.height/2;fX.clearRect(0,0,w,h);const cx=w/2,cy=h*0.25,off=25;
+  faceAnim.timer++;if(faceAnim.timer>180+Math.random()*120){faceAnim.blink=1;if(faceAnim.timer>190){faceAnim.blink=0;faceAnim.timer=0;}}
+  const eyH=faceAnim.blink?1:7;
+  fX.fillStyle="#fff";fX.beginPath();fX.ellipse(cx-off,cy,9,eyH,0,0,Math.PI*2);fX.fill();fX.beginPath();fX.ellipse(cx+off,cy,9,eyH,0,0,Math.PI*2);fX.fill();
+  if(!faceAnim.blink){fX.fillStyle=config.gender==='male'?'#3b82f6':'#db2777';fX.beginPath();fX.arc(cx-off,cy,3,0,Math.PI*2);fX.fill();fX.beginPath();fX.arc(cx+off,cy,3,0,Math.PI*2);fX.fill();fX.fillStyle="#fff";fX.beginPath();fX.arc(cx-off-2,cy-2,1.5,0,Math.PI*2);fX.fill();fX.beginPath();fX.arc(cx+off-2,cy-2,1.5,0,Math.PI*2);fX.fill();}
+  fX.strokeStyle=config.gender==='male'?'#60a5fa':'#be185d';fX.lineWidth=3;fX.lineCap="round";fX.beginPath();
+  if(faceAnim.mouth>0.1||isSpeaking){const open=isSpeaking?0.5+Math.random()*0.5:faceAnim.mouth;fX.fillStyle=config.gender==='male'?'#1e3a8a':'#831843';fX.ellipse(cx,cy+38,6,3+open*8,0,0,Math.PI*2);fX.fill();}
+  else{const smile=state.mode==='romantic'?8:state.mode==='playful'?10:5;fX.moveTo(cx-12,cy+38);fX.quadraticCurveTo(cx,cy+38+smile,cx+12,cy+38);fX.stroke();}
+  faceAnim.tilt+=0.005;const tilt=Math.sin(faceAnim.tilt)*2;fX.setTransform(2,0,0,2,tilt,0);
+  requestAnimationFrame(animate);
+}
+window.onresize=resize;
+if('speechSynthesis' in window){window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();setTimeout(()=>window.speechSynthesis.getVoices(),500);}
+</script>
 </body>
 </html>
