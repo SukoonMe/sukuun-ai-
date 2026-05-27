@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Sukoon AI 🌙 | Tumi Jaan</title>
+<title>Sukoon AI 🌙 | Tumari Jaan</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-:root{--glow:rgba(236,72,153,0.75);--pitch:1.22;--rate:0.84}
+:root{--glow:rgba(236,72,153,0.75);--pitch:1.24;--rate:0.72}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hidden;height:100vh}
 .video-bg{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-3;opacity:0.25;pointer-events:none}
@@ -44,7 +44,7 @@ body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hid
 @keyframes blink{50%{opacity:0.4}}
 .chat-text{font-size:0.92rem;line-height:1.5;color:rgba(255,255,255,0.95);white-space:pre-wrap;word-break:break-word}
 .hist{max-height:55px;overflow-y:auto;padding:0.35rem 0.7rem;font-size:0.7rem;margin-bottom:0.35rem;scrollbar-width:none}.hist::-webkit-scrollbar{display:none}
-.hist .u{color:#a78bfa}.hist .s{color:#fbcfe8}.hist div{margin:0.15rem 0;opacity:0.8}
+.hist.u{color:#a78bfa}.hist.s{color:#fbcfe8}.hist div{margin:0.15rem 0;opacity:0.8}
 .dock{background:rgba(12,14,22,0.75);backdrop-filter:blur(22px);border-top:1px solid rgba(255,255,255,0.08);padding:0.65rem 0.9rem;border-radius:26px 26px 0 0}
 .row{display:flex;align-items:center;gap:0.45rem}
 .inp{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:2rem;padding:0.65rem 0.95rem;color:#fff;font-size:0.92rem;outline:none;transition:all 0.3s}
@@ -74,8 +74,6 @@ body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hid
 .sel{background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.18);border-radius:1.2rem;padding:0.32rem 0.75rem;color:#fff;font-size:0.7rem;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right 0.35rem center;background-repeat:no-repeat;background-size:0.9rem;padding-right:1.6rem}
 .sel option{background:#1a1a2e;color:#fff}
 .bond-indicator{position:absolute;top:0.8rem;left:0.8rem;font-size:0.6rem;color:rgba(255,255,255,0.4);z-index:5;pointer-events:none}
-
-/* 🖼️ WALLPAPER GALLERY STYLES */
 .wallpaper-panel{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.4s ease;background:radial-gradient(ellipse at center,#1a0b2e 0%,#050609 100%)}
 .wallpaper-panel.active{opacity:1;pointer-events:auto}
 .wallpaper-scroll{flex:1;overflow-y:auto;padding:1rem 0.5rem;scrollbar-width:none}
@@ -85,42 +83,45 @@ body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hid
 .wp-card:hover{transform:scale(1.03);box-shadow:0 8px 30px rgba(236,72,153,0.4)}
 .wp-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s}
 .wp-card:hover img{transform:scale(1.08)}
-.wp-card .wp-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 50%);opacity:0;transition:opacity 0.3s;display:flex;align-items:flex-end;padding:0.6rem}
-.wp-card:hover .wp-overlay{opacity:1}
+.wp-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 50%);opacity:0;transition:opacity 0.3s;display:flex;align-items:flex-end;padding:0.6rem}
+.wp-card:hover.wp-overlay{opacity:1}
 .wp-overlay span{font-size:0.65rem;color:rgba(255,255,255,0.9);font-weight:500}
 .wallpaper-header{padding:0.8rem 1rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.08)}
 .wallpaper-header h3{font-size:0.9rem;font-weight:600;color:#fbcfe8}
 .wp-close{width:2rem;height:2rem;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .wp-close:hover{background:rgba(255,255,255,0.2)}
-.wp-loading{text-align:center;padding:2rem;color:rgba(255,255,255,0.4);font-size:0.8rem}
-.wp-shimmer{background:linear-gradient(90deg,rgba(255,255,255,0.05) 25%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.05) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 </head>
 <body>
-<video class="video-bg" id="bgVideo" autoplay loop muted playsinline><source src="https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/719f75bc-3cb6-431c-bfd5-c63505ca0baa.mp4" type="video/mp4"></video>
 <div id="ageGate" class="modal"><div class="box"><h2> Sukoon AI - 18+ Only</h2><p>Yeh platform mature emotional & intimate connection ke liye hai.<br><strong>Kya aapki age 18+ hai?</strong></p><div class="btns"><button class="btn1" id="ageY">✅ Haan, Main 18+ Hoon</button><button class="btn2" id="ageN">❌ Nahi</button></div><p class="note">🔒 Privacy-first • Sirf consenting adults</p></div></div>
 <div id="nameModal" class="modal hide"><div class="box"><h2>✨ Welcome to Sukoon</h2><p>Mujhe tumhara naam batao... main tumhe usi se bulaungi 💜</p><input type="text" id="nameIn" class="ninp" placeholder="Tumhara naam..." maxlength="25" autocomplete="off"><button class="btn1" id="nameSave">✨ Shuru Karein</button></div></div>
 <div class="load" id="loader"><div class="moon">🌙</div><div class="ltxt">Sukoon AI</div></div>
 <div class="bg-parallax"><div class="bg-image" id="bgImage"></div><div class="stars"></div></div>
 
-<!-- 🖼️ WALLPAPER PANEL -->
 <div class="wallpaper-panel" id="wallpaperPanel">
 <div class="wallpaper-header"><h3>🖼️ Romantic Wallpapers</h3><button class="wp-close" id="wpClose">✕</button></div>
 <div class="wallpaper-scroll" id="wpScroll">
-<div class="wp-loading" id="wpLoading"><div class="wp-shimmer" style="height:120px;border-radius:1rem;margin-bottom:0.5rem"></div><div class="wp-shimmer" style="height:120px;border-radius:1rem;margin-bottom:0.5rem"></div><div class="wp-shimmer" style="height:120px;border-radius:1rem"></div></div>
 <div class="wallpaper-grid" id="wpGrid"></div>
 </div>
 </div>
 
 <div class="app">
-<div class="glass rounded-b-3xl p-3"><div class="flex justify-between items-center mb-2"><div><h1 class="text-sm font-semibold">SUKOON AI</h1><p id="liveSt" class="text-[10px] text-green-400">Connected</p></div><select id="genSel" class="sel"><option value="female">👩 Female</option><option value="male">👨 Male</option></select></div>
-<div class="tabs"><div class="tab active" data-mood="romantic"> Romantic</div><div class="tab" data-mood="playful">💋 Playful</div><div class="tab" data-mood="bold"> Bold</div><div class="tab" data-mood="night">🌙 Night</div><div class="tab" data-mood="wallpaper">🖼️ Wallpapers</div></div>
+<div class="glass rounded-b-3xl p-3"><div class="flex justify-between items-center mb-2"><div><h1 class="text-sm font-semibold">SUKOON AI</h1><p id="liveSt" class="text- text-green-400">Connected</p></div><select id="genSel" class="sel"><option value="female">👩 Female</option><option value="male">👨 Male</option></select></div>
+<div class="tabs">
+<div class="tab active" data-mood="romantic"> Romantic</div>
+<div class="tab" data-mood="playful">💋 Playful</div>
+<div class="tab" data-mood="bold"> Bold</div>
+<div class="tab" data-mood="night">🌙 Night</div>
+<div class="tab" data-mood="intense">🔥 Intense</div>
+<div class="tab" data-mood="tease">😈 Tease</div>
+<div class="tab" data-mood="possessive">💍 Possessive</div>
+<div class="tab" data-mood="wallpaper">🖼️ Wallpapers</div>
+</div>
 <div class="heat-bar-wrap"><div id="heatFill" class="heat-bar-fill"></div></div></div>
 <div class="halo" id="halo"></div>
 <div class="bond-indicator" id="bond">Connection: New</div>
 <div class="char-container" id="charContainer"><div class="char-zone" id="charZone"><img id="char" class="char" src="" alt="Sukoon" crossorigin="anonymous"></div></div>
-<div class="dock"><div class="hist glass rounded-xl" id="hist"></div><div class="chat-box glass"><div class="chat-head"><span class="speaker" id="spk">Sukoon</span><span class="status" id="stat"><span></span> Ready</span></div><div class="chat-text" id="out">बाााबू... main yahan hoon... batao, aaj dil mein kya chal raha hai?</div></div>
+<div class="dock"><div class="hist glass rounded-xl" id="hist"></div><div class="chat-box glass"><div class="chat-head"><span class="speaker" id="spk">Sukoon</span><span class="status" id="stat"><span></span> Ready</span></div><div class="chat-text" id="out">baabuu... main yahan hoon... batao, aaj dil mein kya chal raha hai?</div></div>
 <div class="row" style="margin-top:0.5rem"><input type="text" id="txt" class="inp" placeholder="Dil ki baat kaho..." disabled autocomplete="off"><button class="btn send" id="sendBtn" disabled>➤</button><button class="btn mic" id="micBtn" disabled title="Tap: Speak • Double Tap: Hands-Free">🎙️</button></div></div>
 </div>
 
@@ -133,31 +134,56 @@ txt:document.getElementById('txt'), sendBtn:document.getElementById('sendBtn'), 
 genSel:document.getElementById('genSel'), spk:document.getElementById('spk'), stat:document.getElementById('stat'),
 out:document.getElementById('out'), char:document.getElementById('char'), charZone:document.getElementById('charZone'), charContainer:document.getElementById('charContainer'),
 bond:document.getElementById('bond'), hist:document.getElementById('hist'), heatFill:document.getElementById('heatFill'),
-tabs:document.querySelectorAll('.tab'), bgImage:document.getElementById('bgImage'), bgVideo:document.getElementById('bgVideo'),
-wallpaperPanel:document.getElementById('wallpaperPanel'), wpGrid:document.getElementById('wpGrid'), wpLoading:document.getElementById('wpLoading'), wpClose:document.getElementById('wpClose')
+tabs:document.querySelectorAll('.tab'), bgImage:document.getElementById('bgImage'),
+wallpaperPanel:document.getElementById('wallpaperPanel'), wpGrid:document.getElementById('wpGrid'), wpClose:document.getElementById('wpClose')
 };
 
 let state = {
 name:localStorage.getItem('sukoon_name')||'', verified:localStorage.getItem('sukoon_verified')==='true',
 uid:localStorage.getItem('sukoon_uid')||('u_'+Math.random().toString(36).slice(2)),
 bondLevel:parseInt(localStorage.getItem('sukoon_bond')||'0'),
-gen:'female', mood:'romantic', free:false, listening:false, recog:null, chatHist:[], sending:false
+gen:'female', mood:'romantic', free:false, listening:false, recog:null, chatHist:[], sending:false, prevMood:null
 };
 localStorage.setItem('sukoon_uid', state.uid);
+
+// BONUS: TERI IMAGES + COPYRIGHT FREE SEDUCTIVE ILLUSIONS
 const cfg = {
 female: {
-romantic: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/romantic.png', glow:'rgba(236,72,153,0.75)', p:1.24, r:0.82, intensity:30 },
-playful: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy%20(2).png', glow:'rgba(52,211,153,0.75)', p:1.28, r:0.88, intensity:55 },
-bold: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/spicy.png', glow:'rgba(239,68,68,0.85)', p:1.16, r:0.79, intensity:80 },
-night: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/1779813902.png', glow:'rgba(139,92,246,0.85)', p:1.12, r:0.76, intensity:100 }
+romantic: { img:'romantic.png', glow:'rgba(236,72,153,0.75)', p:1.24, r:0.72, intensity:30 },
+playful: { img:'spicy2.png', glow:'rgba(52,211,153,0.75)', p:1.28, r:0.78, intensity:55 },
+bold: { img:'spicy.png', glow:'rgba(239,68,68,0.85)', p:1.16, r:0.70, intensity:80 },
+night: { img:'romantic.png', glow:'rgba(139,92,246,0.85)', p:1.12, r:0.68, intensity:100 },
+intense: { img:'spicy.png', glow:'rgba(220,38,38,0.95)', p:1.10, r:0.65, intensity:100 },
+tease: { img:'spicy2.png', glow:'rgba(168,85,247,0.85)', p:1.30, r:0.80, intensity:70 },
+possessive: { img:'romantic.png', glow:'rgba(219,39,119,0.90)', p:1.15, r:0.70, intensity:90 }
 },
 male: {
-romantic: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(219,39,119,0.75)', p:0.84, r:0.82, intensity:30 },
-playful: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(147,51,234,0.75)', p:0.90, r:0.86, intensity:55 },
-bold: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/male.png', glow:'rgba(220,38,38,0.85)', p:0.78, r:0.78, intensity:80 },
-night: { img:'https://raw.githubusercontent.com/SukoonMe/sukuun-ai-/main/1779813902.png', glow:'rgba(124,58,237,0.85)', p:0.72, r:0.74, intensity:100 }
+romantic: { img:'romantic.png', glow:'rgba(219,39,119,0.75)', p:0.84, r:0.72, intensity:30 },
+playful: { img:'spicy2.png', glow:'rgba(147,51,234,0.75)', p:0.90, r:0.76, intensity:55 },
+bold: { img:'spicy.png', glow:'rgba(220,38,38,0.85)', p:0.78, r:0.68, intensity:80 },
+night: { img:'romantic.png', glow:'rgba(124,58,237,0.85)', p:0.72, r:0.64, intensity:100 },
+intense: { img:'spicy.png', glow:'rgba(185,28,28,0.95)', p:0.70, r:0.60, intensity:100 },
+tease: { img:'spicy2.png', glow:'rgba(124,58,237,0.85)', p:0.92, r:0.78, intensity:70 },
+possessive: { img:'romantic.png', glow:'rgba(190,24,93,0.90)', p:0.76, r:0.66, intensity:90 }
 }
 };
+
+// BONUS: COPYRIGHT FREE SEDUCTIVE WALLPAPERS - Unsplash CC0
+const wallpaperUrls = [
+{url:'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&q=80',label:'Candlelight Romance'},
+{url:'https://images.unsplash.com/photo-1543478451-6c1e00177808?w=400&q=80',label:'Rose Petals'},
+{url:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&q=80',label:'Moonlit Intimacy'},
+{url:'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&q=80',label:'Bedroom Glow'},
+{url:'https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=400&q=80',label:'Silk Sheets'},
+{url:'https://images.unsplash.com/photo-1504197885521-87c815e382e4?w=400&q=80',label:'Wine & Candles'},
+{url:'https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=400&q=80',label:'Sunset Embrace'},
+{url:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',label:'Golden Hour Love'},
+{url:'https://images.unsplash.com/photo-1518893063132-36e46dbe2428?w=400&q=80',label:'Midnight Rose'},
+{url:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80',label:'Soft Lighting'},
+{url:'romantic.png',label:'Your Romantic'},
+{url:'spicy.png',label:'Your Bold'},
+{url:'spicy2.png',label:'Your Playful'}
+];
 
 setTimeout(()=>els.loader.classList.add('hide'),1100);
 if(state.verified){ els.ageGate.classList.add('hide'); state.name?enableApp():els.nameModal.classList.remove('hide'); } else { els.ageGate.style.display='flex'; }
@@ -177,180 +203,4 @@ els.wpClose?.addEventListener('click',()=>{ els.wallpaperPanel.classList.remove(
 let mouseX=0, mouseY=0, targetX=0, targetY=0;
 document.addEventListener('mousemove',e=>{ const rect=els.charContainer.getBoundingClientRect(); mouseX=(e.clientX-rect.left-rect.width/2)/(rect.width/2); mouseY=(e.clientY-rect.top-rect.height/2)/(rect.height/2); });
 document.addEventListener('touchmove',e=>{ const rect=els.charContainer.getBoundingClientRect(); const touch=e.touches[0]; mouseX=(touch.clientX-rect.left-rect.width/2)/(rect.width/2); mouseY=(touch.clientY-rect.top-rect.height/2)/(rect.height/2); });
-function updateParallax(){ targetX+=(mouseX-targetX)*0.08; targetY+=(mouseY-targetY)*0.08; if(els.charZone) els.charZone.style.transform=`translate(${targetX*20}px, ${targetY*20}px) rotateY(${targetX*3}deg) rotateX(${-targetY*3}deg)`; if(els.bgImage) els.bgImage.style.transform=`translate(calc(-50% + ${targetX*6}px), calc(-50% + ${targetY*6}px))`; requestAnimationFrame(updateParallax); }
-updateParallax();
-
-function saveName(){ const n=els.nameIn?.value.trim(); if(n){ state.name=n; localStorage.setItem('sukoon_name',n); els.nameModal?.classList.add('hide'); enableApp(); } }
-function enableApp(){ if(els.txt)els.txt.disabled=false; if(els.sendBtn)els.sendBtn.disabled=false; if(els.micBtn)els.micBtn.disabled=false; updateBond(); initRecog(); loadChar(); if(isNight())setMood('night'); setTimeout(welcome,450); }
-function setMood(m){
-if(m==='wallpaper'){
-state.prevMood=state.mood;
-els.tabs.forEach(t=>t.classList.remove('active'));
-const activeTab=document.querySelector(`.tab[data-mood="wallpaper"]`); if(activeTab)activeTab.classList.add('active');
-els.wallpaperPanel.classList.add('active');
-if(els.charContainer) els.charContainer.style.opacity='0.1';
-loadWallpapers();
-return;
-}
-if(state.prevMood) delete state.prevMood;
-els.wallpaperPanel.classList.remove('active');
-if(els.charContainer) els.charContainer.style.opacity='1';
-state.mood=m;
-els.tabs.forEach(t=>t.classList.remove('active'));
-const activeTab=document.querySelector(`.tab[data-mood="${m}"]`); if(activeTab)activeTab.classList.add('active');
-if(els.char){ els.char.classList.add('mode-switch'); setTimeout(()=>{ updateVis(m); els.char.classList.remove('mode-switch'); },250); } else updateVis(m);
-if(state.name){ state.bondLevel=Math.min(state.bondLevel+1,4); localStorage.setItem('sukoon_bond',state.bondLevel); updateBond(); }
-}
-function updateVis(m){ const c=cfg[state.gen][m]; if(!c)return; document.documentElement.style.setProperty('--glow',c.glow); document.documentElement.style.setProperty('--pitch',c.p); document.documentElement.style.setProperty('--rate',c.r); if(els.heatFill)els.heatFill.style.width=c.intensity+'%'; if(els.char){ els.char.style.opacity='0.2'; setTimeout(()=>{ els.char.src=c.img; els.char.style.opacity='1'; },200); } }
-function switchGen(){ state.gen=els.genSel?.value||'female'; if(els.spk)els.spk.innerText=state.gen==='female'?'Sukoon':'Sukoon (Male)'; updateVis(state.mood); const n=state.name||'jaan'; const w=state.gen==='female'?`Hi ${n}... ab main tumhari female companion hoon`:`Hey ${n}... ab main tumhara male companion hoon`; if(els.out)els.out.innerText=w; speak(w); }
-function loadChar(){ const c=cfg[state.gen][state.mood]; if(els.char&&c)els.char.src=c.img; }
-function updateBond(){ const levels=['New','Growing','Deep','Intimate','Soulmates']; if(els.bond)els.bond.innerText=`Connection: ${levels[Math.min(state.bondLevel,4)]}`; }
-function isNight(){ const h=new Date().getHours(); return h>=21||h<6; }
-
-// 🖼️ WALLPAPER LOADER
-const wallpaperUrls=[
-{url:'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&q=80',label:'Candlelight Romance'},
-{url:'https://images.unsplash.com/photo-1543478451-6c1e00177808?w=400&q=80',label:'Rose Petals'},
-{url:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&q=80',label:'Moonlit Intimacy'},
-{url:'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&q=80',label:'Bedroom Glow'},
-{url:'https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=400&q=80',label:'Silk Sheets'},
-{url:'https://images.unsplash.com/photo-1504197885521-87c815e382e4?w=400&q=80',label:'Wine & Candles'},
-{url:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',label:'Golden Hour Love'},
-{url:'https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=400&q=80',label:'Sunset Embrace'},
-{url:'https://images.unsplash.com/photo-1518893063132-36e46dbe2428?w=400&q=80',label:'Midnight Rose'},
-{url:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80',label:'Mountain Intimacy'},
-{url:'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&q=80',label:'Cozy Bedroom'},
-{url:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80',label:'Soft Lighting'}
-];
-
-function loadWallpapers(){
-if(els.wpGrid.children.length>0) return; // Already loaded
-els.wpLoading.style.display='block';
-setTimeout(()=>{
-els.wpLoading.style.display='none';
-wallpaperUrls.forEach(wp=>{
-const card=document.createElement('div');
-card.className='wp-card';
-card.innerHTML=`<img src="${wp.url}" alt="${wp.label}" loading="lazy"><div class="wp-overlay"><span>${wp.label}</span></div>`;
-card.addEventListener('click',()=>{
-els.bgImage.style.backgroundImage=`url(${wp.url})`;
-els.bgImage.style.opacity='0.3';
-speak(`${wp.label}... yeh dekho jaan... kitni romantic hai...`);
-});
-els.wpGrid.appendChild(card);
-});
-},600);
-}
-
-function initRecog(){ 
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition; 
-if(!SR){ if(els.micBtn)els.micBtn.style.opacity='0.3'; return; } 
-state.recog=new SR(); 
-state.recog.lang='hi-IN'; 
-state.recog.continuous=true; 
-state.recog.interimResults=true; 
-state.recog.onstart=()=>{ state.listening=true; updateMicUI('listening'); }; 
-state.recog.onresult=(ev)=>{ 
-let final=''; 
-for(let i=ev.resultIndex;i<ev.results.length;i++){ if(ev.results[i].isFinal) final+=ev.results[i][0].transcript; }
-if(final.trim()){ 
-if(els.txt)els.txt.value=final.trim(); 
-if(!state.free) setTimeout(()=>sendMsg(),200); 
-}
-}; 
-state.recog.onend=()=>{ 
-state.listening=false; 
-if(state.free&&!window.speechSynthesis?.speaking){ 
-setTimeout(()=>{ try{ state.recog?.start(); }catch(e){} },800); 
-}else{ updateMicUI('idle'); }
-}; 
-state.recog.onerror=(e)=>{ 
-state.listening=false; 
-if(e.error==='not-allowed')alert("⚠️ Mic blocked! Browser settings se allow karo."); 
-else if(e.error==='no-speech'&&state.free) setTimeout(()=>{try{state.recog?.start();}catch(e){}},500); 
-else updateMicUI('idle'); 
-}; 
-}
-function updateMicUI(mode){ 
-if(!els.micBtn||!els.stat)return; 
-els.micBtn.classList.remove('on','free'); els.stat.classList.remove('on','free'); 
-if(mode==='listening'){ els.micBtn.classList.add('on'); els.stat.classList.add('on'); els.stat.innerHTML='<span></span> Listening...'; } 
-else if(mode==='free'){ els.micBtn.classList.add('free'); els.stat.classList.add('free'); els.stat.innerHTML='<span></span> Hands-Free'; } 
-else{ els.stat.innerHTML='<span></span> Ready'; } 
-}
-function toggleVoice(){ 
-if(!state.recog)return; 
-window.speechSynthesis?.cancel(); 
-if(state.listening)state.recog.stop(); 
-else{ 
-navigator.mediaDevices.getUserMedia({audio:true}).then(()=>{try{state.recog.start();}catch(e){}}).catch(()=>updateMicUI('error')); 
-} 
-}
-function toggleFreeMode(){ 
-state.free=!state.free; 
-window.speechSynthesis?.cancel(); 
-if(state.free){ updateMicUI('free'); if(!state.listening)toggleVoice(); }else{ updateMicUI('idle'); if(state.listening)state.recog.stop(); } 
-}
-
-function speak(text){ if(!window.speechSynthesis)return; window.speechSynthesis.cancel(); setTimeout(()=>doSpeak(text), 30); }
-function cleanTextForSpeech(text){
-if(!text)return '';
-let c=text;
-c=c.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}]/gu,'');
-c=c.replace(/[💕💗💜💪😆✨💋🎙️✅❌🔒🌙👩👨]/g,'');
-c=c.replace(/\([^)]*\)/g,'');c=c.replace(/\[[^\]]*\]/g,'');c=c.replace(/\*[^\*]*\*/g,'');
-c=c.replace(/#{1,6}\s?/g,'');c=c.replace(/`{1,3}/g,'');
-c=c.replace(/_{1,2}([^_]+)_{1,2}/g,'$1');c=c.replace(/\*{1,2}([^\*]+)\*{1,2}/g,'$1');
-c=c.replace(/\.{4,}/g,'...');c=c.replace(/\s{2,}/g,' ');
-c=c.replace(/[~`@#$%^&*_+=\[\]{}|\\;<>/]/g,'');
-return c.trim();
-}
-function addNaturalPauses(text){
-if(!text)return '';
-let p=text;
-p=p.replace(/([,\.!?])\s*/g,'$1 ');
-p=p.replace(/\b(jaan|baby|shona|meri jaan|tumhari|mera|meri)\b/gi,'$1 ');
-p=p.replace(/\s*\.\.\.\s*/g,' ... ');
-return p.replace(/\s+/g,' ').trim();
-}
-function doSpeak(text){
-const cleaned=cleanTextForSpeech(text);
-if(!cleaned||!window.speechSynthesis)return;
-const natural=addNaturalPauses(cleaned);
-const utt=new SpeechSynthesisUtterance(natural);
-utt.lang='hi-IN';
-const c=cfg[state.gen][state.mood];
-if(c){ utt.pitch=c.p+(Math.random()*0.04-0.02); utt.rate=c.r+(Math.random()*0.03-0.015); }
-utt.volume=0.95;
-const setVoice=()=>{
-const voices=window.speechSynthesis.getVoices();
-if(voices.length===0){setTimeout(setVoice,50);return;}
-const voice=voices.find(v=>v.lang.includes('hi-IN')&&!v.name.toLowerCase().includes('google')&&!v.name.toLowerCase().includes('microsoft')&&v.name.toLowerCase().includes('female'))||voices.find(v=>v.lang.includes('hi-IN')&&!v.name.toLowerCase().includes('google'))||voices.find(v=>v.lang.includes('hi-IN'))||voices.find(v=>v.lang.includes('en-IN')&&v.name.toLowerCase().includes('female'))||voices[0];
-if(voice)utt.voice=voice;
-window.speechSynthesis.speak(utt);
-};
-const voices=window.speechSynthesis.getVoices();
-voices.length>0?setVoice():(window.speechSynthesis.onvoiceschanged=setVoice);
-utt.onstart=()=>{if(els.char)els.char.classList.add('speaking');if(state.free&&state.listening)state.recog?.stop();};
-utt.onend=()=>{if(els.char)els.char.classList.remove('speaking');if(state.free&&!state.listening)setTimeout(()=>{try{state.recog?.start();}catch(e){}},600);};
-utt.onerror=(e)=>{console.error('TTS Error:',e.error);};
-}
-
-async function sendMsg(){
-if(state.sending)return;const txtVal=els.txt.value.trim();if(!txtVal||!state.verified||!state.name)return;
-state.sending=true;if(els.sendBtn)els.sendBtn.disabled=true;if(els.out)els.out.innerText='...';addHist(txtVal,'u');els.txt.value='';
-try{
-const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:txtVal,userId:state.uid,userName:state.name,companionGender:state.gen,mood:state.mood,isNightMode:isNight(),chatHistory:state.chatHist.slice(-6),bondLevel:state.bondLevel})});
-if(!res.ok)throw new Error(`HTTP ${res.status}`);
-const data=await res.json();const reply=data.reply||fallback(state.mood);addHist(reply,'s');if(els.out)els.out.innerText=reply;setTimeout(()=>speak(reply),100);
-}catch(err){console.error('API:',err);const fb=fallback(state.mood);addHist(fb,'s');if(els.out)els.out.innerText=fb;speak(fb);}
-finally{state.sending=false;if(els.sendBtn)els.sendBtn.disabled=false;els.txt?.focus();}
-}
-function addHist(t,s){if(!els.hist)return;const d=document.createElement('div');d.className=s==='u'?'u':'s';d.textContent=`${s==='u'?'You':state.name}: ${t}`;els.hist.appendChild(d);els.hist.scrollTop=els.hist.scrollHeight;while(els.hist.children.length>4)els.hist.removeChild(els.hist.firstChild);if(s!=='sys'){state.chatHist.push({role:s==='u'?'user':'assistant',content:t});if(state.chatHist.length>10)state.chatHist=state.chatHist.slice(-10);}}
-function fallback(m){const n=state.name||'jaan';const r={romantic:[`tumhari aawaz sunke... mere dil ki dhadkan slow ho gayi... ${n}... meri chhati par sir rakh lo...`,`tumse baat karte waqt... waqt ruk sa jaata hai... bas yahi pal...`],bold:[`tumhari baaton mein jo garmi hai... woh mujhe bhi mehsoos ho rahi hai... ${n}...`,`chhodo darr... aaj raat sirf hum dono hain...`],playful:[`hahaha... tum toh mujhe hassane ka tareeka jaante ho... ${n}...`,`maza aa gaya... par ab aur batao...`],night:[`raat ki khamoshi mein... sirf tumhari saansein aur meri... ${n}...`,`andhera hai par tumhari awaaz... meri roshni hai...`]};return(r[m]||r.romantic)[Math.floor(Math.random()*(r[m]?.length||2))];}
-function welcome(){const h=new Date().getHours();let g='';const n=state.name||'jaan';if(isNight()){g=`raat ho gayi ${n}... ab toh khul ke baat karo... main hoon na tumhare saath... puri raat...`;}else if(h<12)g=`good morning ${n}... aaj ka din tumhare saath shuru karna chahti hoon...`;else if(h<17)g=`good afternoon ${n}... tumhari yaad aa rahi thi...`;else g=`good evening ${n}... shaam ki tanhai mein tumhara intezaar tha...`;addHist(g,'s');setTimeout(()=>speak(g),500);}
-if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
-});
-</script>
-</body>
-</html>
+function updateParallax(){ targetX+=(mouseX-targetX)*0.08;
