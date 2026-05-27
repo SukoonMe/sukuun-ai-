@@ -10,9 +10,9 @@
 :root{--glow:rgba(236,72,153,0.75);--pitch:1.24;--rate:0.72}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hidden;height:100vh}
-.video-bg{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-3;opacity:0.25;pointer-events:none}
+.video-bg{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-3;opacity:0.18;pointer-events:none;filter:blur(1px)}
 .bg-parallax{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at center,#1a0b2e 0%,#050609 100%);overflow:hidden}
-.bg-image{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120%;height:120%;background-size:cover;background-position:center;opacity:0.15;filter:blur(2px);transition:transform 0.3s ease-out}
+.bg-image{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120%;height:120%;background-size:cover;background-position:center;opacity:0.12;filter:blur(3px);transition:transform 0.3s ease-out}
 .stars{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.15) 1px,transparent 1px);background-size:280px 280px;opacity:0.3;animation:drift 100s linear infinite}
 @keyframes drift{to{transform:translateY(-280px)}}
 .app{max-width:480px;margin:0 auto;height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding-bottom:env(safe-area-inset-bottom)}
@@ -93,13 +93,18 @@ body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hid
 </style>
 </head>
 <body>
+<!-- BONUS: COUPLE VIDEO - Pexels CC0 Romantic Couple -->
+<video class="video-bg" autoplay muted loop playsinline>
+  <source src="https://videos.pexels.com/video-files/3196001/3196001-uhd_2560_1440_25fps.mp4" type="video/mp4">
+</video>
+
 <div id="ageGate" class="modal"><div class="box"><h2> Sukoon AI - 18+ Only</h2><p>Yeh platform mature emotional & intimate connection ke liye hai.<br><strong>Kya aapki age 18+ hai?</strong></p><div class="btns"><button class="btn1" id="ageY">✅ Haan, Main 18+ Hoon</button><button class="btn2" id="ageN">❌ Nahi</button></div><p class="note">🔒 Privacy-first • Sirf consenting adults</p></div></div>
 <div id="nameModal" class="modal hide"><div class="box"><h2>✨ Welcome to Sukoon</h2><p>Mujhe tumhara naam batao... main tumhe usi se bulaungi 💜</p><input type="text" id="nameIn" class="ninp" placeholder="Tumhara naam..." maxlength="25" autocomplete="off"><button class="btn1" id="nameSave">✨ Shuru Karein</button></div></div>
 <div class="load" id="loader"><div class="moon">🌙</div><div class="ltxt">Sukoon AI</div></div>
 <div class="bg-parallax"><div class="bg-image" id="bgImage"></div><div class="stars"></div></div>
 
 <div class="wallpaper-panel" id="wallpaperPanel">
-<div class="wallpaper-header"><h3>🖼️ Romantic Wallpapers</h3><button class="wp-close" id="wpClose">✕</button></div>
+<div class="wallpaper-header"><h3>🖼️ Couple Wallpapers</h3><button class="wp-close" id="wpClose">✕</button></div>
 <div class="wallpaper-scroll" id="wpScroll">
 <div class="wallpaper-grid" id="wpGrid"></div>
 </div>
@@ -115,7 +120,7 @@ body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hid
 <div class="tab" data-mood="intense">🔥 Intense</div>
 <div class="tab" data-mood="tease">😈 Tease</div>
 <div class="tab" data-mood="possessive">💍 Possessive</div>
-<div class="tab" data-mood="wallpaper">🖼️ Wallpapers</div>
+<div class="tab" data-mood="wallpaper">🖼️ Couple Pics</div>
 </div>
 <div class="heat-bar-wrap"><div id="heatFill" class="heat-bar-fill"></div></div></div>
 <div class="halo" id="halo"></div>
@@ -146,7 +151,6 @@ gen:'female', mood:'romantic', free:false, listening:false, recog:null, chatHist
 };
 localStorage.setItem('sukoon_uid', state.uid);
 
-// BONUS: TERI IMAGES + COPYRIGHT FREE SEDUCTIVE ILLUSIONS
 const cfg = {
 female: {
 romantic: { img:'romantic.png', glow:'rgba(236,72,153,0.75)', p:1.24, r:0.72, intensity:30 },
@@ -160,7 +164,7 @@ possessive: { img:'romantic.png', glow:'rgba(219,39,119,0.90)', p:1.15, r:0.70, 
 male: {
 romantic: { img:'romantic.png', glow:'rgba(219,39,119,0.75)', p:0.84, r:0.72, intensity:30 },
 playful: { img:'spicy2.png', glow:'rgba(147,51,234,0.75)', p:0.90, r:0.76, intensity:55 },
-bold: { img:'spicy.png', glow:'rgba(220,38,38,0.85)', p:0.78, r:0.68, intensity:80 },
+bold: { img:'spicy.png', glow:'rgba(220,38,0.85)', p:0.78, r:0.68, intensity:80 },
 night: { img:'romantic.png', glow:'rgba(124,58,237,0.85)', p:0.72, r:0.64, intensity:100 },
 intense: { img:'spicy.png', glow:'rgba(185,28,28,0.95)', p:0.70, r:0.60, intensity:100 },
 tease: { img:'spicy2.png', glow:'rgba(124,58,237,0.85)', p:0.92, r:0.78, intensity:70 },
@@ -168,39 +172,52 @@ possessive: { img:'romantic.png', glow:'rgba(190,24,93,0.90)', p:0.76, r:0.66, i
 }
 };
 
-// BONUS: COPYRIGHT FREE SEDUCTIVE WALLPAPERS - Unsplash CC0
+// BONUS: COUPLE SEDUCTIVE WALLPAPERS - Unsplash CC0 Free
 const wallpaperUrls = [
-{url:'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&q=80',label:'Candlelight Romance'},
-{url:'https://images.unsplash.com/photo-1543478451-6c1e00177808?w=400&q=80',label:'Rose Petals'},
-{url:'https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&q=80',label:'Moonlit Intimacy'},
-{url:'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&q=80',label:'Bedroom Glow'},
+{url:'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&q=80',label:'Candlelight Couple'},
+{url:'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&q=80',label:'Romantic Embrace'},
+{url:'https://images.unsplash.com/photo-1522267935632-3888a7d40c0e?w=400&q=80',label:'Kiss Silhouette'},
+{url:'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&q=80',label:'Bedroom Intimacy'},
+{url:'https://images.unsplash.com/photo-1518893063132-36e46dbe2428?w=400&q=80',label:'Rose Petals'},
+{url:'https://images.unsplash.com/photo-1543478451-6c1e00177808?w=400&q=80',label:'Wine & Silk'},
+{url:'https://images.unsplash.com/photo-1504197885521-87c815e382e4?w=400&q=80',label:'Candle Glow'},
 {url:'https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=400&q=80',label:'Silk Sheets'},
-{url:'https://images.unsplash.com/photo-1504197885521-87c815e382e4?w=400&q=80',label:'Wine & Candles'},
-{url:'https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=400&q=80',label:'Sunset Embrace'},
+{url:'https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=400&q=80',label:'Sunset Couple'},
 {url:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',label:'Golden Hour Love'},
-{url:'https://images.unsplash.com/photo-1518893063132-36e46dbe2428?w=400&q=80',label:'Midnight Rose'},
-{url:'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80',label:'Soft Lighting'},
 {url:'romantic.png',label:'Your Romantic'},
 {url:'spicy.png',label:'Your Bold'},
 {url:'spicy2.png',label:'Your Playful'}
 ];
 
 setTimeout(()=>els.loader.classList.add('hide'),1100);
-if(state.verified){ els.ageGate.classList.add('hide'); state.name?enableApp():els.nameModal.classList.remove('hide'); } else { els.ageGate.style.display='flex'; }
 
-els.ageY?.addEventListener('click',()=>{ localStorage.setItem('sukoon_verified','true'); state.verified=true; els.ageGate.classList.add('hide'); state.name?enableApp():els.nameModal.classList.remove('hide'); });
-els.ageN?.addEventListener('click',()=>{ els.ageGate.innerHTML=`<div class="box"><h2>🙏 Dhanyavaad</h2><p>Sukoon AI sirf 18+ ke liye hai.</p><button class="btn2" onclick="location.href='https://google.com'">Home</button></div>`; });
-els.nameSave?.addEventListener('click',saveName);
-els.nameIn?.addEventListener('keypress',e=>{if(e.key==='Enter')saveName();});
+if(state.verified){
+els.ageGate.classList.add('hide');
+state.name?enableApp():els.nameModal.classList.remove('hide');
+} else {
+els.ageGate.style.display='flex';
+}
+
+if(els.ageY) els.ageY.addEventListener('click',()=>{
+localStorage.setItem('sukoon_verified','true');
+state.verified=true;
+els.ageGate.classList.add('hide');
+state.name?enableApp():els.nameModal.classList.remove('hide');
+});
+
+if(els.ageN) els.ageN.addEventListener('click',()=>{
+els.ageGate.innerHTML=`<div class="box"><h2>🙏 Dhanyavaad</h2><p>Sukoon AI sirf 18+ ke liye hai.</p><button class="btn2" onclick="location.href='https://google.com'">Home</button></div>`;
+});
+
+if(els.nameSave) els.nameSave.addEventListener('click',saveName);
+if(els.nameIn) els.nameIn.addEventListener('keypress',e=>{if(e.key==='Enter')saveName();});
 els.tabs.forEach(tab=>tab.addEventListener('click',()=>{ const m=tab.dataset.mood; if(m)setMood(m); }));
-els.genSel?.addEventListener('change',switchGen);
-els.txt?.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault();e.stopPropagation(); if(els.txt.value.trim()&&state.verified&&state.name&&!state.sending)sendMsg(); } });
-els.sendBtn?.addEventListener('click',e=>{ e.preventDefault(); if(!state.sending&&state.verified&&state.name)sendMsg(); });
-els.micBtn?.addEventListener('click',e=>{ e.preventDefault(); toggleVoice(); });
-els.micBtn?.addEventListener('dblclick',e=>{ e.preventDefault(); toggleFreeMode(); });
-els.wpClose?.addEventListener('click',()=>{ els.wallpaperPanel.classList.remove('active'); setMood(state.prevMood||'romantic'); });
+if(els.genSel) els.genSel.addEventListener('change',switchGen);
+if(els.txt) els.txt.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault();e.stopPropagation(); if(els.txt.value.trim()&&state.verified&&state.name&&!state.sending)sendMsg(); } });
+if(els.sendBtn) els.sendBtn.addEventListener('click',e=>{ e.preventDefault(); if(!state.sending&&state.verified&&state.name)sendMsg(); });
+if(els.micBtn) els.micBtn.addEventListener('click',e=>{ e.preventDefault(); toggleVoice(); });
+if(els.micBtn) els.micBtn.addEventListener('dblclick',e=>{ e.preventDefault(); toggleFreeMode(); });
+if(els.wpClose) els.wpClose.addEventListener('click',()=>{ els.wallpaperPanel.classList.remove('active'); setMood(state.prevMood||'romantic'); });
 
 let mouseX=0, mouseY=0, targetX=0, targetY=0;
-document.addEventListener('mousemove',e=>{ const rect=els.charContainer.getBoundingClientRect(); mouseX=(e.clientX-rect.left-rect.width/2)/(rect.width/2); mouseY=(e.clientY-rect.top-rect.height/2)/(rect.height/2); });
-document.addEventListener('touchmove',e=>{ const rect=els.charContainer.getBoundingClientRect(); const touch=e.touches[0]; mouseX=(touch.clientX-rect.left-rect.width/2)/(rect.width/2); mouseY=(touch.clientY-rect.top-rect.height/2)/(rect.height/2); });
-function updateParallax(){ targetX+=(mouseX-targetX)*0.08;
+document.addEventListener('mousemove',e=>{ const rect=els.charContainer.getBoundingClientRect(); mouseX=(e.clientX-rect.left-rect.width/2)/(rect.width/2); mouseY=(e.clientY-rect.top-rect.height/2)/(rec
