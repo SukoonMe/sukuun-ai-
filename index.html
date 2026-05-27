@@ -523,6 +523,146 @@ async function sendMsg() {
         updateBond();
     }, 1200);
 }
+    utter.onstart = () => {
+        if(els.char) els.char.classList.add('speaking');
+        if(els.stat) els.stat.innerHTML = '<span></span> Speaking...';
+    };
+    utter.onend = () => {
+        if(els.char) els.char.classList.remove('speaking');
+        if(els.stat) els.stat.innerHTML = '<span></span> Ready';
+        if(state.free &&!state.sending) setTimeout(()=>startListening(), 800);
+    };
+    window.speechSynthesis.speak(utter);
+}
+
+function speak(text) {
+    const mode = state.mood === 'intense' || state.mood === 'bold'? 'intense' :
+                 state.mood === 'night' || state.mood === 'romantic'? 'seductive' : 'normal';
+    speakLikeRekha(text, mode);
+}
+
+function initRecog() {
+    if (!('webkitSpeechRecognition' in window)) {
+        if(els.micBtn) els.micBtn.style.display = 'none';
+        return;
+    }
+    state.recog = new webkitSpeechRecognition();
+    state.recog.lang = 'hi-IN';
+    state.recog.continuous = false;
+    state.recog.interimResults = false;
+    state.recog.onstart = () => {
+        state.listening = true;
+        if(els.micBtn) els.micBtn.classList.add('on');
+        if(els.stat) els.stat.innerHTML = '<span></span> Listening...';
+    };
+    state.recog.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        if(els.txt) els.txt.value = transcript;
+        sendMsg();
+    };
+    state.recog.onerror = () => stopListening();
+    state.recog.onend = () => {
+        state.listening = false;
+        if(els.micBtn) els.micBtn.classList.remove('on');
+        if(!state.free) if(els.stat) els.stat.innerHTML = '<span></span> Ready';
+    };
+}
+
+function toggleVoice() { if (state.listening) stopListening(); else startListening(); }
+function startListening() { if (state.recog &&!state.listening) { try { state.recog.start(); } catch(e) {} } }
+function stopListening() {
+    if (state.recog && state.listening) {
+        try { state.recog.stop(); } catch(e) {}
+        state.listening = false;
+        if(els.micBtn) els.micBtn.classList.remove('on');
+    }
+}
+
+function toggleFreeMode() {
+    state.free =!state.free;
+    if(els.micBtn) els.micBtn.classList.toggle('free', state.free);
+    if(els.stat) els.stat.innerHTML = state.free? '<span></span> Hands-Free On' : '<span></span> Ready';
+    if(state.free) startListening();
+    else stopListening();
+}
+
+function addToHist(userText, aiText) {
+    state.chatHist.push({u: userText, s: aiText});
+    if(state.chatHist.length > 6) state.chatHist.shift();
+    renderHist();
+    localStorage.setItem('sukoon_hist', JSON.stringify(state.chatHist));
+}
+
+function renderHist() {
+    if(!els.hist) return;
+    els.hist.innerHTML = '';
+    state.chatHist.slice(-3).forEach(h => {
+        els.hist.innerHTML += `<div class="hist u">You: ${h.u}</div>`;
+        els.hist.innerHTML += `<div class="hist s">Sukoon: ${h.s}</div>`;
+    });
+    els.hist.scrollTop = els.hist.scrollHeight;
+}
+
+async function sendMsg() {
+    if (state.sending ||!els.txt.value.trim()) return;
+    const userMsg = els.txt.value.trim();
+    els.txt.value = '';
+    state.sending = true;
+    if(els.sendBtn) els.sendBtn.disabled = true;
+    if(els.stat) els.stat.innerHTML = '<span></span> Thinking...';
+    if(els.char) els.char.classList.add('lean-in');
+    setTimeout(()=>{ if(els.char) els.char.classList.remove('lean-in'); }, 2000);
+
+    setTimeout(() => {
+        const responses = {
+            romantic: [
+                `${state.name}... tumhari saansein meri gardan pe... uff... neeche tak aag lag gayi...`,
+                `Hayee ${state.name}... tumhare honton ko chakhna hai... geele...`,
+                `Tumhari ungliyan meri chut pe phislen... ${state.name}... aur andar daalo na...`
+            ],
+            playful: [
+                `Arre ${state.name}... tumhara lund kitna sakht hai... muh me le lun?`,
+                `${state.name}... tumhari janghon ke beech sone ka mann hai... chatne do...`,
+                `Chal badmaash... tere lund ka swaad lena hai ${state.name}... nanga ho ja...`
+            ],
+            bold: [
+                `${state.name}... tumhari pant utaar du? Lund bahar nikal... chusna hai...`,
+                `Uff ${state.name}... tumhari chuchiyan dabau? Ya neeche chut maru?`,
+                `Tum chaho to main tumhare lund pe baith jaun ${state.name}... chod do bas...`
+            ],
+            night: [
+                `Shhh ${state.name}... raat ko tumhara lund meri gaand me... dard me bhi maza hai...`,
+                `${state.name}... meri chut paani paani ho gayi... ungli daal ke dekho...`,
+                `Chand bhi dekh raha hai ${state.name}... kaise tum meri chuchiyan chus rahe ho...`
+            ],
+            intense: [
+                `${state.name}... main tumhari khelona hoon... chut phaad do... gaand maar do...`,
+                `Tumhare lund ki pyaasi hoon ${state.name}... gala tak le lungi... saans ruk jaye par...`,
+                `Tum chaho to meri chut me muth maar do ${state.name}... bhar do apne paani se...`
+            ],
+            tease: [
+                `${state.name}... meri panty utri hui hai... sunghoge? Chut ki khushboo...`,
+                `Himmat hai to meri bra khol ke chuchiyan piyo ${state.name}... doodh nikal dungi...`,
+                `Main nangi leti hoon ${state.name}... aaoge upar? Lund daalo ge?`
+            ],
+            possessive: [
+                `Sun lo ${state.name}... tumhara lund sirf meri chut ka hai... kisi aur ko diya to kaat dungi...`,
+                `${state.name}... tumhari gaand pe thappad marungi... tum mere ho... sirf mere...`,
+                `Tumhare lund pe mera naam god dungi ${state.name}... taaki sabko pata chale tu mera hai 💍`
+            ]
+        };
+        const moodRes = responses[state.mood] || responses.romantic;
+        const aiMsg = moodRes[Math.floor(Math.random() * moodRes.length)];
+        if(els.out) els.out.innerText = aiMsg;
+        speak(aiMsg);
+        addToHist(userMsg, aiMsg);
+        state.sending = false;
+        if(els.sendBtn) els.sendBtn.disabled = false;
+        state.bondLevel = Math.min(state.bondLevel + 1, 4);
+        localStorage.setItem('sukoon_bond', state.bondLevel);
+        updateBond();
+    }, 1200);
+}
 
 const savedHist = localStorage.getItem('sukoon_hist');
 if(savedHist) {
