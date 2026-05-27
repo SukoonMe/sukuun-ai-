@@ -93,7 +93,6 @@ body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hid
 </style>
 </head>
 <body>
-<!-- BONUS: COUPLE VIDEO - Pexels CC0 Romantic Couple -->
 <video class="video-bg" autoplay muted loop playsinline>
   <source src="https://videos.pexels.com/video-files/3196001/3196001-uhd_2560_1440_25fps.mp4" type="video/mp4">
 </video>
@@ -111,7 +110,7 @@ body{font-family:'Poppins',sans-serif;background:#050609;color:#fff;overflow:hid
 </div>
 
 <div class="app">
-<div class="glass rounded-b-3xl p-3"><div class="flex justify-between items-center mb-2"><div><h1 class="text-sm font-semibold">SUKOON AI</h1><p id="liveSt" class="text- text-green-400">Connected</p></div><select id="genSel" class="sel"><option value="female">👩 Female</option><option value="male">👨 Male</option></select></div>
+<div class="glass rounded-b-3xl p-3"><div class="flex justify-between items-center mb-2"><div><h1 class="text-sm font-semibold">SUKOON AI</h1><p id="liveSt" class="text-xs text-green-400">Connected</p></div><select id="genSel" class="sel"><option value="female">👩 Female</option><option value="male">👨 Male</option></select></div>
 <div class="tabs">
 <div class="tab active" data-mood="romantic"> Romantic</div>
 <div class="tab" data-mood="playful">💋 Playful</div>
@@ -164,7 +163,7 @@ possessive: { img:'romantic.png', glow:'rgba(219,39,119,0.90)', p:1.15, r:0.70, 
 male: {
 romantic: { img:'romantic.png', glow:'rgba(219,39,119,0.75)', p:0.84, r:0.72, intensity:30 },
 playful: { img:'spicy2.png', glow:'rgba(147,51,234,0.75)', p:0.90, r:0.76, intensity:55 },
-bold: { img:'spicy.png', glow:'rgba(220,38,0.85)', p:0.78, r:0.68, intensity:80 },
+bold: { img:'spicy.png', glow:'rgba(220,38,38,0.85)', p:0.78, r:0.68, intensity:80 },
 night: { img:'romantic.png', glow:'rgba(124,58,237,0.85)', p:0.72, r:0.64, intensity:100 },
 intense: { img:'spicy.png', glow:'rgba(185,28,28,0.95)', p:0.70, r:0.60, intensity:100 },
 tease: { img:'spicy2.png', glow:'rgba(124,58,237,0.85)', p:0.92, r:0.78, intensity:70 },
@@ -172,7 +171,6 @@ possessive: { img:'romantic.png', glow:'rgba(190,24,93,0.90)', p:0.76, r:0.66, i
 }
 };
 
-// BONUS: COUPLE SEDUCTIVE WALLPAPERS - Unsplash CC0 Free
 const wallpaperUrls = [
 {url:'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&q=80',label:'Candlelight Couple'},
 {url:'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&q=80',label:'Romantic Embrace'},
@@ -220,4 +218,215 @@ if(els.micBtn) els.micBtn.addEventListener('dblclick',e=>{ e.preventDefault(); t
 if(els.wpClose) els.wpClose.addEventListener('click',()=>{ els.wallpaperPanel.classList.remove('active'); setMood(state.prevMood||'romantic'); });
 
 let mouseX=0, mouseY=0, targetX=0, targetY=0;
-document.addEventListener('mousemove',e=>{ const rect=els.charContainer.getBoundingClientRect(); mouseX=(e.clientX-rect.left-rect.width/2)/(rect.width/2); mouseY=(e.clientY-rect.top-rect.height/2)/(rec
+document.addEventListener('mousemove',e=>{ const rect=els.charContainer.getBoundingClientRect(); mouseX=(e.clientX-rect.left-rect.width/2)/(rect.width/2); mouseY=(e.clientY-rect.top-rect.height/2)/(rect.height/2); });
+document.addEventListener('touchmove',e=>{ const rect=els.charContainer.getBoundingClientRect(); const touch=e.touches[0]; mouseX=(touch.clientX-rect.left-rect.width/2)/(rect.width/2); mouseY=(touch.clientY-rect.top-rect.height/2)/(rect.height/2); });
+function updateParallax(){ targetX+=(mouseX-targetX)*0.08; targetY+=(mouseY-targetY)*0.08; if(els.charZone) els.charZone.style.transform=`translate(${targetX*20}px, ${targetY*20}px) rotateY(${targetX*3}deg) rotateX(${-targetY*3}deg)`; if(els.bgImage) els.bgImage.style.transform=`translate(calc(-50% + ${targetX*6}px), calc(-50% + ${targetY*6}px))`; requestAnimationFrame(updateParallax); }
+updateParallax();
+
+function saveName(){ const n=els.nameIn?.value.trim(); if(n){ state.name=n; localStorage.setItem('sukoon_name',n); els.nameModal?.classList.add('hide'); enableApp(); } }
+function enableApp(){ if(els.txt)els.txt.disabled=false; if(els.sendBtn)els.sendBtn.disabled=false; if(els.micBtn)els.micBtn.disabled=false; updateBond(); initRecog(); loadChar(); if(isNight())setMood('night'); setTimeout(welcome,450); }
+function setMood(m){
+if(m==='wallpaper'){
+state.prevMood=state.mood;
+els.tabs.forEach(t=>t.classList.remove('active'));
+const activeTab=document.querySelector(`.tab[data-mood="wallpaper"]`); if(activeTab)activeTab.classList.add('active');
+els.wallpaperPanel.classList.add('active');
+if(els.charContainer) els.charContainer.style.opacity='0.1';
+loadWallpapers();
+return;
+}
+if(state.prevMood) delete state.prevMood;
+els.wallpaperPanel.classList.remove('active');
+if(els.charContainer) els.charContainer.style.opacity='1';
+state.mood=m;
+els.tabs.forEach(t=>t.classList.remove('active'));
+const activeTab=document.querySelector(`.tab[data-mood="${m}"]`); if(activeTab)activeTab.classList.add('active');
+if(els.char){ els.char.classList.add('mode-switch'); setTimeout(()=>{ updateVis(m); els.char.classList.remove('mode-switch'); },250); } else updateVis(m);
+if(state.name){ state.bondLevel=Math.min(state.bondLevel+1,4); localStorage.setItem('sukoon_bond',state.bondLevel); updateBond(); }
+}
+function updateVis(m){ const c=cfg[state.gen][m]; if(!c)return; document.documentElement.style.setProperty('--glow',c.glow); document.documentElement.style.setProperty('--pitch',c.p); document.documentElement.style.setProperty('--rate',c.r); if(els.heatFill)els.heatFill.style.width=c.intensity+'%'; if(els.char){ els.char.style.opacity='0.2'; setTimeout(()=>{ els.char.src=c.img; els.char.style.opacity='1'; },200); } }
+function switchGen(){ state.gen=els.genSel?.value||'female'; if(els.spk)els.spk.innerText=state.gen==='female'?'Sukoon':'Sukoon (Male)'; updateVis(state.mood); const n=state.name||'jaan'; const w=state.gen==='female'?`Hi ${n}... ab main tumhari female companion hoon... bolo kya dil mei hai...`:`Hey ${n}... ab main tumhara male companion hoon... batao kya baat hai...`; if(els.out)els.out.innerText=w; speak(w); }
+function loadChar(){ const c=cfg[state.gen][state.mood]; if(els.char&&c)els.char.src=c.img; }
+function updateBond(){ const levels=['New','Growing','Deep','Intimate','Soulmates']; if(els.bond)els.bond.innerText=`Connection: ${levels[Math.min(state.bondLevel,4)]}`; }
+function isNight(){ const h=new Date().getHours(); return h>=21||h<6; }
+
+function loadWallpapers(){
+if(els.wpGrid.children.length>0) return;
+wallpaperUrls.forEach(wp=>{
+const card=document.createElement('div');
+card.className='wp-card';
+card.innerHTML=`<img src="${wp.url}" alt="${wp.label}" loading="lazy"><div class="wp-overlay"><span>${wp.label}</span></div>`;
+card.addEventListener('click',()=>{
+els.bgImage.style.backgroundImage=`url(${wp.url})`;
+els.bgImage.style.opacity='0.3';
+speak(`${wp.label}... yeh dekho Tumari Jaan... kitni romantic hai...`);
+});
+els.wpGrid.appendChild(card);
+});
+}
+
+function welcome(){ const g=state.gen==='female'?'main tumhari female companion hoon':'main tumhara male companion hoon'; const w=`${state.name}... ab ${g}... tumari jaan banke... bolo kya dil mei hai...`; if(els.out)els.out.innerText=w; speak(w); }
+
+async function speakLikeRekha(text, mode = 'seductive') {
+    window.speechSynthesis.cancel();
+    let t = text;
+    if (mode === 'seductive') {
+        t = `...hmm... ${text.replace(/\./g, '......').replace(/,/g, ', ').replace(/ /g, '... ')}`;
+    }
+    const utter = new SpeechSynthesisUtterance(t);
+    utter.lang = 'hi-IN';
+    const voices = await new Promise(resolve => {
+        const v = speechSynthesis.getVoices();
+        if (v.length) resolve(v);
+        else speechSynthesis.onvoiceschanged = () => resolve(speechSynthesis.getVoices());
+    });
+    const priority = ['Google हिन्दी', 'Microsoft Heera - Hindi', 'Lekha', 'Kalpana'];
+    for (let name of priority) {
+        const v = voices.find(voice => voice.name.includes(name));
+        if (v) { utter.voice = v; break; }
+    }
+    if (!utter.voice) utter.voice = voices.find(v => v.lang === 'hi-IN') || voices[0];
+    utter.pitch = state.gen === 'female'? (mode === 'seductive'? 1.24 : mode === 'intense'? 1.10 : 1.18) : (mode === 'seductive'? 0.82 : mode === 'intense'? 0.70 : 0.84);
+    utter.rate = state.gen === 'female'? (mode === 'seductive'? 0.72 : mode === 'intense'? 0.65 : 0.78) : (mode === 'seductive'? 0.68 : mode === 'intense'? 0.60 : 0.74);
+
+       utter.onstart = () => {
+        if(els.char) els.char.classList.add('speaking');
+        if(els.stat) els.stat.innerHTML = '<span></span> Speaking...';
+    };
+    utter.onend = () => {
+        if(els.char) els.char.classList.remove('speaking');
+        if(els.stat) els.stat.innerHTML = '<span></span> Ready';
+        if(state.free &&!state.sending) setTimeout(()=>startListening(), 800);
+    };
+    window.speechSynthesis.speak(utter);
+}
+
+function speak(text) {
+    const mode = state.mood === 'intense' || state.mood === 'bold'? 'intense' :
+                 state.mood === 'night' || state.mood === 'romantic'? 'seductive' : 'normal';
+    speakLikeRekha(text, mode);
+}
+
+function initRecog() {
+    if (!('webkitSpeechRecognition' in window)) {
+        if(els.micBtn) els.micBtn.style.display = 'none';
+        return;
+    }
+    state.recog = new webkitSpeechRecognition();
+    state.recog.lang = 'hi-IN';
+    state.recog.continuous = false;
+    state.recog.interimResults = false;
+
+    state.recog.onstart = () => {
+        state.listening = true;
+        if(els.micBtn) els.micBtn.classList.add('on');
+        if(els.stat) els.stat.innerHTML = '<span></span> Listening...';
+    };
+
+    state.recog.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        if(els.txt) els.txt.value = transcript;
+        sendMsg();
+    };
+
+    state.recog.onerror = () => stopListening();
+    state.recog.onend = () => {
+        state.listening = false;
+        if(els.micBtn) els.micBtn.classList.remove('on');
+        if(!state.free) if(els.stat) els.stat.innerHTML = '<span></span> Ready';
+    };
+}
+
+function toggleVoice() {
+    if (state.listening) stopListening();
+    else startListening();
+}
+
+function startListening() {
+    if (state.recog &&!state.listening) {
+        try { state.recog.start(); } catch(e) {}
+    }
+}
+
+function stopListening() {
+    if (state.recog && state.listening) {
+        try { state.recog.stop(); } catch(e) {}
+        state.listening = false;
+        if(els.micBtn) els.micBtn.classList.remove('on');
+    }
+}
+
+function toggleFreeMode() {
+    state.free =!state.free;
+    if(els.micBtn) els.micBtn.classList.toggle('free', state.free);
+    if(els.stat) els.stat.innerHTML = state.free? '<span></span> Hands-Free On' : '<span></span> Ready';
+    if(state.free) startListening();
+    else stopListening();
+}
+
+function addToHist(userText, aiText) {
+    state.chatHist.push({u: userText, s: aiText});
+    if(state.chatHist.length > 6) state.chatHist.shift();
+    renderHist();
+    localStorage.setItem('sukoon_hist', JSON.stringify(state.chatHist));
+}
+
+function renderHist() {
+    if(!els.hist) return;
+    els.hist.innerHTML = '';
+    state.chatHist.slice(-3).forEach(h => {
+        els.hist.innerHTML += `<div class="hist u">You: ${h.u}</div>`;
+        els.hist.innerHTML += `<div class="hist s">Sukoon: ${h.s}</div>`;
+    });
+    els.hist.scrollTop = els.hist.scrollHeight;
+}
+
+async function sendMsg() {
+    if (state.sending ||!els.txt.value.trim()) return;
+    const userMsg = els.txt.value.trim();
+    els.txt.value = '';
+    state.sending = true;
+    if(els.sendBtn) els.sendBtn.disabled = true;
+    if(els.stat) els.stat.innerHTML = '<span></span> Thinking...';
+
+    if(els.char) els.char.classList.add('lean-in');
+    setTimeout(()=>{ if(els.char) els.char.classList.remove('lean-in'); }, 2000);
+
+    // TODO: Yaha apna AI API call lagao - OpenAI/Gemini/Claude
+    // Abhi dummy response hai har mood ke hisaab se
+    setTimeout(() => {
+        const responses = {
+            romantic: [`${state.name}... tumhari ye baat sunke dil khush ho gaya... paas aao na...`, `Hayee ${state.name}... kitni pyari baat ki tumne...`, `Tumhari awaaz mein kuch jaadu hai ${state.name}...`],
+            playful: [`Arre ${state.name}... badmaash ho gaye ho tum... 😘`, `${state.name}... tumse baat karke maza aa jata hai...`, `Chal jhoothe... dil se bolo ${state.name} 😜`],
+            bold: [`${state.name}... seedha dil pe lagti hai tumhari baat...`, `Uff ${state.name}... tumhari himmat to dekho...`, `Tum chaho to main duniya bhool jaun ${state.name}...`],
+            night: [`Shhh ${state.name}... raat gehri hai... sirf hum dono...`, `${state.name}... neend nahi aa rahi tumhare bina...`, `Chand bhi sharma jaye tumhe dekh ke ${state.name}...`],
+            intense: [`${state.name}... main sirf tumhari hoon... samjhe?`, `Tumhare ek lafz mein main kho jaati hu ${state.name}...`, `Tum chaho to saans bhi tumhare naam kar du ${state.name}...`],
+            tease: [`${state.name}... pakad paoge mujhe? 😈`, `Himmat hai to roko mujhe ${state.name}...`, `Main door hun... par dil ke kitne paas ${state.name}...`],
+            possessive: [`Sun lo ${state.name}... tum sirf mere ho... kisi aur ki taraf dekha bhi to...`, `${state.name}... tumhari har saans pe mera naam likha hai...`, `Tum mere ho ${state.name}... bas mere 💍`]
+        };
+        const moodRes = responses[state.mood] || responses.romantic;
+        const aiMsg = moodRes[Math.floor(Math.random() * moodRes.length)];
+
+        if(els.out) els.out.innerText = aiMsg;
+        speak(aiMsg);
+        addToHist(userMsg, aiMsg);
+        state.sending = false;
+        if(els.sendBtn) els.sendBtn.disabled = false;
+
+        state.bondLevel = Math.min(state.bondLevel + 1, 4);
+        localStorage.setItem('sukoon_bond', state.bondLevel);
+        updateBond();
+    }, 1200);
+}
+
+// Load history on start
+const savedHist = localStorage.getItem('sukoon_hist');
+if(savedHist) {
+    state.chatHist = JSON.parse(savedHist);
+    renderHist();
+}
+
+});
+</script>
+</body>
+</html>
