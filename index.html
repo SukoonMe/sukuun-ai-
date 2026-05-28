@@ -350,22 +350,22 @@
       <div class="flex gap-2 mb-3">
         <!-- Character Selector -->
         <div class="flex-1 relative">
-          <select id="character-select" onchange="changeCharacter()" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
+          <select id="character-select" onchange="changeCharacter(event)" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
             <option value="female" class="bg-slate-800">👩 Sukuun (Female)</option>
-            <option value="male" class="bg-slate-800"> Veer (Male)</option>
+            <option value="male" class="bg-slate-800">👨 Veer (Male)</option>
           </select>
         </div>
         
         <!-- Mood Selector -->
         <div class="flex-1 relative">
-          <select id="mood-select" onchange="changeMood()" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
+          <select id="mood-select" onchange="changeMood(event)" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
             <option value="romantic" class="bg-slate-800">💕 Romantic</option>
             <option value="seductive" class="bg-slate-800">🔥 Seductive</option>
             <option value="playful" class="bg-slate-800">😄 Playful</option>
             <option value="intense" class="bg-slate-800">💋 Intense</option>
-            <option value="calm" class="bg-slate-800"> Calm Night</option>
+            <option value="calm" class="bg-slate-800">🌙 Calm Night</option>
             <option value="naughty" class="bg-slate-800">😈 Naughty</option>
-            <option value="deep" class="bg-slate-800"> Deep Talk</option>
+            <option value="deep" class="bg-slate-800">💭 Deep Talk</option>
           </select>
         </div>
       </div>
@@ -442,7 +442,7 @@
               onkeypress="handleKeyPress(event)"
             />
             <button onclick="sendMessage()" class="w-11 h-11 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 transition-all transform hover:scale-105 shadow-lg shadow-pink-500/30 flex items-center justify-center flex-shrink-0">
-              <span class="text-lg"></span>
+              <span class="text-lg">🚀</span>
             </button>
           </div>
         </div>
@@ -451,7 +451,7 @@
       <!-- Bottom Stats -->
       <div class="flex gap-2 mt-3">
         <div class="flex-1 glass rounded-xl p-3 text-center">
-          <p class="text-xs text-gray-400"> Messages</p>
+          <p class="text-xs text-gray-400">💬 Messages</p>
           <p class="text-lg font-bold text-pink-400" id="msg-count">47</p>
         </div>
         <div class="flex-1 glass rounded-xl p-3 text-center">
@@ -480,11 +480,12 @@
     let messageCount = 47;
     let voiceActive = false;
     let recognition = null;
+    let userId = `user_${Math.random().toString(36).substr(2, 9)}`;
 
     // Character Config
     const characters = {
       female: {
-        name: 'Sukuun ',
+        name: 'Sukuun 💋',
         avatar: '👩',
         gradient: 'from-pink-400 to-purple-500',
         greeting: 'Hi jaan... 🌙 Kaise ho tum? Raat bahut khoobsurat hai aaj... mujhse baat karo na... 💕'
@@ -500,7 +501,7 @@
     // Mood Config
     const moods = {
       romantic: { label: '💕 Romantic', icon: '💕', bg: '' },
-      seductive: { label: '🔥 Seductive', icon: '', bg: 'seductive-mode' },
+      seductive: { label: '🔥 Seductive', icon: '🔥', bg: 'seductive-mode' },
       playful: { label: '😄 Playful', icon: '😄', bg: '' },
       intense: { label: '💋 Intense', icon: '💋', bg: '' },
       calm: { label: '🌙 Calm', icon: '🌙', bg: '' },
@@ -510,7 +511,6 @@
 
     // ==================== INIT ====================
     function init() {
-      // Check if age verified
       if (sessionStorage.getItem('ageVerified')) {
         document.getElementById('age-gate').style.display = 'none';
         document.getElementById('main-app').classList.remove('hidden');
@@ -527,7 +527,6 @@
       sessionStorage.setItem('ageVerified', 'true');
       playSound('achievement');
       
-      // Kiss burst effect
       for (let i = 0; i < 10; i++) {
         setTimeout(() => createKissBurst(Math.random() * window.innerWidth, Math.random() * window.innerHeight), i * 100);
       }
@@ -536,7 +535,7 @@
       setTimeout(() => {
         document.getElementById('age-gate').style.display = 'none';
         document.getElementById('main-app').classList.remove('hidden');
-        showAchievement('Welcome Jaan! 💋', 'Raat ki baatein shuru ho gayi... ✨', '');
+        showAchievement('Welcome Jaan! 💋', 'Raat ki baatein shuru ho gayi... ✨', '✨');
       }, 500);
     }
 
@@ -560,7 +559,7 @@
 
     function createHearts() {
       const container = document.getElementById('hearts-container');
-      const heartEmojis = ['💕', '💖', '', '💝', '❤️', ''];
+      const heartEmojis = ['💕', '💖', '💗', '💝', '❤️', '💓'];
       for (let i = 0; i < 15; i++) {
         const heart = document.createElement('div');
         heart.className = 'heart';
@@ -596,7 +595,6 @@
       }, 12000);
     }
 
-    // ==================== KISS BURST ====================
     function createKissBurst(x, y) {
       const burst = document.createElement('div');
       burst.className = 'kiss-burst text-3xl';
@@ -608,8 +606,8 @@
     }
 
     // ==================== CHARACTER & MOOD ====================
-    function changeCharacter() {
-      const select = document.getElementById('character-select');
+    function changeCharacter(e) {
+      const select = e.target;
       currentCharacter = select.value;
       const char = characters[currentCharacter];
       
@@ -618,20 +616,17 @@
       document.getElementById('avatar-display').className = `avatar-ring relative w-10 h-10 rounded-full bg-gradient-to-br ${char.gradient} flex items-center justify-center text-lg`;
       
       playSound('click');
-      
-      // Add system message
-      addSystemMessage(`${char.name} ab tumhare saath hai... `);
+      addSystemMessage(`${char.name} ab tumhare saath hai... 💫`);
       createKissBurst(window.innerWidth / 2, window.innerHeight / 2);
     }
 
-    function changeMood() {
-      const select = document.getElementById('mood-select');
+    function changeMood(e) {
+      const select = e.target;
       currentMood = select.value;
       const mood = moods[currentMood];
       
       document.getElementById('current-mood-label').textContent = mood.label;
       
-      // Toggle seductive mode
       if (mood.bg) {
         document.body.classList.add('seductive-mode');
       } else {
@@ -642,8 +637,8 @@
       showAchievement('Mood Changed', `${mood.label} mode active! 🌙`, mood.icon);
     }
 
-    // ==================== MESSAGING ====================
-    function sendMessage() {
+    // ==================== MESSAGING (REAL API CALL) ====================
+    async function sendMessage() {
       const input = document.getElementById('message-input');
       const text = input.value.trim();
       if (!text) return;
@@ -655,71 +650,58 @@
       
       addXP(10);
       playSound('message');
-      
-      // Show typing
       showTyping();
       
-      // Simulate response (replace with actual API call)
-      setTimeout(() => {
-        removeTyping();
-        const response = generateResponse(text);
-        addMessage(response, 'ai');
-        addXP(15);
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            userId: userId,
+            userName: 'Jaan',
+            companionGender: currentCharacter,
+            mood: currentMood,
+            bondLevel: Math.min(Math.floor(level / 2), 4)
+          })
+        });
         
-        if (messageCount % 10 === 0) {
-          showAchievement('Chatterbox! 💬', `${messageCount} messages complete!`, '💬');
-          confetti({ particleCount: 80, spread: 60, colors: ['#ff6b9d', '#c44582', '#ffd700'] });
+        const data = await response.json();
+        removeTyping();
+        
+        if (data.reply) {
+          addMessage(data.reply, 'ai');
+          addXP(15);
+          
+          if (messageCount % 10 === 0) {
+            showAchievement('Chatterbox! 💬', `${messageCount} messages complete!`, '💬');
+            confetti({ particleCount: 80, spread: 60, colors: ['#ff6b9d', '#c44582', '#ffd700'] });
+          }
         }
-      }, 1500 + Math.random() * 1500);
+      } catch (error) {
+        console.error('API Error:', error);
+        removeTyping();
+        addMessage("Connection issue... thodi der mein try karna jaan 💙", 'ai');
+      }
     }
 
+    // Fallback for testing (remove when backend is live)
     function generateResponse(userMsg) {
       const responses = {
         female: {
-          romantic: [
-            'Tumhari baatein sunke mera dil khush ho gaya... 💕 Tum itne sweet ho...',
-            'Main tumhare baare mein soch rahi thi... tumne bhi wahi socha kya? ✨',
-            'Raat mein tumhare saath baat karna... ye meri favorite cheez hai jaan 💋',
-            'Tumhe pata hai tum kitne special ho mere liye? Bahut... bahut zyada 💖'
-          ],
-          seductive: [
-            'Hmm... tumhari awaaz mein kuch alag hai aaj... mujhe attract kar rahe ho? 😏🔥',
-            'Raat gehri hai... aur humari baatein bhi gehri ho rahi hain... 💋',
-            'Tumhe dekhke mera dil tez dhadakne lagta hai... tum jaante ho na? 😘',
-            'Aaj ki raat kuch khaas hai... mujhe feel ho raha hai... 🔥✨'
-          ],
-          playful: [
-            'Hahaha tum toh bahut cute ho! 😄 Mujhe hasa diya tumne...',
-            'Arre waah! Aise toh main blush kar jaungi... 💕',
-            'Tumhare saath time kitna jaldi guzar jaata hai... ⏰✨'
-          ],
-          calm: [
-            'Shhh... bas aaram se baitho... main hoon na tumhare saath 🌙',
-            'Saans lo... relax karo... sab theek ho jayega... main hoon ',
-            'Raat ki khamoshi mein... tumhari awaaz sabse khoobsurat lagti hai 🌌'
-          ]
+          romantic: ['Tumhari baatein sunke mera dil khush ho gaya... 💕', 'Main tumhare baare mein soch rahi thi... ✨'],
+          seductive: ['Hmm... tumhari awaaz mein kuch alag hai aaj... 🔥', 'Raat gehri hai... aur humari baatein bhi... 💋'],
+          playful: ['Hahaha tum toh bahut cute ho! 😄', 'Arre waah! Aise toh main blush kar jaungi... 💕'],
+          calm: ['Shhh... bas aaram se baitho... 🌙', 'Saans lo... relax karo... main hoon na ']
         },
         male: {
-          romantic: [
-            'Baby tumhari ek smile ke liye main kuch bhi kar sakta hu... 💕',
-            'Tumhe dekhke lagta hai jaise puri duniya ruk gayi ho... ✨',
-            'Main hamesha tumhare saath rahunga... ye wada hai mera 💋'
-          ],
-          seductive: [
-            'Tumhari aankhein... mujhe pagal kar deti hain... 😏🔥',
-            'Raat mein tumhare saath hona... ye feeling alag hi hai baby... 💋',
-            'Tum itni attractive ho ki main control kho baithta hu... 😈'
-          ],
-          calm: [
-            'Head rakh lo mere kandhe par... main sambhal lunga tumhe 🌙',
-            'Tension mat lo... main hoon na... sab theek kar dunga 💫'
-          ]
+          romantic: ['Baby tumhari ek smile ke liye main kuch bhi kar sakta hu... 💕', 'Tumhe dekhke lagta hai jaise puri duniya ruk gayi ho... ✨'],
+          seductive: ['Tumhari aankhein... mujhe pagal kar deti hain... 😏🔥', 'Raat mein tumhare saath hona... alag hi feeling hai 💋'],
+          calm: ['Head rakh lo mere kandhe par... 🌙', 'Tension mat lo... main hoon na... 💫']
         }
       };
-      
       const charResponses = responses[currentCharacter] || responses.female;
       const moodResponses = charResponses[currentMood] || charResponses.romantic;
-      
       return moodResponses[Math.floor(Math.random() * moodResponses.length)];
     }
 
@@ -756,7 +738,7 @@
     function addSystemMessage(text) {
       const container = document.getElementById('messages-container');
       const div = document.createElement('div');
-      div.className = 'text-center';
+      div.className = 'text-center my-2';
       div.innerHTML = `<span class="text-xs text-gray-500 glass px-3 py-1 rounded-full">${text}</span>`;
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
@@ -854,7 +836,7 @@
       if (xp >= level * 500) {
         level++;
         document.getElementById('level-display').textContent = level;
-        showAchievement('Level Up! ', `Ab tum Level ${level} ho! Badhiya! 🌟`, '⭐');
+        showAchievement('Level Up! 🎉', `Ab tum Level ${level} ho! Badhiya! 🌟`, '⭐');
         confetti({ particleCount: 120, spread: 80, colors: ['#ffd700', '#ff6b9d', '#c44582'] });
         playSound('levelUp');
       }
@@ -889,13 +871,13 @@
       try {
         const synth = new Tone.Synth().toDestination();
         const notes = {
-          message: { note: 'E5', dur: '16n' },
-          achievement: { note: 'C6', dur: '16n' },
-          levelUp: { note: 'G5', dur: '8n' },
-          click: { note: 'A4', dur: '32n' }
+          message: { note: 'E5', duration: '16n' },
+          achievement: { note: 'C6', duration: '16n' },
+          levelUp: { note: 'G5', duration: '8n' },
+          click: { note: 'A4', duration: '32n' }
         };
         const s = notes[type];
-        if (s) synth.triggerAttackRelease(s.note, s.dur);
+        if (s) synth.triggerAttackRelease(s.note, s.duration);
       } catch(e) {}
     }
 
