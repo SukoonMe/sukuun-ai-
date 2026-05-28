@@ -1,15 +1,15 @@
 {
-  "name": "sukoon-ai",
-  "version": "2.0.0",
-  "description": "Sukoon AI - Tumhara Perfect Hinglish Companion",
+  "name": "sukuun-ai",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "vercel dev",
-    "start": "vercel",
-    "build": "echo 'No build step needed'"
+    "deploy": "vercel --prod"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@upstash/redis": "^1.28.4"
+  },
   "engines": {
-    "node": "24.x"
+    "node": "18.x"
   }
 }
