@@ -50,7 +50,6 @@ function isTooSimilar(newText, history, threshold = 0.65) {
   return recent.some(old => {
     if (!old || old.length < 10) return false;
     
-    // Simple similarity check for Hinglish
     const wordsNew = newClean.split(' ');
     const wordsOld = old.split(' ');
     const common = wordsNew.filter(w => wordsOld.includes(w) && w.length > 3);
@@ -75,151 +74,7 @@ function fallbackResponse(name, mood, gender) {
   return sanitizeForTTS(responses[mood] || `${name}, main sun rahi hoon... bolo...`);
 }
 
-export const config = {
-  api: {
-    bodyParser: { sizeLimit: '1mb' },
-    externalResolver: true,
-  },
-};
-
-export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  
-  try {
-    const { 
-      message, 
-      userId, 
-      userName, 
-      companionGender = 'female', 
-      mood = 'romantic',
-      chatHistory = [],
-      bondLevel = 0 
-    } = req.body;
-    
-    if (!message || !userId) {
-      return res.status(400).json({ error: 'Missing required fields: message, userId' });
-    }
-    
-    const name = userName?.trim() || 'jaan';
-    
-    // ✅ Validate & normalize mood
-    const validMoods = ['romantic', 'seductive', 'naughty', 'playful', 'intense', 'calm', 'deep', 'night', 'bold'];
-    const safeMood = validMoods.includes(mood) ? mood : 'romantic';
-    
-    // ✅ Validate gender
-    const gender = companionGender === 'male' ? 'male' : 'female';
-    
-    // 🔒 Content Safety Filter (Legal & Ethical)
-    const illegalPatterns = [
-      /\b(minor|child|underage|teen|1[0-7]|under.?18).*(sex|nude|explicit)/i,
-      /\b(rape|non.?consensual|force|coerce|without.?consent)/i,
-      /\b(csam|cp|bestiality|incest)/i
-    ];
-    
-    if (illegalPatterns.some(p => p.test(message.toLowerCase()))) {
-      return res.status(200).json({ 
-        reply: sanitizeForTTS(`${name}, yeh topic theek nahi hai. Main sirf consenting adults ke liye hoon. Chalo kuch aur baat karte hain... 💙`) 
-      });
-    }
-    
-    // 🗄️ Load chat history from Redis
-    const redis = getRedis();
-    const chatKey = `chat:${userId}`;
-    const rawHistory = await redis.lrange(chatKey, -30, -1).catch(() => []);
-    
-    const history = rawHistory
-      .map(m => { try { return JSON.parse(m); } catch { return null; } })
-      .filter(m => m && (m.role === 'user' || m.role === 'assistant'));
-    
-    // 🧠 Build dynamic system prompt
-    const systemPrompt = buildSystemPrompt(name, gender, safeMood, bondLevel);
-    
-    // 🤖 Call Groq API (Llama 3.3 70B)
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`, 
-        'Content-Type': 'application/json' 
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...history.slice(-15), 
-          { role: 'user', content: message }
-        ],
-        // Mood-based temperature tuning
-        temperature: ['romantic', 'seductive', 'night'].includes(safeMood) ? 0.9 : 0.85,
-        max_tokens: 280,
-        top_p: 0.95,
-        frequency_penalty: 0.4,
-        presence_penalty: 0.6,
-        stream: false
-      }),
-      timeout: 35000
-    });
-    
-    if (!groqResponse.ok) {
-      const errorText = await groqResponse.text().catch(() => 'Unknown error');
-      console.error('Groq API Error:', groqResponse.status, errorText);
-      throw new Error(`Groq API failed: ${groqResponse.status}`);
-    }
-    
-    const data = await groqResponse.json();
-    let reply = data.choices?.[0]?.message?.content?.trim();
-    
-    // Fallback if empty
-    if (!reply || reply.length < 5) {
-      reply = fallbackResponse(name, safeMood, gender);
-    }
-    
-    // 🎙️ Sanitize for TTS output
-    reply = sanitizeForTTS(reply);
-    
-    // 🔁 Anti-repetition check
-    if (isTooSimilar(reply, history)) {
-      console.log('⚠️ Response too similar, using fallback');
-      reply = fallbackResponse(name, safeMood, gender);
-    }
-    
-    // 💾 Save to Redis (async, non-blocking)
-    const savePromises = [
-      redis.rpush(chatKey, JSON.stringify({ role: 'user', content: message, timestamp: Date.now() })),
-      redis.rpush(chatKey, JSON.stringify({ role: 'assistant', content: reply, timestamp: Date.now() })),
-      redis.expire(chatKey, 86400) // 24h TTL
-    ];
-    Promise.all(savePromises).catch(console.error);
-    
-    return res.status(200).json({ 
-      reply, 
-      success: true,
-      metadata: {
-        mood: safeMood,
-        gender,
-        bondLevel,
-        messageCount: history.length + 2
-      }
-    });
-    
-  } catch (error) {
-    console.error('Chat API Error:', error);
-    const { userName = 'jaan', mood = 'romantic', companionGender = 'female' } = req.body || {};
-    
-    return res.status(200).json({ 
-      reply: sanitizeForTTS(fallbackResponse(userName, mood, companionGender)), 
-      error: 'Service temporarily unavailable',
-      success: false
-    });
-  }
-}
-
-// 🎭 Dynamic System Prompt Builder
+// 🎭 Dynamic System Prompt Builder Function
 function buildSystemPrompt(name, gender, mood, bondLevel) {
   const intimacyLevel = bondLevel <= 1 ? 'gentle & respectful' : 
                         bondLevel <= 2 ? 'warm & affectionate' : 
@@ -255,7 +110,6 @@ function buildSystemPrompt(name, gender, mood, bondLevel) {
 - Add emotional depth or romantic/sexual tension based on mood
 - End with a gentle hook/question to continue the conversation`;
 
-  // Gender-specific vocabulary & style
   const genderStyle = gender === 'female' 
     ? `
 🌸 FEMALE COMPANION STYLE:
@@ -280,28 +134,152 @@ function buildSystemPrompt(name, gender, mood, bondLevel) {
     'Raw intimacy, explicit possession, deep connection'}
 • Always balance strength with tenderness`;
 
-  // Mood-specific styling
   const moodStyles = {
     romantic: `💕 ROMANTIC MODE: Soft, tender, emotionally deep. Focus on emotional connection, gentle touch, heartbeat, warmth. Vocabulary: poetic, sensual, soothing. Pace: slow & lingering.`,
-    
     seductive: `🔥 SEDUCTIVE MODE: Confident, alluring, subtly provocative. Build tension through words, hints, and anticipation. Vocabulary: suggestive, warm, magnetic. Pace: slow with pauses.`,
-    
     naughty: `😈 NAUGHTY MODE: Playfully bold, teasing, mischievously explicit. Light erotic undertones with humor and charm. Vocabulary: playful, direct, cheeky. Pace: bouncy & fun.`,
-    
     playful: `💋 PLAYFUL MODE: Flirty, teasing, mischievous. Light romantic undertones with humor. Vocabulary: cute, suggestive, fun. Pace: quick & bouncy.`,
-    
     intense: `⚡ INTENSE MODE: High-energy, passionate, urgent. Rapid emotional + physical escalation. Vocabulary: powerful, direct, raw. Pace: fast with emotional peaks.`,
-    
     calm: `🌙 CALM MODE: Soothing, gentle, peaceful. Focus on comfort, safety, relaxation. Vocabulary: soft, reassuring, warm. Pace: slow & steady.`,
-    
     deep: `💭 DEEP MODE: Introspective, meaningful, emotionally vulnerable. Focus on heart-to-heart connection. Vocabulary: thoughtful, sincere, profound. Pace: measured & reflective.`,
-    
     night: `🌌 NIGHT MODE: Intimate, whisper-like, prolonged sensual flow. Maximum romantic/erotic depth for late-night vibes. Vocabulary: whisper-soft, fantasy, dreamy. Pace: very slow & lingering.`,
-    
     bold: `🔥 BOLD MODE: Confident, direct, uninhibited. Explicit desire with grace. Vocabulary: raw, honest, powerful. Pace: steady with emphasis.`
   };
 
   const moodStyle = moodStyles[mood] || moodStyles.romantic;
-
   return `${base}\n\n${genderStyle}\n\n${moodStyle}\n\n🎯 FINAL INSTRUCTION: Always end with a gentle hook for deeper connection. Be present. Be authentic. Be theirs.`;
+}
+
+export const config = {
+  api: {
+    bodyParser: { sizeLimit: '1mb' },
+    externalResolver: true,
+  },
+};
+
+export default async function handler(req, res) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  
+  try {
+    const { 
+      message, 
+      userId, 
+      userName, 
+      companionGender = 'female', 
+      mood = 'romantic',
+      bondLevel = 0 
+    } = req.body;
+    
+    if (!message || !userId) {
+      return res.status(400).json({ error: 'Missing required fields: message, userId' });
+    }
+    
+    const name = userName?.trim() || 'jaan';
+    const validMoods = ['romantic', 'seductive', 'naughty', 'playful', 'intense', 'calm', 'deep', 'night', 'bold'];
+    const safeMood = validMoods.includes(mood) ? mood : 'romantic';
+    const gender = companionGender === 'male' ? 'male' : 'female';
+    
+    // Content Safety Filter
+    const illegalPatterns = [
+      /\b(minor|child|underage|teen|1[0-7]|under.?18).*(sex|nude|explicit)/i,
+      /\b(rape|non.?consensual|force|coerce|without.?consent)/i,
+      /\b(csam|cp|bestiality|incest)/i
+    ];
+    
+    if (illegalPatterns.some(p => p.test(message.toLowerCase()))) {
+      return res.status(200).json({ 
+        reply: sanitizeForTTS(`${name}, yeh topic theek nahi hai. Main sirf consenting adults ke liye hoon. Chalo kuch aur baat karte hain... 💙`) 
+      });
+    }
+    
+    // Redis database integration
+    const redis = getRedis();
+    const chatKey = `chat:${userId}`;
+    const rawHistory = await redis.lrange(chatKey, -30, -1).catch(() => []);
+    
+    const history = rawHistory
+      .map(m => { try { return JSON.parse(m); } catch { return null; } })
+      .filter(m => m && (m.role === 'user' || m.role === 'assistant'));
+    
+    // Build system prompt call
+    const systemPrompt = buildSystemPrompt(name, gender, safeMood, bondLevel);
+    
+    // Vercel execution limits ke mutabik Controller set kiya gaya hai
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 9500); // 9.5 Seconds Vercel limit
+    
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`, 
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...history.slice(-15), 
+          { role: 'user', content: message }
+        ],
+        temperature: ['romantic', 'seductive', 'night'].includes(safeMood) ? 0.9 : 0.85,
+        max_tokens: 280,
+        top_p: 0.95,
+        frequency_penalty: 0.4,
+        presence_penalty: 0.6,
+        stream: false
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!groqResponse.ok) {
+      const errorText = await groqResponse.text().catch(() => 'Unknown error');
+      console.error('Groq API Error:', groqResponse.status, errorText);
+      throw new Error(`Groq API failed: ${groqResponse.status}`);
+    }
+    
+    const data = await groqResponse.json();
+    let reply = data.choices?.[0]?.message?.content?.trim();
+    
+    if (!reply || reply.length < 5) {
+      reply = fallbackResponse(name, safeMood, gender);
+    }
+    
+    reply = sanitizeForTTS(reply);
+    
+    if (isTooSimilar(reply, history)) {
+      reply = fallbackResponse(name, safeMood, gender);
+    }
+    
+    // Async save to Redis
+    const savePromises = [
+      redis.rpush(chatKey, JSON.stringify({ role: 'user', content: message, timestamp: Date.now() })),
+      redis.rpush(chatKey, JSON.stringify({ role: 'assistant', content: reply, timestamp: Date.now() })),
+      redis.expire(chatKey, 86400)
+    ];
+    Promise.all(savePromises).catch(console.error);
+    
+    return res.status(200).json({ 
+      reply, 
+      success: true,
+      metadata: { mood: safeMood, gender, bondLevel, messageCount: history.length + 2 }
+    });
+    
+  } catch (error) {
+    console.error('Chat API Error:', error);
+    const { userName = 'jaan', mood = 'romantic', companionGender = 'female' } = req.body || {};
+    
+    return res.status(200).json({ 
+      reply: sanitizeForTTS(fallbackResponse(userName, mood, companionGender)), 
+      error: error.name === 'AbortError' ? 'Timeout' : 'Service temporarily unavailable',
+      success: false
+    });
+  }
 }
