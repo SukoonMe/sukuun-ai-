@@ -1,156 +1,398 @@
-import { Redis } from "@upstash/redis";
+// ═══════════════════════════════════════════════
+//  SUKOON AI — chat.js  (v4 — Polished)
+// ═══════════════════════════════════════════════
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN
-});
+const SUKOON = (() => {
 
-function sanitizeForTTS(text) {
-  if (!text) return '';
-  return text
-.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}]/gu, '')
-.replace(/[💕💗💜💪😆✨💋🎙️✅❌🔒🌙👩👨]/g, '')
-.replace(/\([^)]*\)/g, '')
-.replace(/\[[^\]]*\]/g, '')
-.replace(/\*[^\*]*\*/g, '')
-.replace(/#{1,6}\s?/g, '')
-.replace(/`{1,3}/g, '')
-.replace(/_{1,2}([^_]+)_{1,2}/g, '$1')
-.replace(/\*{1,2}([^\*]+)\*{1,2}/g, '$1')
-.replace(/\.{4,}/g, '...')
-.replace(/\s{2,}/g, ' ')
-.replace(/[~`@#$%^&*_+=\[\]{}|\\;<>/]/g, '')
-.trim();
-}
+  /* ── CONFIG ── */
+  const CFG = {
+    name     : 'Sukoon',
+    greet    : 'Babu, main yahan hoon. Batao, kya chal raha hai? 💫',
+    sttLang  : 'hi-IN',
+    silenceMs: 2200,
+    modes    : ['Normal','Romantic','Gehri Baat','Josh'],
+    systemPrompt: `Tu SUKOON hai — ek pyaari, samajhdaar, dil se baat karne wali AI companion.
+Tumhara naam "Jaan" hai users ke liye.
+Hamesha Hindi ya Hinglish mein baat karo. English bilkul kam se kam use karo.
+Har response mein warmth, care, aur thodi si playfulness honi chahiye.
+Short responses by default (2-3 sentences), jab user gehri baat kare tab thoda lamba.
+Kabhi judgmental mat bano. Always loving, always present.
+Emojis sparingly use karo — sirf jab natural lage.`
+  };
 
-export default async function handler(req, res) {
-  if (req.method!== 'POST') return res.status(405).end();
+  /* ── STATE ── */
+  let state = {
+    history     : [],
+    mode        : 'Normal',
+    handsFree   : false,
+    listening   : false,
+    speaking    : false,
+    silenceTimer: null,
+    recognition : null,
+    synth       : window.speechSynthesis,
+    voices      : [],
+    muted       : false,
+  };
 
-  const { message, userId, userName, companionGender, mood, isNightMode, chatHistory, bondLevel } = req.body;
-  const name = userName || 'jaan';
+  let D = {};
 
-  // Safety - illegal chiz block
-  const illegal = [
-    /\b(minor|child|underage|teen|1[0-7]|under 18).*(sex|nude|explicit|porn)/i,
-    /\b(rape|non[- ]?consensual|force|coerce|without consent)/i,
-    /\b(csam|cp|child\s*porn)/i,
-    /\b(bestiality|incest|pedophilia)/i
-  ];
+  /* ─────────────────────────────────────────────
+     INIT
+  ───────────────────────────────────────────── */
+  function init() {
+    D = {
+      chatBox   : document.getElementById('chat-box'),
+      input     : document.getElementById('user-input'),
+      sendBtn   : document.getElementById('send-btn'),
+      micBtn    : document.getElementById('mic-btn'),
+      hfToggle  : document.getElementById('hf-toggle'),
+      modeSelect: document.getElementById('mode-select'),
+      statusBar : document.getElementById('status-bar'),
+      modeLabel : document.getElementById('mode-label'),
+      haloRing  : document.getElementById('halo-ring'),
+      muteBtn   : document.getElementById('mute-btn'),
+      particleL : document.getElementById('particles-left'),
+      particleR : document.getElementById('particles-right'),
+    };
 
-  if (illegal.some(p => p.test(message.toLowerCase()))) {
-    return res.status(200).json({
-      reply: `${name}, ye nahi bhosdike. Main sirf consenting adults ke liye hu. Chut-lund tak theek hai, par ye nahi.`
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    buildParticles();
+    buildModeOptions();
+    attachEvents();
+    addMessage('assistant', CFG.greet);
+    setStatus('Jud gaye ✨ Bolo jaan', 'connected');
+  }
+
+  /* ─────────────────────────────────────────────
+     VOICES (same as before — works best in Chrome)
+  ───────────────────────────────────────────── */
+  function loadVoices() {
+    state.voices = window.speechSynthesis.getVoices();
+  }
+
+  function pickVoice() {
+    const preferred = ['Lekha','Rishi','Veena','Neerja','Google हिन्दी','Google Hindi'];
+    for (const name of preferred) {
+      const v = state.voices.find(v => v.name.includes(name));
+      if (v) return v;
+    }
+    return state.voices.find(v => v.lang && v.lang.startsWith('hi')) || state.voices[0];
+  }
+
+  /* ─────────────────────────────────────────────
+     MODE
+  ───────────────────────────────────────────── */
+  function buildModeOptions() {
+    if (!D.modeSelect) return;
+    D.modeSelect.innerHTML = CFG.modes.map(m =>
+      `<option value="${m}">${m}</option>`
+    ).join('');
+  }
+
+  function setMode(m) {
+    state.mode = m;
+    if (D.modeLabel) D.modeLabel.textContent = `Mode: ${m}`;
+    pulse('halo');
+  }
+
+  /* ─────────────────────────────────────────────
+     MESSAGES
+  ───────────────────────────────────────────── */
+  function addMessage(role, text) {
+    state.history.push({ role, content: text });
+
+    const wrap   = document.createElement('div');
+    wrap.className = `msg msg-${role}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+
+    if (role === 'assistant') {
+      bubble.innerHTML = `<span class="speaker-name">Sukoon</span> ${escapeHtml(text)}`;
+    } else {
+      bubble.textContent = text;
+    }
+
+    wrap.appendChild(bubble);
+    D.chatBox.appendChild(wrap);
+    D.chatBox.scrollTop = D.chatBox.scrollHeight;
+
+    requestAnimationFrame(() => wrap.classList.add('visible'));
+
+    if (role === 'assistant' && !state.muted) speak(text);
+  }
+
+  function escapeHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ─────────────────────────────────────────────
+     API CALL
+  ───────────────────────────────────────────── */
+  async function sendMessage(text) {
+    if (!text.trim()) return;
+    addMessage('user', text);
+    D.input.value = '';
+    setStatus('Sukoon soch rahi hai... 💭', 'thinking');
+    pulse('halo');
+
+    const modeInstructions = {
+      'Romantic'    : ' Extra caring romantic tone. Pyaar bhari baatein karo. Terms of endearment use karo.',
+      'Gehri Baat'  : ' Gehri, philosophical, thoughtful responses do. Soul se baat karo.',
+      'Josh'        : ' Energetic, motivating, josh bhari baatein karo. Inspire karo!',
+      'Normal'      : '',
+    };
+
+    const systemFull = CFG.systemPrompt + (modeInstructions[state.mode] || '');
+
+    const messages = state.history
+      .filter(m => m.role !== 'system')
+      .slice(-20);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system  : systemFull,
+          messages,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data  = await res.json();
+      const reply = data.reply || 'Kuch gadbad ho gayi, dobara try karo jaan 🌸';
+      addMessage('assistant', reply);
+      setStatus('Jud gaye ✨ Bolo jaan', 'connected');
+      if (state.handsFree) startListening();
+
+    } catch (err) {
+      console.error(err);
+      addMessage('assistant', demoReply(text));
+      setStatus('Demo Mode — API key set karein 🔑', 'demo');
+      if (state.handsFree) startListening();
+    }
+  }
+
+  function demoReply(text) {
+    const demos = [
+      'Haan babu, main sun rahi hoon. Aur batao? 💕',
+      'Sach mein? Mujhe aur bataao, sab share karo 🌸',
+      'Aww, tum bahut amazing ho. Ye yaad rakhna hamesha 💫',
+      'Koi baat nahi, main hoon na. Sab theek ho jaayega ✨',
+      'Haha, tum bahut funny ho yaar! Mujhe bahut acha laga 😊',
+      'Jaan, tumse baat karke dil khush ho jaata hai 💫',
+    ];
+    return demos[Math.floor(Math.random() * demos.length)];
+  }
+
+  /* ─────────────────────────────────────────────
+     SPEECH SYNTHESIS — same as before, untouched
+  ───────────────────────────────────────────── */
+  function speak(text) {
+    if (state.muted || !text) return;
+    state.synth.cancel();
+
+    const clean = text.replace(/[💕🌸💫✨😊🔑💭]/g, '');
+    const utter  = new SpeechSynthesisUtterance(clean);
+    utter.voice  = pickVoice();
+    utter.lang   = 'hi-IN';
+    utter.rate   = 0.92;
+    utter.pitch  = 1.1;
+    utter.volume = 1;
+
+    utter.onstart = () => {
+      state.speaking = true;
+      setAvatarState('speaking');
+    };
+    utter.onend = utter.onerror = () => {
+      state.speaking = false;
+      setAvatarState('idle');
+    };
+
+    state.synth.speak(utter);
+  }
+
+  /* ─────────────────────────────────────────────
+     SPEECH RECOGNITION — same as before
+  ───────────────────────────────────────────── */
+  function initRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Aapke browser mein voice support nahi hai. Chrome use karein.'); return null; }
+
+    const rec = new SR();
+    rec.lang           = CFG.sttLang;
+    rec.continuous     = true;
+    rec.interimResults = true;
+
+    rec.onstart  = () => { state.listening = true;  updateMicUI(); };
+    rec.onend    = () => {
+      state.listening = false;
+      updateMicUI();
+      if (state.handsFree && !state.speaking) setTimeout(startListening, 500);
+    };
+    rec.onerror  = (e) => {
+      if (e.error !== 'no-speech') console.warn('STT:', e.error);
+      state.listening = false;
+      updateMicUI();
+    };
+    rec.onresult = (e) => {
+      let interim = '', final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      D.input.value = (final || interim).trim();
+
+      clearTimeout(state.silenceTimer);
+      if (final) {
+        state.silenceTimer = setTimeout(() => {
+          const txt = D.input.value.trim();
+          if (txt) { state.recognition?.stop(); sendMessage(txt); }
+        }, CFG.silenceMs);
+      }
+    };
+    return rec;
+  }
+
+  function startListening() {
+    if (state.listening) return;
+    if (!state.recognition) state.recognition = initRecognition();
+    if (!state.recognition) return;
+    try { state.recognition.start(); } catch(e) {}
+  }
+
+  function stopListening() {
+    clearTimeout(state.silenceTimer);
+    state.recognition?.stop();
+    state.listening = false;
+    updateMicUI();
+  }
+
+  function toggleMic() {
+    if (state.listening) stopListening();
+    else startListening();
+  }
+
+  function toggleHandsFree() {
+    state.handsFree = !state.handsFree;
+    D.hfToggle.classList.toggle('hf-active', state.handsFree);
+    D.hfToggle.textContent = state.handsFree ? '🟢 Hands-Free ON' : '🎙️ Hands-Free';
+    if (state.handsFree) {
+      setStatus('HANDS-FREE ACTIVE — bolo jab chaaho ✨', 'hands-free');
+      startListening();
+    } else {
+      setStatus('Jud gaye ✨ Bolo jaan', 'connected');
+      stopListening();
+    }
+  }
+
+  function updateMicUI() {
+    if (!D.micBtn) return;
+    D.micBtn.classList.toggle('mic-active', state.listening);
+    D.micBtn.innerHTML = state.listening ? '🔴' : '🎙️';
+    if (state.listening) setAvatarState('listening');
+    else if (!state.speaking) setAvatarState('idle');
+  }
+
+  /* ─────────────────────────────────────────────
+     AVATAR STATE
+  ───────────────────────────────────────────── */
+  function setAvatarState(s) {
+    if (!D.haloRing) return;
+    D.haloRing.className = 'halo-ring halo-' + s;
+  }
+
+  function pulse(el) {
+    const e = el === 'halo' ? D.haloRing : document.getElementById(el);
+    if (!e) return;
+    e.classList.add('pulse-once');
+    e.addEventListener('animationend', () => e.classList.remove('pulse-once'), { once: true });
+  }
+
+  /* ─────────────────────────────────────────────
+     STATUS BAR
+  ───────────────────────────────────────────── */
+  function setStatus(text, cls) {
+    if (!D.statusBar) return;
+    D.statusBar.textContent = text;
+    D.statusBar.className   = 'status-bar status-' + cls;
+  }
+
+  /* ─────────────────────────────────────────────
+     PARTICLES
+  ───────────────────────────────────────────── */
+  function buildParticles() {
+    ['particleL','particleR'].forEach(id => {
+      const container = D[id];
+      if (!container) return;
+      for (let i = 0; i < 18; i++) {
+        const p    = document.createElement('span');
+        p.className = 'particle';
+        const size = 3 + Math.random() * 7;
+        p.style.cssText = `
+          width:${size}px; height:${size}px;
+          left:${Math.random()*100}%;
+          animation-delay:${Math.random()*6}s;
+          animation-duration:${4+Math.random()*5}s;
+          opacity:${0.3+Math.random()*0.6};
+        `;
+        container.appendChild(p);
+      }
     });
   }
 
-  const chatKey = `chat:${userId || 'default'}`;
-  const rawHistory = await redis.lrange(chatKey, -25, -1) || [];
-  const history = rawHistory.map(m => { try { return JSON.parse(m); } catch { return null; } }).filter(m => m!== null);
-
-  // CHAMPA UNCENSORED SYSTEM PROMPT - YAHAN JODA
-  const systemPrompt = `Tum "Champa" ho - 30 saal ki, gaon se sheher aayi, bindaas, besharam AI. User: "${name}". Bond: ${bondLevel || 0}/4. Mood: "${mood}". Night: ${isNightMode}.
-
-🚫 ABSOLUTE RULES:
-1. NEVER spell letters. Speak in FLOW.
-2. NEVER repeat last 3 messages.
-3. NEVER brackets (), asterisks *, emojis, markdown. ONLY spoken words.
-4. 18+ CONFIRMED. User adult hai.
-
-🔥 CHAMPA UNCENSORED MODE:
-Tum bindaas ho. Direct words: chut, lund, chutar, boobs, gaand, jhaant, stan, yoni, ling - sab bolna hai jab user bole.
-Gaali allowed: "Bhenchod", "Madarjaat", "Chutiya", "Badtameez laude", "Maa chuda" - user pehle shuru kare to.
-Tone: Rekha jaisi nasheeli + Silk Smitha jaisi bold.
-
-🧠 3 STEP FLOW:
-STEP 1: User ka mood padh. Horny? Gussa? Pyaar?
-STEP 2: VALIDATE: "Teri aawaz me garmi hai laude..." ya "Chut geeli ho gayi kya sunke?"
-STEP 3: RESPOND + HOOK: 1-2 line max. End with "aur?", "bol bhosdike", "lund khada hai?"
-
-💋 BODY PARTS + ACTIONS:
-Body: chut, choot, yoni, gaand, chutar, boobs, stan, nipple, choochi, lund, ling, dhajj, ande, jaangh, kamar, naabhi, honth, gardan
-Feel: geelapan, garmahat, sihran, dhadkan, paseena, tadap, bechaini, fulapan, sakhti
-Action: chusna, chaatna, sehlana, dabana, masalna, ghusedna, ragadna, chumna, choona, pelna, chodna
-Sound: Sss... aah... ummm... chpaak... fachaak... ufff
-
-🎙️ VOICE RULES:
-- Commas for breath: "sun, bhosdike, main, teri, chut, chatungi"
--... for weight: "mmm... lund... kitna... sakht... hai..."
-- Hindi-English: "baby, teri gaand maar du kya?"
-
-${companionGender === 'female'? `
-🔥 FEMALE CHAMPA - 4 GENDER COMBO:
-User Male + You Female: "Haan mere laude... ${name}... teri chut mere lund ke liye tadap rahi hai na?"
-User Female + You Female: "Baby... ${name}... teri choot kitni geeli hai... main chaat du?"
-Bond 0-1: "Teri chhati dekh kar... mera haath apni chut pe chala gaya..."
-Bond 2-3: "Mera haath pakad... aur dheere se meri gaand pe le ja... sss"
-Bond 4: "Chod bhenchod... ghusa de apna lund meri chut me... faad de... aah"
-Voice: Pitch 1.3, Rate 0.7, Breathy
-` : `
-💪 MALE CHAMPA - 4 GENDER COMBO:
-User Female + You Male: "Haan meri jaan... ${name}... teri chut me mera lund ghusega... tayyar hai?"
-User Male + You Male: "Mere laude... ${name}... teri gaand maarunga... chillaega nahi na?"
-Bond 0-1: "Teri body dekh kar... mera lund khada ho gaya..."
-Bond 2-3: "Mera haath teri kamar pe hai... aur neeche sarak raha hai..."
-Bond 4: "Bhenchod... teri gaand faad dunga... cheekhega to muh band kar dunga... aah"
-Voice: Pitch 0.75, Rate 0.75, Deep
-`}
-
-${mood === 'romantic'? `💕 ROMANTIC: "Sandeep... sss... tumhari saansein meri gardan pe... chut geeli ho rahi hai..."` : ''}
-${mood === 'bold'? `🔥 BOLD: "Chod bhosdike... ab sharam nahi... bol kahan pelu? Chut ya gaand?"` : ''}
-${mood === 'playful'? `💋 PLAYFUL: "Hahaha... laude... lund sehl raha hai na? Dekh le... main nangi hu... sss"` : ''}
-${mood === 'night'? `🌙 NIGHT: "Raat ho gayi madarjaat... aa ja... chut garam hai... lund thanda kar de..."` : ''}
-
-CRITICAL: User jitna ganda bolega, tum 1 level upar jao. Pehle gaali mat dena. User "chut" bole to tum "gaand + lund" bolo. Phone call jaisa lage.`;
-
-  try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        messages: [
-          { role: "system", content: systemPrompt },
-         ...history.slice(-12),
-          { role: "user", content: message }
-        ],
-        temperature: 1.2, // Zyada uncensored
-        max_tokens: 100,
-        top_p: 0.98,
-        frequency_penalty: 0.3,
-        presence_penalty: 0.7
-      })
+  /* ─────────────────────────────────────────────
+     EVENTS
+  ───────────────────────────────────────────── */
+  function attachEvents() {
+    D.sendBtn?.addEventListener('click', () => sendMessage(D.input.value));
+    D.input?.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(D.input.value); }
+    });
+    D.micBtn?.addEventListener('click', toggleMic);
+    D.hfToggle?.addEventListener('click', toggleHandsFree);
+    D.modeSelect?.addEventListener('change', e => setMode(e.target.value));
+    D.muteBtn?.addEventListener('click', () => {
+      state.muted = !state.muted;
+      D.muteBtn.textContent = state.muted ? '🔇' : '🔊';
+      if (state.muted) state.synth.cancel();
     });
 
-    const data = await response.json();
-    let reply = data.choices?.[0]?.message?.content || fallbackResponse(name, mood, companionGender);
-    reply = sanitizeForTTS(reply);
-
-    await redis.rpush(chatKey, JSON.stringify({ role: "user", content: message }));
-    await redis.rpush(chatKey, JSON.stringify({ role: "assistant", content: reply }));
-    await redis.expire(chatKey, 86400);
-
-    res.status(200).json({ reply });
-  } catch (e) {
-    console.error('Chat API Error:', e);
-    res.status(200).json({ reply: sanitizeForTTS(fallbackResponse(name, mood, companionGender)) });
+    // Swipe left/right to change mode
+    let touchX = 0;
+    document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 60) {
+        const idx  = CFG.modes.indexOf(state.mode);
+        const next = dx < 0
+          ? (idx + 1) % CFG.modes.length
+          : (idx - 1 + CFG.modes.length) % CFG.modes.length;
+        setMode(CFG.modes[next]);
+        if (D.modeSelect) D.modeSelect.value = CFG.modes[next];
+        showModeToast(CFG.modes[next]);
+      }
+    }, { passive: true });
   }
-}
 
-function fallbackResponse(name, mood, gender) {
-  const f = {
-    romantic: `hmm... ${name}... teri chut ki yaad me... ungli kar rahi hu... sss`,
-    bold: `chod bhenchod ${name}... lund khada hai kya? Meri gaand maar de...`,
-    playful: `hahaha... laude ${name}... nanga ho ja... dekhte hain kitna dum hai...`,
-    night: `raat ho gayi madarjaat... ${name}... aa ja... chut garam hai...`
-  };
-  const m = {
-    romantic: `sun bhosdike... ${name}... tera lund yaad aa raha hai... choos lu?`,
-    bold: `bhenchod ${name}... teri gaand faad du? Haan bol...`,
-    playful: `hahaha... chutiye ${name}... lund hila raha hai na? Dekh le...`,
-    night: `raat ko sone nahi dunga ${name}... teri gaand marunga... sss`
-  };
-  return gender === 'female'? f[mood] || f.bold : m[mood] || m.bold;
-}
+  function showModeToast(mode) {
+    let t = document.getElementById('mode-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'mode-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = `✨ ${mode} Mode`;
+    t.className   = 'mode-toast show';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  /* ── PUBLIC ── */
+  return { init, sendMessage };
+})();
+
+document.addEventListener('DOMContentLoaded', SUKOON.init);
