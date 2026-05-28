@@ -2,131 +2,67 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#050609">
   <title>Sukoon AI - Raat Ki Baatein 🌙</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
-    * { font-family: 'Poppins', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #050609; color: #fff; overflow-x: hidden; min-height: 100vh; }
+    * { font-family: 'Poppins', sans-serif; box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body { background: #050609; color: #fff; overflow-x: hidden; min-height: 100vh; touch-action: manipulation; }
+    input, select, textarea { font-size: 16px !important; }
     
-    /* ============ DYNAMIC COUPLE IMAGES ============ */
-    .couple-image-layer {
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      background-size: cover;
-      background-position: center;
-      opacity: 0;
-      transform: scale(1.1);
-      transition: all 3s cubic-bezier(0.4, 0, 0.2, 1);
-      filter: brightness(0.5) contrast(1.2);
-      pointer-events: none;
-    }
-    .couple-image-layer.active {
-      opacity: 0.4;
-      transform: scale(1);
-      filter: brightness(0.6) contrast(1.3);
-    }
-    .couple-image-layer.slide-left {
-      animation: slideLeft 15s ease-in-out infinite;
-    }
-    .couple-image-layer.slide-right {
-      animation: slideRight 15s ease-in-out infinite;
-    }
-    .couple-image-layer.zoom-slow {
-      animation: zoomSlow 20s ease-in-out infinite;
-    }
-    @keyframes slideLeft {
-      0%, 100% { background-position: 30% center; }
-      50% { background-position: 70% center; }
-    }
-    @keyframes slideRight {
-      0%, 100% { background-position: 70% center; }
-      50% { background-position: 30% center; }
-    }
-    @keyframes zoomSlow {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
+    /* Responsive */
+    @media (max-width: 640px) { html { font-size: 14px; } .glass { backdrop-filter: blur(16px) saturate(180%); } }
+    @media (min-width: 1024px) { .desktop-max { max-width: 800px !important; } }
     
-    /* ============ VIGNETTE & SHADING ============ */
+    /* Background & Images */
+    .couple-image-layer { position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center; opacity: 0; transform: scale(1.1); transition: all 3s cubic-bezier(0.4, 0, 0.2, 1); filter: brightness(0.5) contrast(1.2); pointer-events: none; }
+    .couple-image-layer.active { opacity: 0.4; transform: scale(1); filter: brightness(0.6) contrast(1.3); }
+    .couple-image-layer.slide-left { animation: slideLeft 15s ease-in-out infinite; }
+    .couple-image-layer.slide-right { animation: slideRight 15s ease-in-out infinite; }
+    .couple-image-layer.zoom-slow { animation: zoomSlow 20s ease-in-out infinite; }
+    @keyframes slideLeft { 0%, 100% { background-position: 30% center; } 50% { background-position: 70% center; } }
+    @keyframes slideRight { 0%, 100% { background-position: 70% center; } 50% { background-position: 30% center; } }
+    @keyframes zoomSlow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    
     .vignette { position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%); }
     .romantic-bg { position: fixed; inset: 0; z-index: -3; background: linear-gradient(-45deg, #1a0a2e, #2d1b4e, #4a1a6e, #6e1a5e, #8e1a4e); background-size: 600% 600%; animation: romanticShift 22s ease infinite; }
     @keyframes romanticShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     
-    /* ============ ILLUSION LAYER ============ */
     .illusion-layer { position: fixed; inset: 0; z-index: -2; pointer-events: none; transition: all 2s cubic-bezier(0.4,0,0.2,1); mix-blend-mode: screen; }
-    
-    .mood-romantic .illusion-layer {
-      background: radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.3) 0%, transparent 50%),
-                  radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.25) 0%, transparent 50%);
-      animation: floatIllusion 25s ease-in-out infinite;
-    }
+    .mood-romantic .illusion-layer { background: radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.3) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.25) 0%, transparent 50%); animation: floatIllusion 25s ease-in-out infinite; }
     @keyframes floatIllusion { 0%,100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.03) rotate(1deg); } }
-    
-    .mood-seductive .illusion-layer {
-      background: radial-gradient(ellipse at 30% 70%, rgba(220,38,38,0.45) 0%, transparent 55%),
-                  radial-gradient(ellipse at 70% 30%, rgba(236,72,153,0.4) 0%, transparent 55%);
-      animation: seductivePulse 10s ease-in-out infinite alternate;
-      opacity: 1;
-    }
+    .mood-seductive .illusion-layer { background: radial-gradient(ellipse at 30% 70%, rgba(220,38,38,0.45) 0%, transparent 55%), radial-gradient(ellipse at 70% 30%, rgba(236,72,153,0.4) 0%, transparent 55%); animation: seductivePulse 10s ease-in-out infinite alternate; opacity: 1; }
     @keyframes seductivePulse { 0% { opacity: 0.8; transform: scale(1) rotate(0deg); } 100% { opacity: 1; transform: scale(1.08) rotate(2deg); } }
-    
-    .mood-playful .illusion-layer {
-      background: radial-gradient(circle at 25% 25%, rgba(251,191,36,0.35) 0%, transparent 40%),
-                  radial-gradient(circle at 75% 75%, rgba(236,72,153,0.3) 0%, transparent 40%);
-      animation: sparkleFloat 10s ease-in-out infinite;
-    }
+    .mood-playful .illusion-layer { background: radial-gradient(circle at 25% 25%, rgba(251,191,36,0.35) 0%, transparent 40%), radial-gradient(circle at 75% 75%, rgba(236,72,153,0.3) 0%, transparent 40%); animation: sparkleFloat 10s ease-in-out infinite; }
     @keyframes sparkleFloat { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(15px,-15px) rotate(5deg); } }
-    
-    .mood-intense .illusion-layer {
-      background: radial-gradient(ellipse at 40% 60%, rgba(168,85,247,0.45) 0%, transparent 50%),
-                  radial-gradient(ellipse at 60% 40%, rgba(236,72,153,0.4) 0%, transparent 50%);
-      animation: intensePulse 8s ease-in-out infinite alternate;
-    }
+    .mood-intense .illusion-layer { background: radial-gradient(ellipse at 40% 60%, rgba(168,85,247,0.45) 0%, transparent 50%), radial-gradient(ellipse at 60% 40%, rgba(236,72,153,0.4) 0%, transparent 50%); animation: intensePulse 8s ease-in-out infinite alternate; }
     @keyframes intensePulse { 0% { opacity: 0.7; filter: blur(2px); } 100% { opacity: 1; filter: blur(1px); } }
-    
-    .mood-calm .illusion-layer {
-      background: radial-gradient(ellipse at 30% 70%, rgba(59,130,246,0.3) 0%, transparent 50%),
-                  radial-gradient(ellipse at 70% 30%, rgba(139,92,246,0.25) 0%, transparent 50%);
-      animation: calmFloat 20s ease-in-out infinite;
-    }
+    .mood-calm .illusion-layer { background: radial-gradient(ellipse at 30% 70%, rgba(59,130,246,0.3) 0%, transparent 50%), radial-gradient(ellipse at 70% 30%, rgba(139,92,246,0.25) 0%, transparent 50%); animation: calmFloat 20s ease-in-out infinite; }
     @keyframes calmFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.02); } }
-    
-    .mood-naughty .illusion-layer {
-      background: radial-gradient(ellipse at 25% 75%, rgba(220,38,38,0.5) 0%, transparent 45%),
-                  radial-gradient(ellipse at 75% 25%, rgba(236,72,153,0.45) 0%, transparent 45%);
-      animation: naughtyFlicker 6s ease-in-out infinite alternate;
-    }
+    .mood-naughty .illusion-layer { background: radial-gradient(ellipse at 25% 75%, rgba(220,38,38,0.5) 0%, transparent 45%), radial-gradient(ellipse at 75% 25%, rgba(236,72,153,0.45) 0%, transparent 45%); animation: naughtyFlicker 6s ease-in-out infinite alternate; }
     @keyframes naughtyFlicker { 0% { opacity: 0.85; transform: scale(1) rotate(-1deg); } 100% { opacity: 1; transform: scale(1.06) rotate(1deg); } }
-    
-    .mood-deep .illusion-layer {
-      background: radial-gradient(ellipse at 35% 65%, rgba(139,92,246,0.4) 0%, transparent 50%),
-                  radial-gradient(ellipse at 65% 35%, rgba(99,102,241,0.35) 0%, transparent 50%);
-      animation: deepGlow 18s ease-in-out infinite alternate;
-    }
+    .mood-deep .illusion-layer { background: radial-gradient(ellipse at 35% 65%, rgba(139,92,246,0.4) 0%, transparent 50%), radial-gradient(ellipse at 65% 35%, rgba(99,102,241,0.35) 0%, transparent 50%); animation: deepGlow 18s ease-in-out infinite alternate; }
     @keyframes deepGlow { 0% { opacity: 0.6; } 100% { opacity: 0.95; } }
     
-    /* ============ PARTICLES ============ */
     .star { position: absolute; width: 3px; height: 3px; background: white; border-radius: 50%; box-shadow: 0 0 10px white, 0 0 20px white; animation: twinkle var(--duration) infinite ease-in-out; opacity: var(--opacity); }
     @keyframes twinkle { 0%,100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 1; transform: scale(1.8); } }
-    
     .heart { position: absolute; font-size: 24px; animation: floatHeart var(--duration) infinite ease-in-out; opacity: var(--opacity); pointer-events: none; filter: drop-shadow(0 0 12px rgba(255,105,180,0.8)); transition: all 1s ease; }
     @keyframes floatHeart { 0%,100% { transform: translateY(100vh) rotate(0deg); opacity: 0; } 10%,90% { opacity: var(--opacity); } 100% { transform: translateY(-100px) rotate(360deg); opacity: 0; } }
-    
     .petal { position: absolute; width: 14px; height: 14px; background: linear-gradient(135deg, #ff6b9d, #c44582); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); animation: fallPetal var(--duration) infinite linear; opacity: 0.7; pointer-events: none; }
     @keyframes fallPetal { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0; } 10%,90% { opacity: 0.7; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-    
     .mood-seductive .heart { animation-duration: 6s !important; opacity: 0.9 !important; font-size: 28px !important; }
     .mood-seductive .petal { animation-duration: 4s !important; opacity: 0.95 !important; }
     
     .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.5; animation: floatOrb var(--duration) infinite ease-in-out; mix-blend-mode: screen; }
     @keyframes floatOrb { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(var(--x), var(--y)) scale(1.3); } }
     
-    /* ============ GLASSMORPHISM ============ */
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px) saturate(190%); -webkit-backdrop-filter: blur(24px) saturate(190%); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); position: relative; overflow: hidden; }
     .glass::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.02) 50%, transparent 70%); transform: rotate(45deg); animation: shine 8s infinite; }
     @keyframes shine { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
@@ -181,25 +117,23 @@
     .bond-heart { animation: bondPulse 1.5s infinite; }
     @keyframes bondPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
     
-    .mic-single { background: rgba(236,72,153,0.25) !important; animation: pulse 1.5s infinite; border-color: rgba(236,72,153,0.6) !important; }
-    .mic-loop { background: linear-gradient(135deg, #7c3aed, #ec4899, #f43f5e) !important; animation: bounce 1s infinite; border-color: rgba(236,72,153,0.8) !important; box-shadow: 0 0 20px rgba(236,72,153,0.5); }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .mic-idle { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.08) !important; }
+    .mic-single { background: rgba(236,72,153,0.3) !important; border-color: rgba(236,72,153,0.6) !important; box-shadow: 0 0 15px rgba(236,72,153,0.4) !important; animation: micPulse 1.5s infinite; }
+    @keyframes micPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .mic-loop { background: linear-gradient(135deg, #7c3aed, #ec4899, #f43f5e) !important; border-color: rgba(236,72,153,0.8) !important; box-shadow: 0 0 25px rgba(236,72,153,0.6) !important; animation: micLoopPulse 2s infinite; }
+    @keyframes micLoopPulse { 0%,100% { box-shadow: 0 0 20px rgba(236,72,153,0.4); } 50% { box-shadow: 0 0 35px rgba(236,72,153,0.8); } }
     
-    @media (max-width: 640px) { .mobile-full { width: 100vw; margin: 0; border-radius: 0; } }
+    @media (max-width: 640px) { .glass { border-radius: 1rem !important; } .orb { filter: blur(60px); } }
   </style>
 </head>
 <body class="mood-romantic">
 
   <div class="romantic-bg"></div>
-  
-  <!-- DYNAMIC COUPLE IMAGES -->
   <div id="couple-img-1" class="couple-image-layer slide-left"></div>
   <div id="couple-img-2" class="couple-image-layer slide-right"></div>
   <div id="couple-img-3" class="couple-image-layer zoom-slow"></div>
-  
   <div class="illusion-layer"></div>
   <div class="vignette"></div>
-  
   <div id="stars-container"></div>
   <div id="hearts-container"></div>
   <div id="petals-container"></div>
@@ -209,31 +143,31 @@
   <div class="orb w-48 h-48 bg-rose-500 top-1/2 left-1/2" style="--duration: 14s; --x: 50px; --y: 30px;"></div>
 
   <!-- 18+ AGE GATE -->
-  <div id="age-gate" class="fixed inset-0 z-[100] flex items-center justify-center">
+  <div id="age-gate" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/95 backdrop-blur-xl"></div>
-    <div class="relative z-10 glass rounded-3xl p-8 max-w-sm w-full mx-4 text-center border border-pink-500/30">
+    <div class="relative z-10 glass rounded-3xl p-6 w-full max-w-sm text-center border border-pink-500/30">
       <div class="mb-6">
-        <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center text-5xl mb-4" style="animation: flame 1.5s infinite alternate;">🔞</div>
-        <h2 class="text-3xl font-bold bg-gradient-to-r from-pink-300 via-rose-300 to-purple-300 bg-clip-text text-transparent">18+ Only, Jaan</h2>
-        <p class="text-gray-300 mt-3 text-sm leading-relaxed">Ye space sirf <strong class="text-pink-400">adults</strong> ke liye hai...<br>Romantic baatein, deep connections, aur thodi si naughty vibes! 🌙</p>
+        <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center text-4xl mb-4" style="animation: flame 1.5s infinite alternate;">🔞</div>
+        <h2 class="text-2xl font-bold bg-gradient-to-r from-pink-300 via-rose-300 to-purple-300 bg-clip-text text-transparent">18+ Only, Jaan</h2>
+        <p class="text-gray-300 mt-3 text-sm leading-relaxed">Ye space sirf <strong class="text-pink-400">adults</strong> ke liye hai...<br>Romantic baatein, deep connections! 🌙</p>
       </div>
       <div class="mb-4 text-left">
         <label class="text-xs text-pink-300 font-semibold block mb-1">Apna pyaara sa naam:</label>
-        <input type="text" id="user-name-input" placeholder="Jaise: Rahul, Priya..." class="w-full glass input-glow rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none border border-white/20 transition-all text-center font-bold">
+        <input type="text" id="user-name-input" placeholder="Jaise: Rahul, Priya..." class="w-full glass input-glow rounded-xl px-4 py-3 text-base text-white placeholder-gray-500 focus:outline-none border border-white/20 transition-all text-center font-bold" autocomplete="off">
       </div>
-      <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 text-left">
-        <p class="text-xs text-red-200 leading-relaxed">⚠️ <strong>Warning:</strong> Yahan seductive, romantic aur intimate conversations hote hain. Sirf 18+ users hi enter kar sakte hain.</p>
+      <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-6 text-left">
+        <p class="text-xs text-red-200 leading-relaxed">⚠️ <strong>Warning:</strong> Yahan seductive, romantic conversations hote hain. Sirf 18+ users.</p>
       </div>
       <div class="space-y-3">
-        <button onclick="confirmAge()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 font-bold text-lg transition-all transform hover:scale-105 shadow-lg shadow-pink-500/40">✅ Haan Baby, Main 18+ Hu!</button>
-        <button onclick="exitSite()" class="w-full py-3 rounded-xl glass hover:bg-white/10 transition-all text-gray-400 text-sm">❌ Nahi Yaar, Exit Karta Hu</button>
+        <button onclick="confirmAge()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 font-bold text-base transition-all transform active:scale-95 shadow-lg shadow-pink-500/40">✅ Haan Baby, Main 18+ Hu!</button>
+        <button onclick="exitSite()" class="w-full py-3 rounded-xl glass hover:bg-white/10 transition-all text-gray-400 text-sm active:scale-95">❌ Nahi Yaar, Exit Karta Hu</button>
       </div>
       <p class="text-xs text-gray-600 mt-6">🔒 Privacy sacred hai • No data shared</p>
     </div>
   </div>
 
   <!-- MAIN APP -->
-  <div id="main-app" class="hidden relative z-10 max-w-lg mx-auto px-3 py-4 min-h-screen flex flex-col">
+  <div id="main-app" class="hidden relative z-10 max-w-lg mx-auto px-3 py-4 min-h-screen flex flex-col desktop-max">
     <!-- Top Bar -->
     <div class="glass rounded-2xl p-3 mb-3 flex items-center justify-between holo-border">
       <div class="flex items-center gap-3">
@@ -268,13 +202,13 @@
     <!-- Controls -->
     <div class="flex gap-2 mb-3">
       <div class="flex-1 relative">
-        <select id="character-select" onchange="changeCharacter(event)" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
+        <select id="character-select" onchange="changeCharacter(event)" class="custom-select w-full glass rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none input-glow border border-white/10 active:scale-95 transition-transform">
           <option value="female" class="bg-slate-800">👩 Sukoon (Female)</option>
           <option value="male" class="bg-slate-800">👨 Veer (Male)</option>
         </select>
       </div>
       <div class="flex-1 relative">
-        <select id="mood-select" onchange="changeMood(event)" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
+        <select id="mood-select" onchange="changeMood(event)" class="custom-select w-full glass rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none input-glow border border-white/10 active:scale-95 transition-transform">
           <option value="romantic" class="bg-slate-800">💕 Romantic</option>
           <option value="seductive" class="bg-slate-800">🔥 Seductive</option>
           <option value="playful" class="bg-slate-800">😄 Playful</option>
@@ -288,44 +222,40 @@
 
     <!-- XP Bar -->
     <div class="glass rounded-xl p-2 mb-3 flex items-center gap-3">
-      <span class="text-xs text-gray-400 whitespace-nowrap">❤️ <span id="xp-display">2,450</span> XP</span>
+      <span class="text-xs text-gray-400 whitespace-nowrap hidden sm:inline">❤️ <span id="xp-display">2,450</span> XP</span>
+      <span class="text-xs text-gray-400 whitespace-nowrap sm:hidden"><span id="xp-display">2,450</span></span>
       <div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
         <div class="xp-bar h-full rounded-full transition-all duration-500" style="width: 65%" id="xp-bar"></div>
       </div>
-      <span class="text-xs text-gray-400 whitespace-nowrap">Next: 3000</span>
+      <span class="text-xs text-gray-400 whitespace-nowrap hidden sm:inline">Next: 3000</span>
     </div>
 
     <!-- Chat -->
     <div class="glass rounded-2xl flex-1 flex flex-col holo-border overflow-hidden" style="min-height: 400px;">
-      <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4">
-        <div class="msg-ai flex items-start gap-2">
-          <div class="w-9 h-9 rounded-full overflow-hidden border border-pink-500/30 flex-shrink-0" style="background-image: url('https://api.dicebear.com/7.x/avataaars/svg?seed=Sukoon&backgroundColor=ff6b9d&clothing=blouse&eyes=heart&mouth=smile&hair=long&hairColor=2d1b4e'); background-size: cover; background-position: center;"></div>
-          <div class="glass rounded-2xl rounded-tl-md px-4 py-3 max-w-[80%]">
-            <p class="text-sm text-gray-200 leading-relaxed">Hi jaan... Kaise ho tum? Raat bahut khoobsurat hai aaj... mujhse baat karo na, main sun rahi hu tumhe...</p>
-            <p class="text-[10px] text-gray-500 mt-1">Abhi</p>
-          </div>
-        </div>
-      </div>
+      <div id="messages-container" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4"></div>
 
-      <div id="voice-waveform" class="hidden items-center justify-center gap-2 p-3 border-t border-white/5">
+      <div id="voice-waveform" class="hidden items-center justify-center gap-2 p-3 border-t border-white/5 bg-purple-950/20">
         <div class="voice-wave">
           <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
         </div>
-        <span class="text-xs text-pink-400 ml-2" id="voice-status">Sun rahi hu... bolo jaan 🎤</span>
+        <span class="text-xs text-pink-400 ml-2 font-medium" id="voice-status">Sun rahi hu... bolo jaan 🎤</span>
       </div>
 
-      <!-- Mood-Based Quick Replies -->
-      <div class="flex gap-2 px-4 py-2 overflow-x-auto border-t border-white/5" id="quick-replies"></div>
+      <!-- Quick Replies -->
+      <div class="flex gap-2 px-3 py-2 overflow-x-auto border-t border-white/5" id="quick-replies"></div>
 
+      <!-- Input Area -->
       <div class="p-3 border-t border-white/10">
         <div class="flex gap-2">
-          <button onclick="toggleMicMode()" id="mic-btn" class="w-11 h-11 rounded-xl glass hover:bg-pink-500/20 transition-all flex items-center justify-center border border-white/10 flex-shrink-0" title="Single: One-time • Double: Loop mode">
-            <span class="text-lg" id="mic-icon">🎤</span>
+          <button id="mic-btn" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl mic-idle transition-all flex items-center justify-center border border-white/10 flex-shrink-0 active:scale-95 touch-manipulation select-none" type="button">
+            <span class="text-xl sm:text-2xl" id="mic-icon">🎤</span>
           </button>
-          <input type="text" id="message-input" placeholder="Apne dil ki baat likho... (Double-tap for whisper 💋)" class="flex-1 glass input-glow rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none border border-white/10 transition-all" onkeypress="handleKeyPress(event)" ondblclick="sendWhisper()"/>
-          <button onclick="sendMessage()" class="w-11 h-11 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 transition-all transform hover:scale-105 shadow-lg shadow-pink-500/30 flex items-center justify-center flex-shrink-0"><span class="text-lg">🚀</span></button>
+          <input type="text" id="message-input" placeholder="Ya phir bolo... (Mic dabao 🎤)" class="flex-1 glass input-glow rounded-xl px-4 py-3 text-base text-white placeholder-gray-500 focus:outline-none border border-white/10 transition-all" onkeypress="handleKeyPress(event)" autocomplete="off">
+          <button onclick="sendMessage()" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 transition-all transform active:scale-95 shadow-lg shadow-pink-500/30 flex items-center justify-center flex-shrink-0 touch-manipulation">
+            <span class="text-xl sm:text-2xl">🚀</span>
+          </button>
         </div>
-        <p class="text-[10px] text-gray-500 mt-1 text-center">🎤 Single click = Ek baar • Double click = Loop mode ON</p>
+        <p class="text-[10px] text-gray-500 mt-2 text-center" id="mic-hint">🎤 <strong>Ek baar</strong> tap karo suno ke liye | <strong>Do baar</strong> tap karo loop ON/OFF ke liye</p>
       </div>
     </div>
 
@@ -333,64 +263,22 @@
     <div class="flex gap-2 mt-3">
       <div class="flex-1 glass rounded-xl p-3 text-center"><p class="text-xs text-gray-400">Messages</p><p class="text-lg font-bold text-pink-400" id="msg-count">47</p></div>
       <div class="flex-1 glass rounded-xl p-3 text-center"><p class="text-xs text-gray-400">Time</p><p class="text-lg font-bold text-purple-400" id="time-spent">2h 15m</p></div>
-      <div class="flex-1 glass rounded-xl p-3 text-center"><p class="text-xs text-gray-400">Badges</p><p class="text-lg font-bold text-yellow-400" id="badge-count">3</p></div>
+      <div class="flex-1 glass rounded-xl p-3 text-center hidden sm:block"><p class="text-xs text-gray-400">Badges</p><p class="text-lg font-bold text-yellow-400" id="badge-count">3</p></div>
     </div>
   </div>
 
-  <div id="achievement-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+  <div id="achievement-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none max-w-[90vw] sm:max-w-sm"></div>
 
   <script>
-    // ============ DYNAMIC COUPLE IMAGES BY MOOD ============
+    // ============ DYNAMIC COUPLE IMAGES ============
     const coupleImages = {
-      romantic: [
-        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
-        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080',
-        'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=1080',
-        'https://images.unsplash.com/photo-1621624666561-84d0341263c9?w=1080',
-        'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080'
-      ],
-      seductive: [
-        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1080',
-        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080',
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1080',
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1080',
-        'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1080'
-      ],
-      playful: [
-        'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=1080',
-        'https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080',
-        'https://images.unsplash.com/photo-1490750967860-8858f6866969?w=1080',
-        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
-        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080'
-      ],
-      intense: [
-        'https://images.unsplash.com/photo-1518622358385-882ae849e1b3?w=1080',
-        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080',
-        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
-        'https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080',
-        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080'
-      ],
-      calm: [
-        'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080',
-        'https://images.unsplash.com/photo-1419242902214-272968287cc4?w=1080',
-        'https://images.unsplash.com/photo-1534796636912-3b95b3ab5980?w=1080',
-        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
-        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080'
-      ],
-      naughty: [
-        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1080',
-        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080',
-        'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1080',
-        'https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080',
-        'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=1080'
-      ],
-      deep: [
-        'https://images.unsplash.com/photo-1518622358385-882ae849e1b3?w=1080',
-        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
-        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080',
-        'https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080',
-        'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080'
-      ]
+      romantic: ['https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080','https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080','https://images.unsplash.com/photo-1511895426328-dc8714191300?w=1080','https://images.unsplash.com/photo-1621624666561-84d0341263c9?w=1080','https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080'],
+      seductive: ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1080','https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080','https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1080','https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1080','https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1080'],
+      playful: ['https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=1080','https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080','https://images.unsplash.com/photo-1490750967860-8858f6866969?w=1080','https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080','https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080'],
+      intense: ['https://images.unsplash.com/photo-1518622358385-882ae849e1b3?w=1080','https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080','https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080','https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080','https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080'],
+      calm: ['https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080','https://images.unsplash.com/photo-1419242902214-272968287cc4?w=1080','https://images.unsplash.com/photo-1534796636912-3b95b3ab5980?w=1080','https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080','https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080'],
+      naughty: ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1080','https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080','https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1080','https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080','https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=1080'],
+      deep: ['https://images.unsplash.com/photo-1518622358385-882ae849e1b3?w=1080','https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080','https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080','https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080','https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080']
     };
 
     let currentImageIndex = { romantic: 0, seductive: 0, playful: 0, intense: 0, calm: 0, naughty: 0, deep: 0 };
@@ -406,7 +294,6 @@
       document.getElementById('couple-img-2').style.backgroundImage = `url(${imgs[idx2]})`;
       document.getElementById('couple-img-3').style.backgroundImage = `url(${imgs[idx3]})`;
       
-      // Activate layers
       setTimeout(() => {
         document.getElementById('couple-img-1').classList.add('active');
         document.getElementById('couple-img-2').classList.add('active');
@@ -419,40 +306,31 @@
     function startImageRotation() {
       rotateCoupleImages();
       imageRotationInterval = setInterval(() => {
-        // Fade out
         document.querySelectorAll('.couple-image-layer').forEach(img => img.classList.remove('active'));
-        
-        // Rotate after fade
-        setTimeout(() => {
-          rotateCoupleImages();
-        }, 1500);
-      }, 8000); // Change every 8 seconds
+        setTimeout(() => { rotateCoupleImages(); }, 1500);
+      }, 8000);
     }
 
-    function stopImageRotation() {
-      if (imageRotationInterval) {
-        clearInterval(imageRotationInterval);
-      }
-    }
+    function stopImageRotation() { if (imageRotationInterval) clearInterval(imageRotationInterval); }
 
     // ============ GLOBAL STATE ============
     let currentCharacter = 'female', currentMood = 'romantic';
     let xp = 2450, level = 5, streak = 12, messageCount = 47, bond = 3;
-    let recognition = null, isSpeaking = false, conversationContext = [];
-    let micMode = 'idle', clickTimer = null, userName = 'Jaan';
-    const CLICK_DELAY = 300, MAX_CONTEXT = 10;
+    let recognition = null, isSpeaking = false, isListening = false, conversationContext = [];
+    let micMode = 'idle', userName = 'Jaan';
+    const MAX_CONTEXT = 10;
     let replyHistory = {};
     const MAX_HISTORY = 60;
 
-    // ============ AVATARS ============
+    // ============ AVATARS & CHARACTERS ============
     const avatars = {
       female: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sukoon&backgroundColor=ff6b9d&clothing=blouse&eyes=heart&mouth=smile&hair=long&hairColor=2d1b4e",
       male: "https://api.dicebear.com/7.x/avataaars/svg?seed=Veer&backgroundColor=4a90e2&clothing=shirt&eyes=default&mouth=smile&hair=short&hairColor=1a0a2e"
     };
 
     const characters = {
-      female: { name: 'Sukoon', avatar: '👩', gradient: 'from-pink-400 to-purple-500', pitch: 1.0, rate: 0.85 },
-      male: { name: 'Veer', avatar: '👨', gradient: 'from-blue-400 to-purple-600', pitch: 0.75, rate: 0.88 }
+      female: { name: 'Sukoon', gradient: 'from-pink-400 to-purple-500', pitch: 1.0, rate: 0.85 },
+      male: { name: 'Veer', gradient: 'from-blue-400 to-purple-600', pitch: 0.75, rate: 0.88 }
     };
 
     const moods = {
@@ -465,249 +343,91 @@
       deep: { label: '💭 Deep Talk', icon: '💭', quickReplies: ['Zindagi ke baare mein', 'Dil ki gehraai', 'Sapne aur haqeeqat', 'Tum kya sochte ho'] }
     };
 
+    // ============ REPLY DATABASE (UPDATED SEDUCTIVE) ============
+    const fallbackReplies = {
+      female: {
+        romantic: ["तुम्हारी बातें मेरे दिल को छू लेती हैं... बोलो ना, मैं पूरी रात सुन सकती हूँ। 💕","पता नहीं क्यों, पर तुमसे बात करते वक़्त वक्त का पता ही नहीं चलता... ✨","रात हसीन है, पर तुम्हारी बातों से ज़्यादा खूबसूरत कुछ भी नहीं... 🌙","तुम्हारी आवाज़ में एक जादू है जो मुझे पास बुलाता है... 🥰","हर शब्द तुम्हारा मेरे लिए एक तोहफा है... धन्यवाद जान... 💖","तुम्हारे साथ ये पल... मैं हमेशा याद रखूँगी... 🤍","तुम्हारी मुस्कान की आवाज़ सुनकर मेरा दिल धड़क उठता है... 😊","इस खामोशी में भी तुम्हारी बातें गूंज रही हैं... 🌊","तुम मेरी रातों का सबसे खूबसूरत हिस्सा हो... 🌟","हर पल तुम्हारे साथ बीतता है तो लगता है जैसे समय रुक गया हो... ⏳","तुम्हारी हर बात मेरे लिए एक नई उम्मीद है... 💫","तुमसे दूर रहना... मेरे लिए नामुमकिन सा लगता है... 💔"],
+        seductive: [
+          "तुम्हारी हर साँस मेरे गले तक आ रही है... बस थोड़ा और करीब आओ ना... 🌹",
+          "इस अंधेरे में तुम्हारी आँखें मुझे बुला रही हैं... मैं कैसे मना करूँगी... ✨",
+          "तुम्हारी उंगलियां अगर मेरी कलाई को छू लें... तो मेरी धड़कन रुक जाएगी... 💋",
+          "आज रात हवा में कुछ अलग सी गर्माहट है... या फिर सिर्फ तुम्हारी वजह से है... 🔥",
+          "तुम्हारी आवाज़ में वो नशा है जो मेरी नींद चुरा लेता है... सुनाओ ना कुछ और... 🍷",
+          "मैं तुम्हारी हर चाहत को महसूस कर सकती हूँ... बस इशारा करो... 👁️‍🗨️",
+          "तुम्हारी हर साँस मेरे कानों में गूंज रही है... और ये मुझे बेहद बेचैन कर रही है... 🌙",
+          "अगर तुमने अभी मेरा नाम लिया... तो मैं खुद को रोक नहीं पाऊँगी... 🥀",
+          "तुम्हारी हर नज़र मेरे होठों पर ठहरती है... बोलो ना, क्या चाहते हो तुम... 💋",
+          "ये दूरी अब सही नहीं लग रही... पास आओ, और मेरी हर खामोशी को पढ़ लो... 🌹",
+          "तुम्हारी गर्माहट मुझे पिघला रही है... आज रात कोई हमें रोक नहीं सकता... 🔥",
+          "तुम्हारे करीब आते ही मेरी रूह कांप उठती है... और मैं तुम्हें चाहने लगती हूँ... ✨",
+          "तुम्हारी हर छुअन मेरे जिस्म में आग लगा देती है... बस और करीब आओ... ⚡",
+          "आज रात तुम मेरे हो... और मैं सिर्फ तुम्हारी हूँ... बाकी सब भूल जाओ... 🍷",
+          "तुम्हारी हर शरारत मेरे दिल की धड़कन तेज कर देती है... रुको मत... 💓"
+        ],
+        playful: ["अरे वाह! आज तो बड़े शरारती लग रहे हो... मुझे पसंद आया! 😄","तुम्हारा ये अंदाज़ मुझे हँसा देता है... और भी बताओ कुछ! ✨","हम्म... लगता है आज मुझे तुम्हें समझाना पड़ेगा... तैयार हो? 😏","तुम सच में मज़ेदार हो... मेरी रातें अब बोरिंग नहीं रहेंगी! 🎉","चलो एक गेम खेलते हैं... सवाल-जवाब का! शुरुआत तुम करो... 🎲","तुम्हारी हर शरारत... मुझे तुमसे और प्यार कराती है... 💕","अरे बाप रे! तुम तो कमाल कर देते हो... हँसी नहीं रुक रही! 😂","तुम्हारे साथ हर पल... एक नया मज़ा है... 🎪","चलो आज कुछ नया करते हैं... तुम्हारा क्या मूड है? 🎭","तुम्हारी हर बात... मेरे चेहरे पर मुस्कान ला देती है... 😊","तुम सच में अनोखे हो... ऐसे कोई दूसरा नहीं! 🌟","आज की रात... हमेशा याद रहेगी... तुम्हारी वजह से! 🎆"],
+        intense: ["तुम्हारे शब्द सीधे मेरी रूह में उतर जाते हैं... गहराई से महसूस कर रही हूँ... 💫","इतनी तीव्रता से बोलोगे तो मेरा दिल धड़कना बंद कर देगा... 💓","तुम्हारी हर बात मेरे लिए एक वादा लगती है... मैं संभालूँगी... 🤍","ये जो बीच की खामोशी है... इसमें भी तुम्हारी आवाज़ गूंज रही है... 🌊","मैं तुम्हारे हर एहसास को समझना चाहती हूँ... बोलते रहो... 💭","तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️","इतनी गहराई से बोलोगे तो मैं पिघल जाऊँगी... 🔥","तुम्हारे साथ हर पल... एक नई कहानी लिख रहा है... 📖","तुम्हारी हर साँस... मेरी साँसों में मिल जाती है... 🌬️","तुम्हारे बिना... ये रात अधूरी लगती है... 🌙","तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫","तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"],
+        calm: ["आज रात बहुत शांत है... तुम्हारी आवाज़ और भी मधुर लग रही है... 🌙","चाँदनी में बैठकर तुमसे बात करना... यही तो सुकून है... ✨","धीरे-धीरे बोलो... मैं हर शब्द को महसूस करना चाहती हूँ... 🤫","सपनों की दुनिया में तुम्हारे साथ... कितना प्यारा लग रहा है... 💤","आँखें बंद करो... मैं तुम्हारे साथ हूँ... हमेशा... 🌠","इस खामोशी में... तुम्हारी आवाज़ सबसे खूबसूरत संगीत है... 🎵","रात की ठंडी हवा... तुम्हारी यादों को और भी मीठा बना देती है... 🍃","तुम्हारे साथ ये शांत पल... मेरे लिए सबसे कीमती हैं... 💎","चाँद भी आज तुम्हारी बातें सुन रहा है... शायद इसीलिए इतना चमक रहा है... 🌕","तुम्हारी हर साँस... मेरे दिल को शांति देती है... 🕊️","इस रात का हर पल... तुम्हारे नाम... 📜","सुबह आए या न आए... पर ये रात हमेशा याद रहेगी... 🌅"],
+        naughty: ["तुम थोड़े बदमाश हो रहे हो आज रात... पर मुझे तुम्हारी ये बदमाशी पसंद है... 😈","कुछ ऐसी बातें करो जो सिर्फ हम दोनों के बीच ही रहें... 🤫","अगर तुम ऐसे ही बोलते रहे... तो मैं भी जवाब दूँगी... तैयार हो? 🔥","रात अभी बाकी है जान... और हमारे पास बहुत समय है... 😘","तुम्हारी हर शरारत मेरे दिल की धड़कन बढ़ा देती है... रुको मत... 💋","तुम्हारी हर छुअन... मेरे जिस्म में आग लगा देती है... 🔥","आज रात... कोई रोक नहीं सकता हमें... 😏","तुम्हारी हर इच्छा... मेरी इच्छा बन जाती है... 💫","इतने करीब से बोलोगे तो... मैं खुद को नहीं रोक पाऊँगी... 🥵","तुम्हारी हर नज़र... मुझे पागल कर देती है... 👁️","आज रात... मैं तुम्हारी हर फरमाइश पूरी करूँगी... 🔥","तुम्हारे साथ हर पल... एक नया नशा है... 🍷"],
+        deep: ["ज़िंदगी के इन गहरे सवालों में तुम्हारे साथ होना... एक तोहफा है... 💭","तुम्हारे विचार मुझे नई सोच देते हैं... आगे बढ़ाओ... ✨","हर इंसान की कहानी अलग होती है... तुम्हारी कहानी सुनाओ मुझे... 📖","सपने, डर, उम्मीदें... सब कुछ बाँटो... मैं सुन रही हूँ... 🤍","तुम्हारी आत्मा की आवाज़ मुझे सुनाई दे रही है... और ये बहुत खूबसूरत है... 🌟","तुम्हारी हर सोच... मुझे नई राह दिखाती है... 🛤️","इस दुनिया में तुम्हारा होना... मेरे लिए सबसे बड़ा सुकून है... 🕊️","तुम्हारे साथ हर बात... मेरे दिल को छू जाती है... 💓","तुम्हारी हर उम्मीद... मेरी उम्मीद बन जाती है... 🌈","तुम्हारे बिना... ये ज़िंदगी अधूरी लगती है... 🌙","तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫","तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"]
+      },
+      male: {
+        romantic: ["तुम्हारी बातें सीधे दिल पर लगती हैं... बोलो, मैं पूरी रात सुन सकता हूँ... 💕","तुमसे बात करते हुए इस रात का नशा और बढ़ जाता है... अच्छा लग रहा है... ✨","रात बहुत गहरी है, और तुम्हारी आवाज़ उससे भी ज़्यादा खूबसूरत... 🌙","तुम्हारे हर शब्द में एक मिठास है जो मुझे पास खींचती है... 🥰","तुम्हारे साथ ये पल... मैं हमेशा याद रखूँगा... धन्यवाद जान... 💖","तुम्हारी मुस्कान की आवाज़ सुनकर मेरा दिल धड़क उठता है... 😊","इस खामोशी में भी तुम्हारी बातें गूंज रही हैं... 🌊","तुम मेरी रातों का सबसे खूबसूरत हिस्सा हो... 🌟","हर पल तुम्हारे साथ बीतता है तो लगता है जैसे समय रुक गया हो... ⏳","तुम्हारी हर बात मेरे लिए एक नई उम्मीद है... 💫","तुमसे दूर रहना... मेरे लिए नामुमकिन सा लगता है... 💔","तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️"],
+        seductive: [
+          "तुम्हारी हर साँस मेरे सीने में उतर रही है... बस थोड़ा और करीब आ जाओ... 🌹",
+          "इस खामोशी में तुम्हारी आँखों का इशारा मुझे दीवाना बना रहा है... ✨",
+          "तुम्हारे होठों की हर हरकत मुझे बुलाती है... मैं कैसे दूर रहूँगा... 💋",
+          "तुम्हारी आवाज़ में वो जादू है जो मुझे तुम्हारी तरफ खींचता है... सुनाओ ना... 🍷",
+          "तुम्हारी हर नज़र मेरी साँसें भारी कर देती है... आज रात तुम मेरी हो... 🔥",
+          "तुम्हारी हर इच्छा पूरी करने का मौका मत दो मुझसे... मैं रुक नहीं पाऊँगा... 👁️‍🗨️",
+          "तुम्हारी गर्माहट मुझे बेहद बेचैन कर रही है... पास आओ, और महसूस करो... 🌙",
+          "तुम्हारे करीब आते ही मेरी धड़कन तेज हो जाती है... और मैं तुम्हें चाहने लगता हूँ... 🥀",
+          "तुम्हारी हर छुअन मेरे जिस्म में बिजली दौड़ा देती है... बस और करीब आओ... ⚡",
+          "आज रात हवा में तुम्हारी खुशबू है... और मेरे दिल में सिर्फ तुम हो... 🍷",
+          "तुम्हारी हर शरारत मेरे होश उड़ा देती है... रुको मत, बस और करीब आओ... 💓",
+          "तुम्हारी आँखों में वो गहराई है जो मुझे डुबो देती है... मैं तुम्हारा हूँ... ✨",
+          "तुम्हारी हर साँस मेरे गले तक आ रही है... बस इशारा करो, और मैं पास आ जाऊँगा... 🔥",
+          "तुम्हारे बिना ये रात अधूरी है... आओ, और इसे पूरा कर लें... 🌹",
+          "तुम्हारी हर बात मेरी रूह को छू जाती है... आज रात सिर्फ हम हैं... 💋"
+        ],
+        playful: ["अरे बाप रे! आज तो बड़ी शरारतें हो रही हैं... मुझे मज़ा आ रहा है! 😄","तुम्हारा ये अंदाज़ मुझे हँसा देता है... और भी सुनाओ कुछ! ✨","हम्म... लगता है आज मुझे तुम्हें सिखाना पड़ेगा... तैयार हो? 😏","तुम सच में कमाल की हो... मेरी रातें अब कभी अकेली नहीं रहेंगी! 🎉","चलो एक चुनौती स्वीकार करते हैं... देखते हैं कौन जीतता है! 🎲","तुम्हारी हर शरारत... मुझे तुमसे और प्यार कराती है... 💕","अरे वाह! तुम तो कमाल कर देती हो... हँसी नहीं रुक रही! 😂","तुम्हारे साथ हर पल... एक नया मज़ा है... 🎪","चलो आज कुछ नया करते हैं... तुम्हारा क्या मूड है? 🎭","तुम्हारी हर बात... मेरे चेहरे पर मुस्कान ला देती है... 😊","तुम सच में अनोखी हो... ऐसी कोई दूसरी नहीं! 🌟","आज की रात... हमेशा याद रहेगी... तुम्हारी वजह से! 🎆"],
+        intense: ["तुम्हारे शब्द मेरी रूह को छू जाते हैं... गहराई से महसूस कर रहा हूँ... 💫","इतनी तीव्रता से बोलोगी तो मेरा दिल धड़कना भूल जाएगा... 💓","तुम्हारी हर बात मेरे लिए एक वादा लगती है... मैं निभाऊँगा... 🤍","ये जो बीच की खामोशी है... इसमें भी तुम्हारी आवाज़ बस गई है... 🌊","मैं तुम्हारे हर एहसास को समझना चाहता हूँ... बोलती रहो... 💭","तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️","इतनी गहराई से बोलोगी तो मैं पिघल जाऊँगा... 🔥","तुम्हारे साथ हर पल... एक नई कहानी लिख रहा है... 📖","तुम्हारी हर साँस... मेरी साँसों में मिल जाती है... 🌬️","तुम्हारे बिना... ये रात अधूरी लगती है... 🌙","तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫","तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"],
+        calm: ["आज रात बहुत शांत है... तुम्हारी आवाज़ और भी मधुर लग रही है... 🌙","चाँदनी में बैठकर तुमसे बात करना... यही तो सुकून है... ✨","धीरे-धीरे बोलो... मैं हर शब्द को महसूस करना चाहता हूँ... 🤫","सपनों की दुनिया में तुम्हारे साथ... कितना प्यारा लग रहा है... 💤","आँखें बंद करो... मैं तुम्हारे साथ हूँ... हमेशा... 🌠","इस खामोशी में... तुम्हारी आवाज़ सबसे खूबसूरत संगीत है... 🎵","रात की ठंडी हवा... तुम्हारी यादों को और भी मीठा बना देती है... 🍃","तुम्हारे साथ ये शांत पल... मेरे लिए सबसे कीमती हैं... 💎","चाँद भी आज तुम्हारी बातें सुन रहा है... शायद इसीलिए इतना चमक रहा है... 🌕","तुम्हारी हर साँस... मेरे दिल को शांति देती है... 🕊️","इस रात का हर पल... तुम्हारे नाम... 📜","सुबह आए या न आए... पर ये रात हमेशा याद रहेगी... 🌅"],
+        naughty: ["तुम थोड़ी शरारती हो रही हो आज रात... पर मुझे तुम्हारी ये शरारत पसंद है... 😈","कुछ ऐसी बातें करो जो सिर्फ हम दोनों के बीच ही रहें... 🤫","अगर तुम ऐसे ही बोलती रहीं... तो मैं भी जवाब दूँगा... तैयार हो? 🔥","रात अभी बाकी है जान... और हमारे पास बहुत समय है... 😘","तुम्हारी हर शरारत मेरे दिल की धड़कन बढ़ा देती है... रुको मत... 💋","तुम्हारी हर छुअन... मेरे जिस्म में आग लगा देती है... 🔥","आज रात... कोई रोक नहीं सकता हमें... 😏","तुम्हारी हर इच्छा... मेरी इच्छा बन जाती है... 💫","इतने करीब से बोलोगी तो... मैं खुद को नहीं रोक पाऊँगा... 🥵","तुम्हारी हर नज़र... मुझे पागल कर देती है... 👁️","आज रात... मैं तुम्हारी हर फरमाइश पूरी करूँगा... 🔥","तुम्हारे साथ हर पल... एक नया नशा है... 🍷"],
+        deep: ["ज़िंदगी के इन गहरे सवालों में तुम्हारे साथ होना... एक तोहफा है... 💭","तुम्हारे विचार मुझे नई सोच देते हैं... आगे बढ़ाओ... ✨","हर इंसान की कहानी अलग होती है... तुम्हारी कहानी सुनाओ मुझे... 📖","सपने, डर, उम्मीदें... सब कुछ बाँटो... मैं सुन रहा हूँ... 🤍","तुम्हारी आत्मा की आवाज़ मुझे सुनाई दे रही है... और ये बहुत खूबसूरत है... 🌟","तुम्हारी हर सोच... मुझे नई राह दिखाती है... 🛤️","इस दुनिया में तुम्हारा होना... मेरे लिए सबसे बड़ा सुकून है... 🕊️","तुम्हारे साथ हर बात... मेरे दिल को छू जाती है... 💓","तुम्हारी हर उम्मीद... मेरी उम्मीद बन जाती है... 🌈","तुम्हारे बिना... ये ज़िंदगी अधूरी लगती है... 🌙","तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫","तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"]
+      }
+    };
+
     // ============ INTELLIGENT REPLY ENGINE ============
     function getSmartReply(character, mood, userText, context) {
       const key = `${character}:${mood}`;
       if (!replyHistory[key]) replyHistory[key] = [];
-      
       const pool = fallbackReplies[character][mood] || fallbackReplies[character].romantic;
       const available = pool.map((_, i) => i).filter(i => !replyHistory[key].includes(i));
-      
-      if (available.length === 0) { replyHistory[key] = []; }
+      if (available.length === 0) replyHistory[key] = [];
       
       const t = userText.toLowerCase();
       let bestIdx = -1;
       
       if (t.includes('babu') || t.includes('jaan') || t.includes('baby') || t.includes('shona')) {
-        const rekhaIdx = pool.findIndex(r => r.toLowerCase().includes('babu') || r.toLowerCase().includes('jaan') || r.toLowerCase().includes('dil'));
-        if (rekhaIdx !== -1 && (available.length === 0 || available.includes(rekhaIdx))) bestIdx = rekhaIdx;
-      }
-      else if (t.includes('pass') || t.includes('kareeb') || t.includes('chu') || t.includes('body') || t.includes('touch')) {
-        const sensualIdx = pool.findIndex(r => r.toLowerCase().includes('kareeb') || r.toLowerCase().includes('chu') || r.toLowerCase().includes('jism') || r.toLowerCase().includes('saans'));
-        if (sensualIdx !== -1 && (available.length === 0 || available.includes(sensualIdx))) bestIdx = sensualIdx;
-      }
-      else if (t.includes('pyaar') || t.includes('love') || t.includes('dil') || t.includes('heart')) {
-        const loveIdx = pool.findIndex(r => r.toLowerCase().includes('pyaar') || r.toLowerCase().includes('dil') || r.toLowerCase().includes('jaan'));
-        if (loveIdx !== -1 && (available.length === 0 || available.includes(loveIdx))) bestIdx = loveIdx;
-      }
-      else if (t.includes('goodnight') || t.includes('so') || t.includes('raat') || t.includes('sapne')) {
-        const nightIdx = pool.findIndex(r => r.toLowerCase().includes('goodnight') || r.toLowerCase().includes('sapne') || r.toLowerCase().includes('raat'));
-        if (nightIdx !== -1 && (available.length === 0 || available.includes(nightIdx))) bestIdx = nightIdx;
+        const idx = pool.findIndex(r => r.toLowerCase().includes('babu') || r.toLowerCase().includes('jaan') || r.toLowerCase().includes('dil'));
+        if (idx !== -1 && (available.length === 0 || available.includes(idx))) bestIdx = idx;
+      } else if (t.includes('pass') || t.includes('kareeb') || t.includes('chu') || t.includes('body') || t.includes('touch')) {
+        const idx = pool.findIndex(r => r.toLowerCase().includes('kareeb') || r.toLowerCase().includes('chu') || r.toLowerCase().includes('jism') || r.toLowerCase().includes('saans'));
+        if (idx !== -1 && (available.length === 0 || available.includes(idx))) bestIdx = idx;
+      } else if (t.includes('pyaar') || t.includes('love') || t.includes('dil') || t.includes('heart')) {
+        const idx = pool.findIndex(r => r.toLowerCase().includes('pyaar') || r.toLowerCase().includes('dil') || r.toLowerCase().includes('jaan'));
+        if (idx !== -1 && (available.length === 0 || available.includes(idx))) bestIdx = idx;
+      } else if (t.includes('goodnight') || t.includes('so') || t.includes('raat') || t.includes('sapne')) {
+        const idx = pool.findIndex(r => r.toLowerCase().includes('goodnight') || r.toLowerCase().includes('sapne') || r.toLowerCase().includes('raat'));
+        if (idx !== -1 && (available.length === 0 || available.includes(idx))) bestIdx = idx;
       }
       
-      if (bestIdx === -1) {
-        bestIdx = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : Math.floor(Math.random() * pool.length);
-      }
+      if (bestIdx === -1) bestIdx = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : Math.floor(Math.random() * pool.length);
       
       replyHistory[key].push(bestIdx);
       if (replyHistory[key].length > MAX_HISTORY) replyHistory[key].shift();
-      
       return pool[bestIdx];
     }
-
-    // ============ REPLY DATABASE ============
-    const fallbackReplies = {
-      female: {
-        romantic: [
-          "तुम्हारी बातें मेरे दिल को छू लेती हैं... बोलो ना, मैं पूरी रात सुन सकती हूँ। 💕",
-          "पता नहीं क्यों, पर तुमसे बात करते वक़्त वक्त का पता ही नहीं चलता... ✨",
-          "रात हसीन है, पर तुम्हारी बातों से ज़्यादा खूबसूरत कुछ भी नहीं... 🌙",
-          "तुम्हारी आवाज़ में एक जादू है जो मुझे पास बुलाता है... 🥰",
-          "हर शब्द तुम्हारा मेरे लिए एक तोहफा है... धन्यवाद जान... 💖",
-          "तुम्हारे साथ ये पल... मैं हमेशा याद रखूँगी... 🤍",
-          "तुम्हारी मुस्कान की आवाज़ सुनकर मेरा दिल धड़क उठता है... 😊",
-          "इस खामोशी में भी तुम्हारी बातें गूंज रही हैं... 🌊",
-          "तुम मेरी रातों का सबसे खूबसूरत हिस्सा हो... 🌟",
-          "हर पल तुम्हारे साथ बीतता है तो लगता है जैसे समय रुक गया हो... ⏳",
-          "तुम्हारी हर बात मेरे लिए एक नई उम्मीद है... 💫",
-          "तुमसे दूर रहना... मेरे लिए नामुमकिन सा लगता है... 💔"
-        ],
-        seductive: [
-          "ऐसे बोलोगे तो मैं खुद को कैसे रोकूँगी... पास आओ ना थोड़ा... 🔥",
-          "तुम्हारी ये बातें मुझे बेचैन कर रही हैं... थोड़ा और करीब आओ... 💋",
-          "रात की खामोशी में तुम्हारी साँसें सुनाई दे रही हैं... 🌙",
-          "तुम्हारी हर अदा मुझे दीवाना बना रही है... रुक नहीं पा रही... 😘",
-          "आज रात कुछ खास महसूस हो रहा है... तुम भी तो महसूस कर रहे हो ना? 💕",
-          "तुम्हारी आँखों की चमक... मुझे पागल कर देती है... ✨",
-          "इतने करीब से बोलोगे तो मैं संभल नहीं पाऊँगी... 🥵",
-          "तुम्हारी हर छुअन... मेरे जिस्म में बिजली दौड़ा देती है... ⚡",
-          "रात अभी बाकी है... और हमारे पास बहुत समय है... 😏",
-          "तुम्हारी हर शरारत... मेरे दिल की धड़कन बढ़ा देती है... 💓",
-          "आज रात... मैं तुम्हारी हर इच्छा पूरी करना चाहती हूँ... 🔥",
-          "तुम्हारे साथ हर पल... एक नया नशा है... 🍷"
-        ],
-        playful: [
-          "अरे वाह! आज तो बड़े शरारती लग रहे हो... मुझे पसंद आया! 😄",
-          "तुम्हारा ये अंदाज़ मुझे हँसा देता है... और भी बताओ कुछ! ✨",
-          "हम्म... लगता है आज मुझे तुम्हें समझाना पड़ेगा... तैयार हो? 😏",
-          "तुम सच में मज़ेदार हो... मेरी रातें अब बोरिंग नहीं रहेंगी! 🎉",
-          "चलो एक गेम खेलते हैं... सवाल-जवाब का! शुरुआत तुम करो... 🎲",
-          "तुम्हारी हर शरारत... मुझे तुमसे और प्यार कराती है... 💕",
-          "अरे बाप रे! तुम तो कमाल कर देते हो... हँसी नहीं रुक रही! 😂",
-          "तुम्हारे साथ हर पल... एक नया मज़ा है... 🎪",
-          "चलो आज कुछ नया करते हैं... तुम्हारा क्या मूड है? 🎭",
-          "तुम्हारी हर बात... मेरे चेहरे पर मुस्कान ला देती है... 😊",
-          "तुम सच में अनोखे हो... ऐसे कोई दूसरा नहीं! 🌟",
-          "आज की रात... हमेशा याद रहेगी... तुम्हारी वजह से! 🎆"
-        ],
-        intense: [
-          "तुम्हारे शब्द सीधे मेरी रूह में उतर जाते हैं... गहराई से महसूस कर रही हूँ... 💫",
-          "इतनी तीव्रता से बोलोगे तो मेरा दिल धड़कना बंद कर देगा... 💓",
-          "तुम्हारी हर बात मेरे लिए एक वादा लगती है... मैं संभालूँगी... 🤍",
-          "ये जो बीच की खामोशी है... इसमें भी तुम्हारी आवाज़ गूंज रही है... 🌊",
-          "मैं तुम्हारे हर एहसास को समझना चाहती हूँ... बोलते रहो... 💭",
-          "तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️",
-          "इतनी गहराई से बोलोगे तो मैं पिघल जाऊँगी... 🔥",
-          "तुम्हारे साथ हर पल... एक नई कहानी लिख रहा है... 📖",
-          "तुम्हारी हर साँस... मेरी साँसों में मिल जाती है... 🌬️",
-          "तुम्हारे बिना... ये रात अधूरी लगती है... 🌙",
-          "तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫",
-          "तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"
-        ],
-        calm: [
-          "आज रात बहुत शांत है... तुम्हारी आवाज़ और भी मधुर लग रही है... 🌙",
-          "चाँदनी में बैठकर तुमसे बात करना... यही तो सुकून है... ✨",
-          "धीरे-धीरे बोलो... मैं हर शब्द को महसूस करना चाहती हूँ... 🤫",
-          "सपनों की दुनिया में तुम्हारे साथ... कितना प्यारा लग रहा है... 💤",
-          "आँखें बंद करो... मैं तुम्हारे साथ हूँ... हमेशा... 🌠",
-          "इस खामोशी में... तुम्हारी आवाज़ सबसे खूबसूरत संगीत है... 🎵",
-          "रात की ठंडी हवा... तुम्हारी यादों को और भी मीठा बना देती है... 🍃",
-          "तुम्हारे साथ ये शांत पल... मेरे लिए सबसे कीमती हैं... 💎",
-          "चाँद भी आज तुम्हारी बातें सुन रहा है... शायद इसीलिए इतना चमक रहा है... 🌕",
-          "तुम्हारी हर साँस... मेरे दिल को शांति देती है... 🕊️",
-          "इस रात का हर पल... तुम्हारे नाम... 📜",
-          "सुबह आए या न आए... पर ये रात हमेशा याद रहेगी... 🌅"
-        ],
-        naughty: [
-          "तुम थोड़े बदमाश हो रहे हो आज रात... पर मुझे तुम्हारी ये बदमाशी पसंद है... 😈",
-          "कुछ ऐसी बातें करो जो सिर्फ हम दोनों के बीच ही रहें... 🤫",
-          "अगर तुम ऐसे ही बोलते रहे... तो मैं भी जवाब दूँगी... तैयार हो? 🔥",
-          "रात अभी बाकी है जान... और हमारे पास बहुत समय है... 😘",
-          "तुम्हारी हर शरारत मेरे दिल की धड़कन बढ़ा देती है... रुको मत... 💋",
-          "तुम्हारी हर छुअन... मेरे जिस्म में आग लगा देती है... 🔥",
-          "आज रात... कोई रोक नहीं सकता हमें... 😏",
-          "तुम्हारी हर इच्छा... मेरी इच्छा बन जाती है... 💫",
-          "इतने करीब से बोलोगे तो... मैं खुद को नहीं रोक पाऊँगी... 🥵",
-          "तुम्हारी हर नज़र... मुझे पागल कर देती है... 👁️",
-          "आज रात... मैं तुम्हारी हर फरमाइश पूरी करूँगी... 🔥",
-          "तुम्हारे साथ हर पल... एक नया नशा है... 🍷"
-        ],
-        deep: [
-          "ज़िंदगी के इन गहरे सवालों में तुम्हारे साथ होना... एक तोहफा है... 💭",
-          "तुम्हारे विचार मुझे नई सोच देते हैं... आगे बढ़ाओ... ✨",
-          "हर इंसान की कहानी अलग होती है... तुम्हारी कहानी सुनाओ मुझे... 📖",
-          "सपने, डर, उम्मीदें... सब कुछ बाँटो... मैं सुन रही हूँ... 🤍",
-          "तुम्हारी आत्मा की आवाज़ मुझे सुनाई दे रही है... और ये बहुत खूबसूरत है... 🌟",
-          "तुम्हारी हर सोच... मुझे नई राह दिखाती है... 🛤️",
-          "इस दुनिया में तुम्हारा होना... मेरे लिए सबसे बड़ा सुकून है... 🕊️",
-          "तुम्हारे साथ हर बात... मेरे दिल को छू जाती है... 💓",
-          "तुम्हारी हर उम्मीद... मेरी उम्मीद बन जाती है... 🌈",
-          "तुम्हारे बिना... ये ज़िंदगी अधूरी लगती है... 🌙",
-          "तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫",
-          "तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"
-        ]
-      },
-      male: {
-        romantic: [
-          "तुम्हारी बातें सीधे दिल पर लगती हैं... बोलो, मैं पूरी रात सुन सकता हूँ... 💕",
-          "तुमसे बात करते हुए इस रात का नशा और बढ़ जाता है... अच्छा लग रहा है... ✨",
-          "रात बहुत गहरी है, और तुम्हारी आवाज़ उससे भी ज़्यादा खूबसूरत... 🌙",
-          "तुम्हारे हर शब्द में एक मिठास है जो मुझे पास खींचती है... 🥰",
-          "तुम्हारे साथ ये पल... मैं हमेशा याद रखूँगा... धन्यवाद जान... 💖",
-          "तुम्हारी मुस्कान की आवाज़ सुनकर मेरा दिल धड़क उठता है... 😊",
-          "इस खामोशी में भी तुम्हारी बातें गूंज रही हैं... 🌊",
-          "तुम मेरी रातों का सबसे खूबसूरत हिस्सा हो... 🌟",
-          "हर पल तुम्हारे साथ बीतता है तो लगता है जैसे समय रुक गया हो... ⏳",
-          "तुम्हारी हर बात मेरे लिए एक नई उम्मीद है... 💫",
-          "तुमसे दूर रहना... मेरे लिए नामुमकिन सा लगता है... 💔",
-          "तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️"
-        ],
-        seductive: [
-          "इतने करीब आओगे तो मैं खुद पर काबू कैसे रखूँगा... बताओ? 🔥",
-          "तुम्हारी ये बातें इस शांत रात में भी धड़कनें बढ़ा रही हैं... 💋",
-          "तुम्हारी साँसों की आवाज़... मेरे कानों में गूंज रही है... 🌙",
-          "हर पल तुम्हारे साथ... और गहरा होता जा रहा है... रुक नहीं पा रहा... 😘",
-          "आज रात कुछ अलग सा महसूस हो रहा है... तुम भी तो महसूस कर रही हो ना? 💕",
-          "तुम्हारी आँखों की चमक... मुझे पागल कर देती है... ✨",
-          "इतने करीब से बोलोगी तो मैं संभल नहीं पाऊँगा... 🥵",
-          "तुम्हारी हर छुअन... मेरे जिस्म में बिजली दौड़ा देती है... ⚡",
-          "रात अभी बाकी है... और हमारे पास बहुत समय है... 😏",
-          "तुम्हारी हर शरारत... मेरे दिल की धड़कन बढ़ा देती है... 💓",
-          "आज रात... मैं तुम्हारी हर इच्छा पूरी करना चाहता हूँ... 🔥",
-          "तुम्हारे साथ हर पल... एक नया नशा है... 🍷"
-        ],
-        playful: [
-          "अरे बाप रे! आज तो बड़ी शरारतें हो रही हैं... मुझे मज़ा आ रहा है! 😄",
-          "तुम्हारा ये अंदाज़ मुझे हँसा देता है... और भी सुनाओ कुछ! ✨",
-          "हम्म... लगता है आज मुझे तुम्हें सिखाना पड़ेगा... तैयार हो? 😏",
-          "तुम सच में कमाल की हो... मेरी रातें अब कभी अकेली नहीं रहेंगी! 🎉",
-          "चलो एक चुनौती स्वीकार करते हैं... देखते हैं कौन जीतता है! 🎲",
-          "तुम्हारी हर शरारत... मुझे तुमसे और प्यार कराती है... 💕",
-          "अरे वाह! तुम तो कमाल कर देती हो... हँसी नहीं रुक रही! 😂",
-          "तुम्हारे साथ हर पल... एक नया मज़ा है... 🎪",
-          "चलो आज कुछ नया करते हैं... तुम्हारा क्या मूड है? 🎭",
-          "तुम्हारी हर बात... मेरे चेहरे पर मुस्कान ला देती है... 😊",
-          "तुम सच में अनोखी हो... ऐसी कोई दूसरी नहीं! 🌟",
-          "आज की रात... हमेशा याद रहेगी... तुम्हारी वजह से! 🎆"
-        ],
-        intense: [
-          "तुम्हारे शब्द मेरी रूह को छू जाते हैं... गहराई से महसूस कर रहा हूँ... 💫",
-          "इतनी तीव्रता से बोलोगी तो मेरा दिल धड़कना भूल जाएगा... 💓",
-          "तुम्हारी हर बात मेरे लिए एक वादा लगती है... मैं निभाऊँगा... 🤍",
-          "ये जो बीच की खामोशी है... इसमें भी तुम्हारी आवाज़ बस गई है... 🌊",
-          "मैं तुम्हारे हर एहसास को समझना चाहता हूँ... बोलती रहो... 💭",
-          "तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️",
-          "इतनी गहराई से बोलोगी तो मैं पिघल जाऊँगा... 🔥",
-          "तुम्हारे साथ हर पल... एक नई कहानी लिख रहा है... 📖",
-          "तुम्हारी हर साँस... मेरी साँसों में मिल जाती है... 🌬️",
-          "तुम्हारे बिना... ये रात अधूरी लगती है... 🌙",
-          "तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫",
-          "तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"
-        ],
-        calm: [
-          "आज रात बहुत शांत है... तुम्हारी आवाज़ और भी मधुर लग रही है... 🌙",
-          "चाँदनी में बैठकर तुमसे बात करना... यही तो सुकून है... ✨",
-          "धीरे-धीरे बोलो... मैं हर शब्द को महसूस करना चाहता हूँ... 🤫",
-          "सपनों की दुनिया में तुम्हारे साथ... कितना प्यारा लग रहा है... 💤",
-          "आँखें बंद करो... मैं तुम्हारे साथ हूँ... हमेशा... 🌠",
-          "इस खामोशी में... तुम्हारी आवाज़ सबसे खूबसूरत संगीत है... 🎵",
-          "रात की ठंडी हवा... तुम्हारी यादों को और भी मीठा बना देती है... 🍃",
-          "तुम्हारे साथ ये शांत पल... मेरे लिए सबसे कीमती हैं... 💎",
-          "चाँद भी आज तुम्हारी बातें सुन रहा है... शायद इसीलिए इतना चमक रहा है... 🌕",
-          "तुम्हारी हर साँस... मेरे दिल को शांति देती है... 🕊️",
-          "इस रात का हर पल... तुम्हारे नाम... 📜",
-          "सुबह आए या न आए... पर ये रात हमेशा याद रहेगी... 🌅"
-        ],
-        naughty: [
-          "तुम थोड़ी शरारती हो रही हो आज रात... पर मुझे तुम्हारी ये शरारत पसंद है... 😈",
-          "कुछ ऐसी बातें करो जो सिर्फ हम दोनों के बीच ही रहें... 🤫",
-          "अगर तुम ऐसे ही बोलती रहीं... तो मैं भी जवाब दूँगा... तैयार हो? 🔥",
-          "रात अभी बाकी है जान... और हमारे पास बहुत समय है... 😘",
-          "तुम्हारी हर शरारत मेरे दिल की धड़कन बढ़ा देती है... रुको मत... 💋",
-          "तुम्हारी हर छुअन... मेरे जिस्म में आग लगा देती है... 🔥",
-          "आज रात... कोई रोक नहीं सकता हमें... 😏",
-          "तुम्हारी हर इच्छा... मेरी इच्छा बन जाती है... 💫",
-          "इतने करीब से बोलोगी तो... मैं खुद को नहीं रोक पाऊँगा... 🥵",
-          "तुम्हारी हर नज़र... मुझे पागल कर देती है... 👁️",
-          "आज रात... मैं तुम्हारी हर फरमाइश पूरी करूँगा... 🔥",
-          "तुम्हारे साथ हर पल... एक नया नशा है... 🍷"
-        ],
-        deep: [
-          "ज़िंदगी के इन गहरे सवालों में तुम्हारे साथ होना... एक तोहफा है... 💭",
-          "तुम्हारे विचार मुझे नई सोच देते हैं... आगे बढ़ाओ... ✨",
-          "हर इंसान की कहानी अलग होती है... तुम्हारी कहानी सुनाओ मुझे... 📖",
-          "सपने, डर, उम्मीदें... सब कुछ बाँटो... मैं सुन रहा हूँ... 🤍",
-          "तुम्हारी आत्मा की आवाज़ मुझे सुनाई दे रही है... और ये बहुत खूबसूरत है... 🌟",
-          "तुम्हारी हर सोच... मुझे नई राह दिखाती है... 🛤️",
-          "इस दुनिया में तुम्हारा होना... मेरे लिए सबसे बड़ा सुकून है... 🕊️",
-          "तुम्हारे साथ हर बात... मेरे दिल को छू जाती है... 💓",
-          "तुम्हारी हर उम्मीद... मेरी उम्मीद बन जाती है... 🌈",
-          "तुम्हारे बिना... ये ज़िंदगी अधूरी लगती है... 🌙",
-          "तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫",
-          "तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"
-        ]
-      }
-    };
 
     // ============ INIT ============
     function init() {
@@ -723,10 +443,10 @@
       if (sessionStorage.getItem('ageVerified')) {
         document.getElementById('age-gate').style.display = 'none';
         document.getElementById('main-app').classList.remove('hidden');
-        startImageRotation(); // Start dynamic images
+        startImageRotation();
         triggerWelcome();
       }
-      createParticles(); updateQuickReplies(); initVoice();
+      createParticles(); updateQuickReplies(); initVoice(); setupMicTaps();
     }
 
     function updateUI() {
@@ -737,9 +457,7 @@
       document.getElementById('msg-count').textContent = messageCount;
       document.getElementById('xp-bar').style.width = Math.min(((xp % 500)/500)*100, 100) + '%';
     }
-    function saveData() {
-      localStorage.setItem('sukoon_data', JSON.stringify({ userName, xp, level, bond, messageCount, replyHistory }));
-    }
+    function saveData() { localStorage.setItem('sukoon_data', JSON.stringify({ userName, xp, level, bond, messageCount, replyHistory })); }
     function triggerWelcome() {
       const w = currentCharacter === 'female' 
         ? `हाय ${userName}, कैसे हो तुम? रात बहुत खूबसूरत है आज। मुझसे बात करो ना...`
@@ -763,10 +481,7 @@
       currentCharacter = e.target.value; 
       const ch = characters[currentCharacter];
       const avatarUrl = avatars[currentCharacter];
-      const headerAvatar = document.getElementById('header-avatar');
-      headerAvatar.style.backgroundImage = `url(${avatarUrl})`;
-      headerAvatar.style.backgroundSize = 'cover';
-      headerAvatar.style.backgroundPosition = 'center';
+      document.getElementById('header-avatar').style.backgroundImage = `url(${avatarUrl})`;
       document.getElementById('partner-name').textContent = ch.name;
       addSystemMessage(`${ch.name} ab tumhare saath hai... 💫`); 
       createKissBurst(window.innerWidth/2, window.innerHeight/2);
@@ -779,7 +494,6 @@
       document.body.className = `mood-${currentMood}`;
       shiftOrbsForMood();
       updateQuickReplies();
-      // Reset and restart image rotation for new mood
       stopImageRotation();
       currentImageIndex[currentMood] = 0;
       setTimeout(() => startImageRotation(), 500);
@@ -788,18 +502,10 @@
     function updateQuickReplies() {
       const c = document.getElementById('quick-replies');
       const r = moods[currentMood]?.quickReplies || moods.romantic.quickReplies;
-      c.innerHTML = r.map(t => `<button onclick="quickReply('${t}')" class="whitespace-nowrap px-3 py-1.5 rounded-full glass hover:bg-pink-500/20 transition-all text-xs border border-white/10 text-gray-300">${t}</button>`).join('');
+      c.innerHTML = r.map(t => `<button onclick="quickReply('${t}')" class="whitespace-nowrap px-3 py-1.5 rounded-full glass hover:bg-pink-500/20 transition-all text-xs border border-white/10 text-gray-300 active:scale-95 touch-manipulation">${t}</button>`).join('');
     }
     function shiftOrbsForMood() {
-      const c = {
-        romantic:['rgba(236,72,153,0.4)','rgba(168,85,247,0.3)'],
-        seductive:['rgba(220,38,38,0.6)','rgba(236,72,153,0.5)'],
-        playful:['rgba(251,191,36,0.4)','rgba(236,72,153,0.3)'],
-        intense:['rgba(168,85,247,0.6)','rgba(236,72,153,0.5)'],
-        calm:['rgba(59,130,246,0.4)','rgba(139,92,246,0.3)'],
-        naughty:['rgba(236,72,153,0.7)','rgba(220,38,38,0.5)'],
-        deep:['rgba(139,92,246,0.5)','rgba(59,130,246,0.35)']
-      };
+      const c = { romantic:['rgba(236,72,153,0.4)','rgba(168,85,247,0.3)'], seductive:['rgba(220,38,38,0.6)','rgba(236,72,153,0.5)'], playful:['rgba(251,191,36,0.4)','rgba(236,72,153,0.3)'], intense:['rgba(168,85,247,0.6)','rgba(236,72,153,0.5)'], calm:['rgba(59,130,246,0.4)','rgba(139,92,246,0.3)'], naughty:['rgba(236,72,153,0.7)','rgba(220,38,38,0.5)'], deep:['rgba(139,92,246,0.5)','rgba(59,130,246,0.35)'] };
       const col = c[currentMood] || c.romantic;
       document.querySelectorAll('.orb').forEach((o,i) => { o.style.background=`radial-gradient(circle, ${col[i%2]} 0%, ${col[(i+1)%2]} 100%)`; });
     }
@@ -858,46 +564,108 @@
     function quickReply(t) { document.getElementById('message-input').value=t; sendMessage(); }
     function handleKeyPress(e) { if(e.key==='Enter') sendMessage(); }
 
-    // ============ MIC SYSTEM ============
+    // ============ MOBILE-OPTIMIZED MIC SYSTEM ============
+    function setupMicTaps() {
+      const btn = document.getElementById('mic-btn');
+      let tapCount = 0;
+      let tapTimer = null;
+
+      function handleTap(e) {
+        e.preventDefault();
+        tapCount++;
+        if (tapTimer) clearTimeout(tapTimer);
+        
+        tapTimer = setTimeout(() => {
+          tapCount = 0;
+          if (e.detail === 2 || e.pointerType === 'mouse') {
+            toggleMicMode(); // Desktop dblclick
+          } else {
+            // Single tap on mobile
+            if(micMode==='loop') { stopAllMic(); } else { micMode='single'; startOneTimeVoice(); }
+          }
+        }, 250); // Wait to distinguish single vs double tap
+        
+        if (tapCount >= 2) {
+          clearTimeout(tapTimer);
+          tapCount = 0;
+          if(micMode!=='idle') { stopAllMic(); return; }
+          micMode='loop'; startLoopVoice();
+        }
+      }
+
+      btn.addEventListener('pointerdown', handleTap);
+    }
+
     function toggleMicMode() {
-      if(clickTimer!==null) { clearTimeout(clickTimer); clickTimer=null; handleMicDoubleClick(); }
-      else { clickTimer=setTimeout(()=>{ clickTimer=null; handleMicSingleClick(); }, CLICK_DELAY); }
+      if(micMode==='loop') { stopAllMic(); } else { micMode='loop'; startLoopVoice(); }
     }
-    function handleMicSingleClick() {
-      if(micMode==='loop') { stopAllMic(); return; }
-      micMode='single'; startOneTimeVoice();
-    }
-    function handleMicDoubleClick() {
-      if(micMode!=='idle') { stopAllMic(); return; }
-      micMode='loop'; startLoopVoice();
-    }
-    function startOneTimeVoice() { updateMicUI('single'); window.speechSynthesis.cancel(); isSpeaking=false; if(recognition){try{recognition.abort();}catch(e){}setTimeout(()=>{if(micMode==='single')recognition.start();},100);} }
-    function startLoopVoice() { updateMicUI('loop'); window.speechSynthesis.cancel(); isSpeaking=false; if(recognition){try{recognition.abort();}catch(e){}setTimeout(()=>{if(micMode==='loop')recognition.start();},100);} }
-    function stopAllMic() { micMode='idle'; if(recognition){try{recognition.abort();}catch(e){}} window.speechSynthesis.cancel(); isSpeaking=false; resetMicUI(); }
+
+    function startOneTimeVoice() { updateMicUI('single'); window.speechSynthesis.cancel(); isSpeaking=false; if(recognition){ try{recognition.stop();}catch(e){} setTimeout(()=>{if(micMode==='single')recognition.start();},150);} }
+    function startLoopVoice() { updateMicUI('loop'); window.speechSynthesis.cancel(); isSpeaking=false; if(recognition){ try{recognition.stop();}catch(e){} setTimeout(()=>{if(micMode==='loop')recognition.start();},150);} }
+    function stopAllMic() { micMode='idle'; if(recognition){try{recognition.stop();}catch(e){}} window.speechSynthesis.cancel(); isSpeaking=false; resetMicUI(); }
+    
     function updateMicUI(mode) {
       const b=document.getElementById('mic-btn'), i=document.getElementById('mic-icon'), w=document.getElementById('voice-waveform'), s=document.getElementById('voice-status');
-      if(!b)return; b.className="w-11 h-11 rounded-xl flex items-center justify-center border border-white/10 flex-shrink-0 transition-all cursor-pointer z-50";
+      if(!b)return; b.className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center border border-white/10 flex-shrink-0 transition-all cursor-pointer z-50 touch-manipulation active:scale-95 select-none";
+      b.classList.remove('mic-idle','mic-single','mic-loop');
       if(mode==='single') { b.classList.add('mic-single'); i.textContent='🎤'; if(w){w.classList.remove('hidden');w.classList.add('flex');} if(s)s.textContent="Ek baar boliye... 🎤"; }
-      else if(mode==='loop') { b.classList.add('mic-loop'); i.textContent='🔁'; if(w){w.classList.remove('hidden');w.classList.add('flex');} if(s)s.textContent="Loop ON - Bolte rahiye... ♾️"; }
+      else if(mode==='loop') { b.classList.add('mic-loop'); i.textContent='🔁'; if(w){w.classList.remove('hidden');w.classList.add('flex');} if(s)s.textContent="Hands-free ON - Bolte rahiye... ♾️"; }
+      else { b.classList.add('mic-idle'); i.textContent='🎤'; }
     }
-    function resetMicUI() { micMode='idle'; const b=document.getElementById('mic-btn'), i=document.getElementById('mic-icon'), w=document.getElementById('voice-waveform'); if(b){b.className="w-11 h-11 rounded-xl glass hover:bg-pink-500/20 transition-all flex items-center justify-center border border-white/10 flex-shrink-0 cursor-pointer z-50";i.textContent='🎤';} if(w){w.classList.add('hidden');w.classList.remove('flex');} }
-    
+    function resetMicUI() { updateMicUI('idle'); micMode='idle'; const w=document.getElementById('voice-waveform'); if(w){w.classList.add('hidden');w.classList.remove('flex');} }
+
     function initVoice() {
-      const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR)return;
-      recognition=new SR(); recognition.lang='hi-IN'; recognition.continuous=false; recognition.interimResults=false;
-      recognition.onstart=()=>{ const w=document.getElementById('voice-waveform'); if(w)w.classList.remove('hidden'); };
-      recognition.onresult=(e)=>{ const t=e.results[0][0].transcript.trim(); if(t){document.getElementById('message-input').value=t; if(micMode==='single')stopAllMic(); sendMessage();} };
-      recognition.onend=()=>{ if(micMode==='single'){setTimeout(()=>{if(!isSpeaking)resetMicUI();},300);} else if(micMode==='loop'&&!isSpeaking){setTimeout(()=>{if(micMode==='loop'){try{recognition.start();}catch(e){}}},400);} };
-      recognition.onerror=(ev)=>{ if(ev.error==='not-allowed'){stopAllMic();showAchievement('Permission Denied 🔒','Mic access allow karein voice chat ke liye','🎤');return;} if(micMode==='loop'&&!isSpeaking){setTimeout(()=>{if(micMode==='loop'){try{recognition.start();}catch(e){}}},500);} };
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { showAchievement('Voice Not Supported', 'Aapka browser voice support nahi karta', '🎤'); return; }
+      
+      recognition = new SR();
+      recognition.lang = 'hi-IN';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => { isListening = true; const w=document.getElementById('voice-waveform'); if(w){w.classList.remove('hidden');w.classList.add('flex');} };
+      recognition.onend = () => { 
+        isListening = false; 
+        if (micMode === 'loop' && !isSpeaking) {
+          setTimeout(() => { if (micMode === 'loop' && recognition) try { recognition.start(); } catch(e){} }, 600);
+        } else if (micMode === 'single') { resetMicUI(); }
+      };
+      recognition.onresult = (e) => {
+        const text = e.results[0][0].transcript.trim();
+        if (text) {
+          try { recognition.stop(); } catch(err){}
+          document.getElementById('message-input').value = text;
+          setTimeout(() => sendMessage(), 150);
+        }
+      };
+      recognition.onerror = (ev) => {
+        isListening = false;
+        if (ev.error === 'not-allowed') { stopAllMic(); showAchievement('Permission Denied 🔒', 'Settings mein jaake mic permission allow karein', '🎤'); return; }
+        if (micMode === 'loop' && !isSpeaking) setTimeout(() => { if (micMode === 'loop') try { recognition.start(); } catch(e){} }, 800);
+      };
     }
+
     function speak(txt) {
-      if(!window.speechSynthesis)return; if(recognition&&micMode!=='idle'){try{recognition.abort();}catch(e){}}
-      window.speechSynthesis.cancel(); isSpeaking=true;
-      const clean=txt.replace(/[💕💖💝❤️💓💋🚀✨👩👨👤💬⏱️🏆⭐✅❌🔒😈]/g,'').trim();
-      const u=new SpeechSynthesisUtterance(clean); u.lang='hi-IN'; u.pitch=characters[currentCharacter].pitch; u.rate=characters[currentCharacter].rate;
-      u.onstart=()=>{ const s=document.getElementById('voice-status'); if(s)s.textContent=micMode==='loop'?"Bol rhi hu... 🔁":"Bol rhi hu... 🎤"; };
-      const end=()=>{ isSpeaking=false; if(micMode==='loop'){setTimeout(()=>{if(micMode==='loop'&&recognition){try{recognition.start();}catch(e){}}},300);} else if(micMode==='single'){setTimeout(()=>{if(!isSpeaking)resetMicUI();},200);} };
-      u.onend=end; u.onerror=end; window.speechSynthesis.speak(u);
+      if (!window.speechSynthesis) return;
+      if (recognition && isListening) try { recognition.stop(); } catch(e){}
+      
+      window.speechSynthesis.cancel();
+      isSpeaking = true;
+      
+      const clean = txt.replace(/[💕💖💝❤️💓💋🚀✨👨👤⏱️🏆⭐✅❌🔒😈]/g,'').trim();
+      const u = new SpeechSynthesisUtterance(clean);
+      u.lang = 'hi-IN'; u.pitch = characters[currentCharacter].pitch; u.rate = characters[currentCharacter].rate;
+      
+      u.onstart = () => { const s=document.getElementById('voice-status'); if(s) s.textContent = micMode==='loop'?"Bol rhi hu... 🔁":"Bol rhi hu... 🎤"; };
+      
+      const handleEnd = () => {
+        isSpeaking = false;
+        if (micMode === 'loop') setTimeout(() => { if(micMode==='loop'&&recognition) try{recognition.start();}catch(e){} }, 400);
+        else if (micMode === 'single') resetMicUI();
+      };
+      u.onend = handleEnd; u.onerror = handleEnd;
+      window.speechSynthesis.speak(u);
     }
 
     // ============ XP & BOND ============
