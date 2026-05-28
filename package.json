@@ -1,16 +1,7 @@
-{
-  "name": "sukuun-ai",
+\{
+  "name": "sukoon-ai-backend",
   "version": "1.0.0",
-  "description": "Romantic AI Companion - Hinglish Night Mode",
-  "private": true,
-  "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel --prod"
-  },
   "dependencies": {
-    "@upstash/redis": "^1.28.4"
-  },
-  "engines": {
-    "node": "18.x"
+    "@upstash/redis": "^1.34.3"
   }
 }
