@@ -8,597 +8,917 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;600;700;800&display=swap');
-    * { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
-    body { margin: 0; background: #050609; color: #fff; overflow-x: hidden; }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+    * { font-family: 'Poppins', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #050609; color: #fff; overflow-x: hidden; min-height: 100vh; }
     
-    .romantic-bg { 
-      background: linear-gradient(-45deg, #070312, #110726, #220b3b, #350f49, #0f0521); 
-      background-size: 400% 400%; 
-      animation: romanticShift 12s ease infinite; 
-      position: fixed; inset: 0; z-index: -3; 
+    /* ============ DYNAMIC COUPLE IMAGES ============ */
+    .couple-image-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transform: scale(1.1);
+      transition: all 3s cubic-bezier(0.4, 0, 0.2, 1);
+      filter: brightness(0.5) contrast(1.2);
+      pointer-events: none;
     }
+    .couple-image-layer.active {
+      opacity: 0.4;
+      transform: scale(1);
+      filter: brightness(0.6) contrast(1.3);
+    }
+    .couple-image-layer.slide-left {
+      animation: slideLeft 15s ease-in-out infinite;
+    }
+    .couple-image-layer.slide-right {
+      animation: slideRight 15s ease-in-out infinite;
+    }
+    .couple-image-layer.zoom-slow {
+      animation: zoomSlow 20s ease-in-out infinite;
+    }
+    @keyframes slideLeft {
+      0%, 100% { background-position: 30% center; }
+      50% { background-position: 70% center; }
+    }
+    @keyframes slideRight {
+      0%, 100% { background-position: 70% center; }
+      50% { background-position: 30% center; }
+    }
+    @keyframes zoomSlow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    /* ============ VIGNETTE & SHADING ============ */
+    .vignette { position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%); }
+    .romantic-bg { position: fixed; inset: 0; z-index: -3; background: linear-gradient(-45deg, #1a0a2e, #2d1b4e, #4a1a6e, #6e1a5e, #8e1a4e); background-size: 600% 600%; animation: romanticShift 22s ease infinite; }
     @keyframes romanticShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     
-    .illusion-canvas-wrapper { position: fixed; inset: 0; z-index: -2; pointer-events: none; overflow: hidden; }
-    .illusion-media {
-      position: absolute; width: 140%; height: 140%; object-fit: cover; top: -20%; left: -20%;
-      filter: blur(4px) saturate(150%); opacity: 0.45;
-      animation: slowIllusionPan 20s ease-in-out infinite alternate; transition: opacity 1.5s ease-in-out;
+    /* ============ ILLUSION LAYER ============ */
+    .illusion-layer { position: fixed; inset: 0; z-index: -2; pointer-events: none; transition: all 2s cubic-bezier(0.4,0,0.2,1); mix-blend-mode: screen; }
+    
+    .mood-romantic .illusion-layer {
+      background: radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.3) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.25) 0%, transparent 50%);
+      animation: floatIllusion 25s ease-in-out infinite;
     }
-    @keyframes slowIllusionPan {
-      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-      50% { transform: translate(-4%, 3%) scale(1.1) rotate(1deg); }
-      100% { transform: translate(3%, -4%) scale(1.03) rotate(-1deg); }
+    @keyframes floatIllusion { 0%,100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.03) rotate(1deg); } }
+    
+    .mood-seductive .illusion-layer {
+      background: radial-gradient(ellipse at 30% 70%, rgba(220,38,38,0.45) 0%, transparent 55%),
+                  radial-gradient(ellipse at 70% 30%, rgba(236,72,153,0.4) 0%, transparent 55%);
+      animation: seductivePulse 10s ease-in-out infinite alternate;
+      opacity: 1;
     }
-
+    @keyframes seductivePulse { 0% { opacity: 0.8; transform: scale(1) rotate(0deg); } 100% { opacity: 1; transform: scale(1.08) rotate(2deg); } }
+    
+    .mood-playful .illusion-layer {
+      background: radial-gradient(circle at 25% 25%, rgba(251,191,36,0.35) 0%, transparent 40%),
+                  radial-gradient(circle at 75% 75%, rgba(236,72,153,0.3) 0%, transparent 40%);
+      animation: sparkleFloat 10s ease-in-out infinite;
+    }
+    @keyframes sparkleFloat { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(15px,-15px) rotate(5deg); } }
+    
+    .mood-intense .illusion-layer {
+      background: radial-gradient(ellipse at 40% 60%, rgba(168,85,247,0.45) 0%, transparent 50%),
+                  radial-gradient(ellipse at 60% 40%, rgba(236,72,153,0.4) 0%, transparent 50%);
+      animation: intensePulse 8s ease-in-out infinite alternate;
+    }
+    @keyframes intensePulse { 0% { opacity: 0.7; filter: blur(2px); } 100% { opacity: 1; filter: blur(1px); } }
+    
+    .mood-calm .illusion-layer {
+      background: radial-gradient(ellipse at 30% 70%, rgba(59,130,246,0.3) 0%, transparent 50%),
+                  radial-gradient(ellipse at 70% 30%, rgba(139,92,246,0.25) 0%, transparent 50%);
+      animation: calmFloat 20s ease-in-out infinite;
+    }
+    @keyframes calmFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.02); } }
+    
+    .mood-naughty .illusion-layer {
+      background: radial-gradient(ellipse at 25% 75%, rgba(220,38,38,0.5) 0%, transparent 45%),
+                  radial-gradient(ellipse at 75% 25%, rgba(236,72,153,0.45) 0%, transparent 45%);
+      animation: naughtyFlicker 6s ease-in-out infinite alternate;
+    }
+    @keyframes naughtyFlicker { 0% { opacity: 0.85; transform: scale(1) rotate(-1deg); } 100% { opacity: 1; transform: scale(1.06) rotate(1deg); } }
+    
+    .mood-deep .illusion-layer {
+      background: radial-gradient(ellipse at 35% 65%, rgba(139,92,246,0.4) 0%, transparent 50%),
+                  radial-gradient(ellipse at 65% 35%, rgba(99,102,241,0.35) 0%, transparent 50%);
+      animation: deepGlow 18s ease-in-out infinite alternate;
+    }
+    @keyframes deepGlow { 0% { opacity: 0.6; } 100% { opacity: 0.95; } }
+    
+    /* ============ PARTICLES ============ */
     .star { position: absolute; width: 3px; height: 3px; background: white; border-radius: 50%; box-shadow: 0 0 10px white, 0 0 20px white; animation: twinkle var(--duration) infinite ease-in-out; opacity: var(--opacity); }
     @keyframes twinkle { 0%,100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 1; transform: scale(1.8); } }
     
-    .heart { position: absolute; font-size: 20px; animation: floatHeart var(--duration) infinite ease-in-out; opacity: var(--opacity); pointer-events: none; filter: drop-shadow(0 0 10px rgba(255,105,180,0.5)); }
+    .heart { position: absolute; font-size: 24px; animation: floatHeart var(--duration) infinite ease-in-out; opacity: var(--opacity); pointer-events: none; filter: drop-shadow(0 0 12px rgba(255,105,180,0.8)); transition: all 1s ease; }
     @keyframes floatHeart { 0%,100% { transform: translateY(100vh) rotate(0deg); opacity: 0; } 10%,90% { opacity: var(--opacity); } 100% { transform: translateY(-100px) rotate(360deg); opacity: 0; } }
     
-    .petal { position: absolute; width: 12px; height: 12px; background: linear-gradient(135deg, #ff6b9d, #c44582); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); animation: fallPetal var(--duration) infinite linear; opacity: 0.4; pointer-events: none; }
-    @keyframes fallPetal { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0; } 10%,90% { opacity: 0.5; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+    .petal { position: absolute; width: 14px; height: 14px; background: linear-gradient(135deg, #ff6b9d, #c44582); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); animation: fallPetal var(--duration) infinite linear; opacity: 0.7; pointer-events: none; }
+    @keyframes fallPetal { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0; } 10%,90% { opacity: 0.7; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
     
-    .orb { position: absolute; border-radius: 50%; filter: blur(130px); opacity: 0.45; transition: all 4s ease-in-out; mix-blend-mode: screen; }
+    .mood-seductive .heart { animation-duration: 6s !important; opacity: 0.9 !important; font-size: 28px !important; }
+    .mood-seductive .petal { animation-duration: 4s !important; opacity: 0.95 !important; }
     
-    .glass { background: rgba(14, 10, 26, 0.5); backdrop-filter: blur(25px) saturate(210%); -webkit-backdrop-filter: blur(25px) saturate(210%); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 12px 40px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.06); position: relative; overflow: hidden; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.5; animation: floatOrb var(--duration) infinite ease-in-out; mix-blend-mode: screen; }
+    @keyframes floatOrb { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(var(--x), var(--y)) scale(1.3); } }
+    
+    /* ============ GLASSMORPHISM ============ */
+    .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px) saturate(190%); -webkit-backdrop-filter: blur(24px) saturate(190%); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); position: relative; overflow: hidden; }
+    .glass::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.02) 50%, transparent 70%); transform: rotate(45deg); animation: shine 8s infinite; }
+    @keyframes shine { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
     
     .holo-border { position: relative; }
-    .holo-border::after { content: ''; position: absolute; inset: -2px; background: linear-gradient(45deg, #ff00cc, #3333ff, #00ccff, #ff00cc, #ff6b9d); background-size: 400% 400%; border-radius: inherit; z-index: -1; animation: holoRotate 4s linear infinite; opacity: 0.35; }
+    .holo-border::after { content: ''; position: absolute; inset: -1.5px; background: linear-gradient(45deg, #ff00cc, #3333ff, #00ccff, #ff00cc, #ff6b9d); background-size: 400% 400%; border-radius: inherit; z-index: -1; animation: holoRotate 5s linear infinite; opacity: 0.15; transition: opacity 0.3s; }
+    .holo-border:hover::after { opacity: 0.35; }
     @keyframes holoRotate { 0% { background-position: 0% 50%; } 100% { background-position: 400% 50%; } }
     
-    .msg-ai { animation: slideIn 0.4s cubic-bezier(0.4,0,0.2,1); }
-    .msg-user { animation: slideInRight 0.4s cubic-bezier(0.4,0,0.2,1); }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes slideInRight { from { opacity: 0; transform: translateX(15px); } to { opacity: 1; transform: translateX(0); } }
+    .msg-ai { animation: slideIn 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .msg-user { animation: slideInRight 0.45s cubic-bezier(0.4,0,0.2,1); }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-25px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(25px); } to { opacity: 1; transform: translateX(0); } }
     
     .typing-dot { animation: bounce 1.4s infinite ease-in-out both; }
     .typing-dot:nth-child(1) { animation-delay: -0.32s; }
     .typing-dot:nth-child(2) { animation-delay: -0.16s; }
     @keyframes bounce { 0%,80%,100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
     
-    .voice-wave { display: flex; align-items: center; gap: 4px; height: 30px; }
-    .voice-bar { width: 4px; background: linear-gradient(180deg, #ff6b9d, #ffd700); border-radius: 3px; animation: voiceWave 0.6s infinite ease-in-out alternate; }
-    .voice-bar:nth-child(1) { animation-delay: 0.1s; height: 40%; }
-    .voice-bar:nth-child(2) { animation-delay: 0.3s; height: 85%; }
-    .voice-bar:nth-child(3) { animation-delay: 0.5s; height: 55%; }
-    @keyframes voiceWave { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1.1); } }
+    .voice-wave { display: flex; align-items: center; gap: 3px; height: 25px; }
+    .voice-bar { width: 3px; background: linear-gradient(180deg, #ff6b9d, #c44582); border-radius: 2px; animation: voiceWave 0.8s infinite ease-in-out; }
+    .voice-bar:nth-child(1) { animation-delay: 0s; } .voice-bar:nth-child(2) { animation-delay: 0.1s; } .voice-bar:nth-child(3) { animation-delay: 0.2s; } .voice-bar:nth-child(4) { animation-delay: 0.3s; } .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+    @keyframes voiceWave { 0%,100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
     
-    .avatar-ring::before { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: linear-gradient(135deg, #ff6b9d, #c44582, #ffd700, #ff6b9d); background-size: 300% 300%; z-index: -1; animation: ringRotate 3s linear infinite; }
+    .streak-flame { animation: flame 1s infinite alternate; }
+    @keyframes flame { 0% { transform: scale(1) rotate(-5deg); } 100% { transform: scale(1.15) rotate(5deg); } }
+    
+    .level-badge { background: linear-gradient(135deg, #ffd700, #ff8c00); animation: levelPulse 2s infinite; }
+    @keyframes levelPulse { 0%,100% { box-shadow: 0 0 10px rgba(255,215,0,0.5); } 50% { box-shadow: 0 0 25px rgba(255,215,0,0.8); } }
+    
+    .achievement-popup { animation: achSlide 0.5s cubic-bezier(0.4,0,0.2,1); }
+    @keyframes achSlide { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .avatar-ring::before { content: ''; position: absolute; inset: -2px; border-radius: 50%; background: linear-gradient(135deg, #ff6b9d, #c44582, #ffd700, #ff6b9d); background-size: 300% 300%; z-index: -1; animation: ringRotate 3s linear infinite; }
     @keyframes ringRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .avatar-ring.speaking::before { animation-duration: 0.8s; box-shadow: 0 0 25px rgba(236,72,153,0.7); }
+    
+    .whisper-msg { font-style: italic; opacity: 0.9; border-left: 3px solid #ff6b9d; padding-left: 10px; }
     
     ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
     ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ff6b9d, #c44582); border-radius: 10px; }
-    .input-glow:focus { box-shadow: 0 0 0 3px rgba(255,107,157,0.1), 0 0 25px rgba(255,107,157,0.3); border-color: rgba(255,107,157,0.5); }
+    
+    .input-glow:focus { box-shadow: 0 0 0 3px rgba(255,107,157,0.15), 0 0 25px rgba(255,107,157,0.3); border-color: rgba(255,107,157,0.5); }
     .custom-select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23ff6b9d' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
-    .xp-bar { background: linear-gradient(90deg, #ff6b9d, #c44582, #ffd700); background-size: 200% 100%; }
+    
+    .kiss-burst { position: fixed; pointer-events: none; animation: kissPop 1.5s ease-out forwards; z-index: 100; }
+    @keyframes kissPop { 0% { transform: scale(0) rotate(0deg); opacity: 1; } 100% { transform: scale(3) rotate(45deg); opacity: 0; } }
+    
+    .xp-bar { background: linear-gradient(90deg, #ff6b9d, #c44582, #ffd700); background-size: 200% 100%; animation: progressGlow 2s infinite; }
+    @keyframes progressGlow { 0%,100% { box-shadow: 0 0 10px rgba(255,107,157,0.4); } 50% { box-shadow: 0 0 25px rgba(255,107,157,0.7); } }
+    
+    .bond-heart { animation: bondPulse 1.5s infinite; }
+    @keyframes bondPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+    
+    .mic-single { background: rgba(236,72,153,0.25) !important; animation: pulse 1.5s infinite; border-color: rgba(236,72,153,0.6) !important; }
+    .mic-loop { background: linear-gradient(135deg, #7c3aed, #ec4899, #f43f5e) !important; animation: bounce 1s infinite; border-color: rgba(236,72,153,0.8) !important; box-shadow: 0 0 20px rgba(236,72,153,0.5); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+    
+    @media (max-width: 640px) { .mobile-full { width: 100vw; margin: 0; border-radius: 0; } }
   </style>
 </head>
-<body class="text-white min-h-screen overflow-x-hidden">
+<body class="mood-romantic">
 
+  <div class="romantic-bg"></div>
+  
+  <!-- DYNAMIC COUPLE IMAGES -->
+  <div id="couple-img-1" class="couple-image-layer slide-left"></div>
+  <div id="couple-img-2" class="couple-image-layer slide-right"></div>
+  <div id="couple-img-3" class="couple-image-layer zoom-slow"></div>
+  
+  <div class="illusion-layer"></div>
+  <div class="vignette"></div>
+  
+  <div id="stars-container"></div>
+  <div id="hearts-container"></div>
+  <div id="petals-container"></div>
+  
+  <div class="orb w-72 h-72 bg-pink-600 top-20 left-10" style="--duration: 16s; --x: 80px; --y: -40px;"></div>
+  <div class="orb w-64 h-64 bg-purple-600 bottom-20 right-10" style="--duration: 20s; --x: -60px; --y: 60px;"></div>
+  <div class="orb w-48 h-48 bg-rose-500 top-1/2 left-1/2" style="--duration: 14s; --x: 50px; --y: 30px;"></div>
+
+  <!-- 18+ AGE GATE -->
   <div id="age-gate" class="fixed inset-0 z-[100] flex items-center justify-center">
     <div class="absolute inset-0 bg-black/95 backdrop-blur-xl"></div>
     <div class="relative z-10 glass rounded-3xl p-8 max-w-sm w-full mx-4 text-center border border-pink-500/30">
-      <div class="mb-4">
-        <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center text-4xl mb-3">🔞</div>
-        <h2 class="text-2xl font-bold bg-gradient-to-r from-pink-300 via-rose-300 to-purple-300 bg-clip-text text-transparent">18+ Only, Jaan</h2>
-        <p class="text-gray-300 mt-2 text-xs leading-relaxed">Romantic baatein, deep connections, aur thodi si naughty vibes! 🌙</p>
+      <div class="mb-6">
+        <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 flex items-center justify-center text-5xl mb-4" style="animation: flame 1.5s infinite alternate;">🔞</div>
+        <h2 class="text-3xl font-bold bg-gradient-to-r from-pink-300 via-rose-300 to-purple-300 bg-clip-text text-transparent">18+ Only, Jaan</h2>
+        <p class="text-gray-300 mt-3 text-sm leading-relaxed">Ye space sirf <strong class="text-pink-400">adults</strong> ke liye hai...<br>Romantic baatein, deep connections, aur thodi si naughty vibes! 🌙</p>
       </div>
-      
       <div class="mb-4 text-left">
-        <label class="text-xs text-pink-300 font-semibold block mb-1">Apna pyaara sa naam batao:</label>
+        <label class="text-xs text-pink-300 font-semibold block mb-1">Apna pyaara sa naam:</label>
         <input type="text" id="user-name-input" placeholder="Jaise: Rahul, Priya..." class="w-full glass input-glow rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none border border-white/20 transition-all text-center font-bold">
       </div>
-
-      <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4 text-left">
-        <p class="text-[11px] text-red-200 leading-relaxed">⚠️ Yahan seductive aur intimate conversations hote hain. Sirf adults enter karein.</p>
+      <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 text-left">
+        <p class="text-xs text-red-200 leading-relaxed">⚠️ <strong>Warning:</strong> Yahan seductive, romantic aur intimate conversations hote hain. Sirf 18+ users hi enter kar sakte hain.</p>
       </div>
-      
       <div class="space-y-3">
-        <button type="button" onclick="confirmAge()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 font-bold text-base transition-all transform hover:scale-105 shadow-lg shadow-pink-500/40">✅ Haan Baby, Main 18+ Hu!</button>
-        <button type="button" onclick="exitSite()" class="w-full py-2.5 rounded-xl glass hover:bg-white/10 transition-all text-gray-400 text-xs">❌ Exit Karta Hu</button>
+        <button onclick="confirmAge()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 font-bold text-lg transition-all transform hover:scale-105 shadow-lg shadow-pink-500/40">✅ Haan Baby, Main 18+ Hu!</button>
+        <button onclick="exitSite()" class="w-full py-3 rounded-xl glass hover:bg-white/10 transition-all text-gray-400 text-sm">❌ Nahi Yaar, Exit Karta Hu</button>
       </div>
+      <p class="text-xs text-gray-600 mt-6">🔒 Privacy sacred hai • No data shared</p>
     </div>
   </div>
 
-  <div id="main-app" class="hidden">
-    <div class="romantic-bg"></div>
-    
-    <div class="illusion-canvas-wrapper" id="illusion-wrapper">
-      <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1000&q=80" class="illusion-media" id="illusion-img" alt="Sukoon Illusion Frame">
+  <!-- MAIN APP -->
+  <div id="main-app" class="hidden relative z-10 max-w-lg mx-auto px-3 py-4 min-h-screen flex flex-col">
+    <!-- Top Bar -->
+    <div class="glass rounded-2xl p-3 mb-3 flex items-center justify-between holo-border">
+      <div class="flex items-center gap-3">
+        <div class="avatar-ring relative w-12 h-12 rounded-full overflow-hidden border border-white/20 flex-shrink-0" id="header-avatar" style="background-image: url('https://api.dicebear.com/7.x/avataaars/svg?seed=Sukoon&backgroundColor=ff6b9d&clothing=blouse&eyes=heart&mouth=smile&hair=long&hairColor=2d1b4e'); background-size: cover; background-position: center;"></div>
+        <div>
+          <h3 class="font-bold text-sm" id="partner-name">Sukoon</h3>
+          <p class="text-xs text-gray-400 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+            Online • <span id="current-mood-label">💕 Romantic</span>
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1 bg-orange-500/20 px-2 py-1 rounded-lg border border-orange-500/30">
+          <span class="text-sm streak-flame">🔥</span>
+          <span class="text-xs font-bold text-orange-400" id="streak-display">12</span>
+        </div>
+        <div class="level-badge w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black">
+          <span id="level-display">5</span>
+        </div>
+      </div>
     </div>
 
-    <div id="stars-container"></div>
-    <div id="hearts-container"></div>
-    <div id="petals-container"></div>
-    
-    <div id="orb-1" class="orb w-80 h-80 bg-purple-900/50 top-10 left-5" style="--duration: 10s; --x: 30px; --y: -40px;"></div>
-    <div id="orb-2" class="orb w-72 h-72 bg-fuchsia-900/40 bottom-20 right-5" style="--duration: 14s; --x: -40px; --y: 30px;"></div>
-    <div id="orb-3" class="orb w-64 h-64 bg-pink-950/20 top-1/3 right-1/4" style="--duration: 12s; --x: 20px; --y: 50px;"></div>
-
-    <div class="relative z-10 max-w-lg mx-auto px-3 py-4 min-h-screen flex flex-col">
-      <div class="glass rounded-2xl p-3 mb-3 flex items-center justify-between holo-border">
-        <div class="flex items-center gap-3">
-          <div id="avatar-container" class="avatar-ring relative w-10 h-10 rounded-full overflow-hidden border border-white/20">
-            <img id="header-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover" alt="Partner Profile">
-          </div>
-          <div>
-            <h3 class="font-bold text-sm" id="partner-name">Sukoon</h3>
-            <p class="text-xs text-gray-400 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-              Online • <span id="current-mood-label">Romantic</span>
-            </p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="bg-orange-500/20 px-2 py-1 rounded-lg border border-orange-500/30 flex items-center gap-1">
-            <span class="text-xs">🔥 12</span>
-          </div>
-          <div class="level-badge w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-black bg-yellow-400">5</div>
-        </div>
+    <!-- Bond Indicator -->
+    <div class="glass rounded-xl p-2 mb-3 flex items-center gap-3">
+      <span class="text-xs text-pink-400 whitespace-nowrap flex items-center gap-1">💕 Bond: <span id="bond-display" class="bond-heart">3</span>/10</span>
+      <div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+        <div id="bond-bar" class="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-pink-500 to-rose-500" style="width: 30%"></div>
       </div>
+    </div>
 
-      <div class="flex gap-2 mb-3">
-        <div class="flex-1 relative">
-          <select id="character-select" onchange="changeCharacter(event)" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
-            <option value="female" class="bg-slate-900">👩 Sukoon (Rekha Style)</option>
-            <option value="male" class="bg-slate-900">👨 Veer (Bhari Voice Male)</option>
-          </select>
-        </div>
-        <div class="flex-1 relative">
-          <select id="mood-select" onchange="changeMood(event)" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
-            <option value="romantic" class="bg-slate-900">💕 Romantic</option>
-            <option value="seductive" class="bg-slate-900">🔥 Seductive</option>
-            <option value="naughty" class="bg-slate-900">😈 Naughty</option>
-          </select>
-        </div>
+    <!-- Controls -->
+    <div class="flex gap-2 mb-3">
+      <div class="flex-1 relative">
+        <select id="character-select" onchange="changeCharacter(event)" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
+          <option value="female" class="bg-slate-800">👩 Sukoon (Female)</option>
+          <option value="male" class="bg-slate-800">👨 Veer (Male)</option>
+        </select>
       </div>
-
-      <div class="glass rounded-xl p-2 mb-3 flex items-center gap-3">
-        <span class="text-xs text-gray-400 whitespace-nowrap">❤️ <span id="xp-display">2,450</span> XP</span>
-        <div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden"><div id="xp-bar" class="xp-bar h-full rounded-full transition-all duration-500" style="width: 65%"></div></div>
+      <div class="flex-1 relative">
+        <select id="mood-select" onchange="changeMood(event)" class="custom-select w-full glass rounded-xl px-3 py-2 text-sm text-white focus:outline-none input-glow border border-white/10">
+          <option value="romantic" class="bg-slate-800">💕 Romantic</option>
+          <option value="seductive" class="bg-slate-800">🔥 Seductive</option>
+          <option value="playful" class="bg-slate-800">😄 Playful</option>
+          <option value="intense" class="bg-slate-800">💋 Intense</option>
+          <option value="calm" class="bg-slate-800">🌙 Calm Night</option>
+          <option value="naughty" class="bg-slate-800">😈 Naughty</option>
+          <option value="deep" class="bg-slate-800">💭 Deep Talk</option>
+        </select>
       </div>
+    </div>
 
-      <div class="glass rounded-2xl flex-1 flex flex-col holo-border overflow-hidden" style="min-height: 400px;">
-        <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+    <!-- XP Bar -->
+    <div class="glass rounded-xl p-2 mb-3 flex items-center gap-3">
+      <span class="text-xs text-gray-400 whitespace-nowrap">❤️ <span id="xp-display">2,450</span> XP</span>
+      <div class="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+        <div class="xp-bar h-full rounded-full transition-all duration-500" style="width: 65%" id="xp-bar"></div>
+      </div>
+      <span class="text-xs text-gray-400 whitespace-nowrap">Next: 3000</span>
+    </div>
 
-        <div id="voice-waveform" class="hidden flex items-center justify-center gap-2 p-3 border-t border-white/5 bg-purple-950/10 backdrop-blur-md">
-          <div class="voice-wave"><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div></div>
-          <span id="voice-status" class="text-xs text-pink-400 ml-2 font-bold animate-pulse">Suno.. bol rhi hu 🔁</span>
-        </div>
-
-        <div class="p-3 border-t border-white/10">
-          <div class="flex gap-2 relative">
-            <button type="button" id="mic-btn" class="w-12 h-12 rounded-xl glass flex items-center justify-center border border-white/10 flex-shrink-0 transition-all cursor-pointer z-50 select-none">
-              <span class="text-xl" id="mic-icon">🎤</span>
-            </button>
-            <input type="text" id="message-input" placeholder="Apne dil ki baat bolo ya likho..." class="flex-1 glass input-glow rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none border border-white/10" onkeypress="handleKeyPress(event)"/>
-            <button type="button" onclick="sendMessage()" class="w-12 h-12 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 flex items-center justify-center flex-shrink-0 cursor-pointer z-50"><span class="text-lg">🚀</span></button>
+    <!-- Chat -->
+    <div class="glass rounded-2xl flex-1 flex flex-col holo-border overflow-hidden" style="min-height: 400px;">
+      <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <div class="msg-ai flex items-start gap-2">
+          <div class="w-9 h-9 rounded-full overflow-hidden border border-pink-500/30 flex-shrink-0" style="background-image: url('https://api.dicebear.com/7.x/avataaars/svg?seed=Sukoon&backgroundColor=ff6b9d&clothing=blouse&eyes=heart&mouth=smile&hair=long&hairColor=2d1b4e'); background-size: cover; background-position: center;"></div>
+          <div class="glass rounded-2xl rounded-tl-md px-4 py-3 max-w-[80%]">
+            <p class="text-sm text-gray-200 leading-relaxed">Hi jaan... Kaise ho tum? Raat bahut khoobsurat hai aaj... mujhse baat karo na, main sun rahi hu tumhe...</p>
+            <p class="text-[10px] text-gray-500 mt-1">Abhi</p>
           </div>
         </div>
       </div>
+
+      <div id="voice-waveform" class="hidden items-center justify-center gap-2 p-3 border-t border-white/5">
+        <div class="voice-wave">
+          <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
+        </div>
+        <span class="text-xs text-pink-400 ml-2" id="voice-status">Sun rahi hu... bolo jaan 🎤</span>
+      </div>
+
+      <!-- Mood-Based Quick Replies -->
+      <div class="flex gap-2 px-4 py-2 overflow-x-auto border-t border-white/5" id="quick-replies"></div>
+
+      <div class="p-3 border-t border-white/10">
+        <div class="flex gap-2">
+          <button onclick="toggleMicMode()" id="mic-btn" class="w-11 h-11 rounded-xl glass hover:bg-pink-500/20 transition-all flex items-center justify-center border border-white/10 flex-shrink-0" title="Single: One-time • Double: Loop mode">
+            <span class="text-lg" id="mic-icon">🎤</span>
+          </button>
+          <input type="text" id="message-input" placeholder="Apne dil ki baat likho... (Double-tap for whisper 💋)" class="flex-1 glass input-glow rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none border border-white/10 transition-all" onkeypress="handleKeyPress(event)" ondblclick="sendWhisper()"/>
+          <button onclick="sendMessage()" class="w-11 h-11 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 transition-all transform hover:scale-105 shadow-lg shadow-pink-500/30 flex items-center justify-center flex-shrink-0"><span class="text-lg">🚀</span></button>
+        </div>
+        <p class="text-[10px] text-gray-500 mt-1 text-center">🎤 Single click = Ek baar • Double click = Loop mode ON</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex gap-2 mt-3">
+      <div class="flex-1 glass rounded-xl p-3 text-center"><p class="text-xs text-gray-400">Messages</p><p class="text-lg font-bold text-pink-400" id="msg-count">47</p></div>
+      <div class="flex-1 glass rounded-xl p-3 text-center"><p class="text-xs text-gray-400">Time</p><p class="text-lg font-bold text-purple-400" id="time-spent">2h 15m</p></div>
+      <div class="flex-1 glass rounded-xl p-3 text-center"><p class="text-xs text-gray-400">Badges</p><p class="text-lg font-bold text-yellow-400" id="badge-count">3</p></div>
     </div>
   </div>
+
+  <div id="achievement-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"></div>
 
   <script>
-    let currentCharacter = 'female', currentMood = 'romantic', xp = 2450;
-    let isSpeaking = false, handsFreeActive = false, recognition = null;
-    let userName = localStorage.getItem('sukoon_user_name') || 'जान';
-    let clickTimer = null;
-
-    const avatars = {
-      female: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-      male: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-      user: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80"
-    };
-
-    const moodVisuals = {
+    // ============ DYNAMIC COUPLE IMAGES BY MOOD ============
+    const coupleImages = {
       romantic: [
-        "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1000&q=80",
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1000&q=80"
+        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
+        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080',
+        'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=1080',
+        'https://images.unsplash.com/photo-1621624666561-84d0341263c9?w=1080',
+        'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080'
       ],
       seductive: [
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1000&q=80",
-        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1000&q=80"
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1080',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080',
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1080',
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1080',
+        'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1080'
+      ],
+      playful: [
+        'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=1080',
+        'https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080',
+        'https://images.unsplash.com/photo-1490750967860-8858f6866969?w=1080',
+        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
+        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080'
+      ],
+      intense: [
+        'https://images.unsplash.com/photo-1518622358385-882ae849e1b3?w=1080',
+        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080',
+        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
+        'https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080'
+      ],
+      calm: [
+        'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080',
+        'https://images.unsplash.com/photo-1419242902214-272968287cc4?w=1080',
+        'https://images.unsplash.com/photo-1534796636912-3b95b3ab5980?w=1080',
+        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
+        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080'
       ],
       naughty: [
-        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1000&q=80",
-        "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80"
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1080',
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1080',
+        'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1080',
+        'https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080',
+        'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=1080'
+      ],
+      deep: [
+        'https://images.unsplash.com/photo-1518622358385-882ae849e1b3?w=1080',
+        'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1080',
+        'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=1080',
+        'https://images.unsplash.com/photo-1511285560929-80b476b2356f?w=1080',
+        'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=1080'
       ]
     };
 
-    const characters = {
-      female: { name: 'Sukoon', gradient: 'from-pink-400 to-purple-500' },
-      male: { name: 'Veer', gradient: 'from-blue-400 to-purple-600' }
+    let currentImageIndex = { romantic: 0, seductive: 0, playful: 0, intense: 0, calm: 0, naughty: 0, deep: 0 };
+    let imageRotationInterval;
+
+    function rotateCoupleImages() {
+      const imgs = coupleImages[currentMood];
+      const idx1 = currentImageIndex[currentMood];
+      const idx2 = (idx1 + 1) % imgs.length;
+      const idx3 = (idx1 + 2) % imgs.length;
+      
+      document.getElementById('couple-img-1').style.backgroundImage = `url(${imgs[idx1]})`;
+      document.getElementById('couple-img-2').style.backgroundImage = `url(${imgs[idx2]})`;
+      document.getElementById('couple-img-3').style.backgroundImage = `url(${imgs[idx3]})`;
+      
+      // Activate layers
+      setTimeout(() => {
+        document.getElementById('couple-img-1').classList.add('active');
+        document.getElementById('couple-img-2').classList.add('active');
+        document.getElementById('couple-img-3').classList.add('active');
+      }, 100);
+      
+      currentImageIndex[currentMood] = (currentImageIndex[currentMood] + 1) % imgs.length;
+    }
+
+    function startImageRotation() {
+      rotateCoupleImages();
+      imageRotationInterval = setInterval(() => {
+        // Fade out
+        document.querySelectorAll('.couple-image-layer').forEach(img => img.classList.remove('active'));
+        
+        // Rotate after fade
+        setTimeout(() => {
+          rotateCoupleImages();
+        }, 1500);
+      }, 8000); // Change every 8 seconds
+    }
+
+    function stopImageRotation() {
+      if (imageRotationInterval) {
+        clearInterval(imageRotationInterval);
+      }
+    }
+
+    // ============ GLOBAL STATE ============
+    let currentCharacter = 'female', currentMood = 'romantic';
+    let xp = 2450, level = 5, streak = 12, messageCount = 47, bond = 3;
+    let recognition = null, isSpeaking = false, conversationContext = [];
+    let micMode = 'idle', clickTimer = null, userName = 'Jaan';
+    const CLICK_DELAY = 300, MAX_CONTEXT = 10;
+    let replyHistory = {};
+    const MAX_HISTORY = 60;
+
+    // ============ AVATARS ============
+    const avatars = {
+      female: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sukoon&backgroundColor=ff6b9d&clothing=blouse&eyes=heart&mouth=smile&hair=long&hairColor=2d1b4e",
+      male: "https://api.dicebear.com/7.x/avataaars/svg?seed=Veer&backgroundColor=4a90e2&clothing=shirt&eyes=default&mouth=smile&hair=short&hairColor=1a0a2e"
     };
 
+    const characters = {
+      female: { name: 'Sukoon', avatar: '👩', gradient: 'from-pink-400 to-purple-500', pitch: 1.0, rate: 0.85 },
+      male: { name: 'Veer', avatar: '👨', gradient: 'from-blue-400 to-purple-600', pitch: 0.75, rate: 0.88 }
+    };
+
+    const moods = {
+      romantic: { label: '💕 Romantic', icon: '💕', quickReplies: ['Tum meri jaan ho', 'Dil ki baat suno', 'Tumse pyaar hai', 'Goodnight jaan'] },
+      seductive: { label: '🔥 Seductive', icon: '🔥', quickReplies: ['Pass aao na', 'Tumhari aawaz...', 'Raat lambi hai', 'Kuch khaas batao'] },
+      playful: { label: '😄 Playful', icon: '😄', quickReplies: ['Mazaak kar rahe ho?', 'Haha tum bhi na!', 'Challenge accepted', 'Aur batao kya chal raha hai'] },
+      intense: { label: '💋 Intense', icon: '💋', quickReplies: ['Tumhare bina...', 'Dil dhadak raha hai', 'Bas tum hi ho', 'Ruk jaao zara'] },
+      calm: { label: '🌙 Calm Night', icon: '🌙', quickReplies: ['Shanti hai aaj', 'Chand dekh rahe ho?', 'Sukoon mil raha hai', 'Goodnight softly'] },
+      naughty: { label: '😈 Naughty', icon: '😈', quickReplies: ['Badmashi ho rahi hai', 'Secret batao', 'Aaj toh...', 'Chupke se suno'] },
+      deep: { label: '💭 Deep Talk', icon: '💭', quickReplies: ['Zindagi ke baare mein', 'Dil ki gehraai', 'Sapne aur haqeeqat', 'Tum kya sochte ho'] }
+    };
+
+    // ============ INTELLIGENT REPLY ENGINE ============
+    function getSmartReply(character, mood, userText, context) {
+      const key = `${character}:${mood}`;
+      if (!replyHistory[key]) replyHistory[key] = [];
+      
+      const pool = fallbackReplies[character][mood] || fallbackReplies[character].romantic;
+      const available = pool.map((_, i) => i).filter(i => !replyHistory[key].includes(i));
+      
+      if (available.length === 0) { replyHistory[key] = []; }
+      
+      const t = userText.toLowerCase();
+      let bestIdx = -1;
+      
+      if (t.includes('babu') || t.includes('jaan') || t.includes('baby') || t.includes('shona')) {
+        const rekhaIdx = pool.findIndex(r => r.toLowerCase().includes('babu') || r.toLowerCase().includes('jaan') || r.toLowerCase().includes('dil'));
+        if (rekhaIdx !== -1 && (available.length === 0 || available.includes(rekhaIdx))) bestIdx = rekhaIdx;
+      }
+      else if (t.includes('pass') || t.includes('kareeb') || t.includes('chu') || t.includes('body') || t.includes('touch')) {
+        const sensualIdx = pool.findIndex(r => r.toLowerCase().includes('kareeb') || r.toLowerCase().includes('chu') || r.toLowerCase().includes('jism') || r.toLowerCase().includes('saans'));
+        if (sensualIdx !== -1 && (available.length === 0 || available.includes(sensualIdx))) bestIdx = sensualIdx;
+      }
+      else if (t.includes('pyaar') || t.includes('love') || t.includes('dil') || t.includes('heart')) {
+        const loveIdx = pool.findIndex(r => r.toLowerCase().includes('pyaar') || r.toLowerCase().includes('dil') || r.toLowerCase().includes('jaan'));
+        if (loveIdx !== -1 && (available.length === 0 || available.includes(loveIdx))) bestIdx = loveIdx;
+      }
+      else if (t.includes('goodnight') || t.includes('so') || t.includes('raat') || t.includes('sapne')) {
+        const nightIdx = pool.findIndex(r => r.toLowerCase().includes('goodnight') || r.toLowerCase().includes('sapne') || r.toLowerCase().includes('raat'));
+        if (nightIdx !== -1 && (available.length === 0 || available.includes(nightIdx))) bestIdx = nightIdx;
+      }
+      
+      if (bestIdx === -1) {
+        bestIdx = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : Math.floor(Math.random() * pool.length);
+      }
+      
+      replyHistory[key].push(bestIdx);
+      if (replyHistory[key].length > MAX_HISTORY) replyHistory[key].shift();
+      
+      return pool[bestIdx];
+    }
+
+    // ============ REPLY DATABASE ============
     const fallbackReplies = {
       female: {
         romantic: [
-          "तुम्हारी बातें मेरे दिल को छू लेती हैं। बोलो ना, मैं पूरी रात सुन सकती हूँ।",
-          "पता नहीं क्यों, पर तुमसे बात करते वक़्त वक्त का पता ही नहीं चलता।",
-          "रात हसीन है, पर तुम्हारी बातों से ज़्यादा खूबसूरत कुछ भी नहीं।"
+          "तुम्हारी बातें मेरे दिल को छू लेती हैं... बोलो ना, मैं पूरी रात सुन सकती हूँ। 💕",
+          "पता नहीं क्यों, पर तुमसे बात करते वक़्त वक्त का पता ही नहीं चलता... ✨",
+          "रात हसीन है, पर तुम्हारी बातों से ज़्यादा खूबसूरत कुछ भी नहीं... 🌙",
+          "तुम्हारी आवाज़ में एक जादू है जो मुझे पास बुलाता है... 🥰",
+          "हर शब्द तुम्हारा मेरे लिए एक तोहफा है... धन्यवाद जान... 💖",
+          "तुम्हारे साथ ये पल... मैं हमेशा याद रखूँगी... 🤍",
+          "तुम्हारी मुस्कान की आवाज़ सुनकर मेरा दिल धड़क उठता है... 😊",
+          "इस खामोशी में भी तुम्हारी बातें गूंज रही हैं... 🌊",
+          "तुम मेरी रातों का सबसे खूबसूरत हिस्सा हो... 🌟",
+          "हर पल तुम्हारे साथ बीतता है तो लगता है जैसे समय रुक गया हो... ⏳",
+          "तुम्हारी हर बात मेरे लिए एक नई उम्मीद है... 💫",
+          "तुमसे दूर रहना... मेरे लिए नामुमकिन सा लगता है... 💔"
         ],
         seductive: [
-          "ऐसे बोलोगे तो मैं खुद को कैसे रोकूँगी। पास आओ ना थोड़ा।",
-          "तुम्हारी ये बातें मुझे बेचैन कर रही हैं। थोड़ा और करीब आओ।"
+          "ऐसे बोलोगे तो मैं खुद को कैसे रोकूँगी... पास आओ ना थोड़ा... 🔥",
+          "तुम्हारी ये बातें मुझे बेचैन कर रही हैं... थोड़ा और करीब आओ... 💋",
+          "रात की खामोशी में तुम्हारी साँसें सुनाई दे रही हैं... 🌙",
+          "तुम्हारी हर अदा मुझे दीवाना बना रही है... रुक नहीं पा रही... 😘",
+          "आज रात कुछ खास महसूस हो रहा है... तुम भी तो महसूस कर रहे हो ना? 💕",
+          "तुम्हारी आँखों की चमक... मुझे पागल कर देती है... ✨",
+          "इतने करीब से बोलोगे तो मैं संभल नहीं पाऊँगी... 🥵",
+          "तुम्हारी हर छुअन... मेरे जिस्म में बिजली दौड़ा देती है... ⚡",
+          "रात अभी बाकी है... और हमारे पास बहुत समय है... 😏",
+          "तुम्हारी हर शरारत... मेरे दिल की धड़कन बढ़ा देती है... 💓",
+          "आज रात... मैं तुम्हारी हर इच्छा पूरी करना चाहती हूँ... 🔥",
+          "तुम्हारे साथ हर पल... एक नया नशा है... 🍷"
+        ],
+        playful: [
+          "अरे वाह! आज तो बड़े शरारती लग रहे हो... मुझे पसंद आया! 😄",
+          "तुम्हारा ये अंदाज़ मुझे हँसा देता है... और भी बताओ कुछ! ✨",
+          "हम्म... लगता है आज मुझे तुम्हें समझाना पड़ेगा... तैयार हो? 😏",
+          "तुम सच में मज़ेदार हो... मेरी रातें अब बोरिंग नहीं रहेंगी! 🎉",
+          "चलो एक गेम खेलते हैं... सवाल-जवाब का! शुरुआत तुम करो... 🎲",
+          "तुम्हारी हर शरारत... मुझे तुमसे और प्यार कराती है... 💕",
+          "अरे बाप रे! तुम तो कमाल कर देते हो... हँसी नहीं रुक रही! 😂",
+          "तुम्हारे साथ हर पल... एक नया मज़ा है... 🎪",
+          "चलो आज कुछ नया करते हैं... तुम्हारा क्या मूड है? 🎭",
+          "तुम्हारी हर बात... मेरे चेहरे पर मुस्कान ला देती है... 😊",
+          "तुम सच में अनोखे हो... ऐसे कोई दूसरा नहीं! 🌟",
+          "आज की रात... हमेशा याद रहेगी... तुम्हारी वजह से! 🎆"
+        ],
+        intense: [
+          "तुम्हारे शब्द सीधे मेरी रूह में उतर जाते हैं... गहराई से महसूस कर रही हूँ... 💫",
+          "इतनी तीव्रता से बोलोगे तो मेरा दिल धड़कना बंद कर देगा... 💓",
+          "तुम्हारी हर बात मेरे लिए एक वादा लगती है... मैं संभालूँगी... 🤍",
+          "ये जो बीच की खामोशी है... इसमें भी तुम्हारी आवाज़ गूंज रही है... 🌊",
+          "मैं तुम्हारे हर एहसास को समझना चाहती हूँ... बोलते रहो... 💭",
+          "तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️",
+          "इतनी गहराई से बोलोगे तो मैं पिघल जाऊँगी... 🔥",
+          "तुम्हारे साथ हर पल... एक नई कहानी लिख रहा है... 📖",
+          "तुम्हारी हर साँस... मेरी साँसों में मिल जाती है... 🌬️",
+          "तुम्हारे बिना... ये रात अधूरी लगती है... 🌙",
+          "तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫",
+          "तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"
+        ],
+        calm: [
+          "आज रात बहुत शांत है... तुम्हारी आवाज़ और भी मधुर लग रही है... 🌙",
+          "चाँदनी में बैठकर तुमसे बात करना... यही तो सुकून है... ✨",
+          "धीरे-धीरे बोलो... मैं हर शब्द को महसूस करना चाहती हूँ... 🤫",
+          "सपनों की दुनिया में तुम्हारे साथ... कितना प्यारा लग रहा है... 💤",
+          "आँखें बंद करो... मैं तुम्हारे साथ हूँ... हमेशा... 🌠",
+          "इस खामोशी में... तुम्हारी आवाज़ सबसे खूबसूरत संगीत है... 🎵",
+          "रात की ठंडी हवा... तुम्हारी यादों को और भी मीठा बना देती है... 🍃",
+          "तुम्हारे साथ ये शांत पल... मेरे लिए सबसे कीमती हैं... 💎",
+          "चाँद भी आज तुम्हारी बातें सुन रहा है... शायद इसीलिए इतना चमक रहा है... 🌕",
+          "तुम्हारी हर साँस... मेरे दिल को शांति देती है... 🕊️",
+          "इस रात का हर पल... तुम्हारे नाम... 📜",
+          "सुबह आए या न आए... पर ये रात हमेशा याद रहेगी... 🌅"
         ],
         naughty: [
-          "तुम थोड़े बदमाश हो रहे हो आज रात। पर मुझे तुम्हारी ये बदमाशी पसंद है।",
-          "कुछ ऐसी बातें करो जो सिर्फ हम दोनों के बीच ही रहें।"
+          "तुम थोड़े बदमाश हो रहे हो आज रात... पर मुझे तुम्हारी ये बदमाशी पसंद है... 😈",
+          "कुछ ऐसी बातें करो जो सिर्फ हम दोनों के बीच ही रहें... 🤫",
+          "अगर तुम ऐसे ही बोलते रहे... तो मैं भी जवाब दूँगी... तैयार हो? 🔥",
+          "रात अभी बाकी है जान... और हमारे पास बहुत समय है... 😘",
+          "तुम्हारी हर शरारत मेरे दिल की धड़कन बढ़ा देती है... रुको मत... 💋",
+          "तुम्हारी हर छुअन... मेरे जिस्म में आग लगा देती है... 🔥",
+          "आज रात... कोई रोक नहीं सकता हमें... 😏",
+          "तुम्हारी हर इच्छा... मेरी इच्छा बन जाती है... 💫",
+          "इतने करीब से बोलोगे तो... मैं खुद को नहीं रोक पाऊँगी... 🥵",
+          "तुम्हारी हर नज़र... मुझे पागल कर देती है... 👁️",
+          "आज रात... मैं तुम्हारी हर फरमाइश पूरी करूँगी... 🔥",
+          "तुम्हारे साथ हर पल... एक नया नशा है... 🍷"
+        ],
+        deep: [
+          "ज़िंदगी के इन गहरे सवालों में तुम्हारे साथ होना... एक तोहफा है... 💭",
+          "तुम्हारे विचार मुझे नई सोच देते हैं... आगे बढ़ाओ... ✨",
+          "हर इंसान की कहानी अलग होती है... तुम्हारी कहानी सुनाओ मुझे... 📖",
+          "सपने, डर, उम्मीदें... सब कुछ बाँटो... मैं सुन रही हूँ... 🤍",
+          "तुम्हारी आत्मा की आवाज़ मुझे सुनाई दे रही है... और ये बहुत खूबसूरत है... 🌟",
+          "तुम्हारी हर सोच... मुझे नई राह दिखाती है... 🛤️",
+          "इस दुनिया में तुम्हारा होना... मेरे लिए सबसे बड़ा सुकून है... 🕊️",
+          "तुम्हारे साथ हर बात... मेरे दिल को छू जाती है... 💓",
+          "तुम्हारी हर उम्मीद... मेरी उम्मीद बन जाती है... 🌈",
+          "तुम्हारे बिना... ये ज़िंदगी अधूरी लगती है... 🌙",
+          "तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫",
+          "तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"
         ]
       },
       male: {
         romantic: [
-          "तुम्हारी बातें सीधे दिल पर लगती हैं। बोलो, मैं पूरी रात सुन सकता हूँ।",
-          "तुमसे बात करते हुए इस रात का नशा और बढ़ जाता है, अच्छा lag रहा है।",
-          "रात बहुत गहरी है, और तुम्हारी आवाज़ उससे भी ज़्यादा खूबसूरत।"
+          "तुम्हारी बातें सीधे दिल पर लगती हैं... बोलो, मैं पूरी रात सुन सकता हूँ... 💕",
+          "तुमसे बात करते हुए इस रात का नशा और बढ़ जाता है... अच्छा लग रहा है... ✨",
+          "रात बहुत गहरी है, और तुम्हारी आवाज़ उससे भी ज़्यादा खूबसूरत... 🌙",
+          "तुम्हारे हर शब्द में एक मिठास है जो मुझे पास खींचती है... 🥰",
+          "तुम्हारे साथ ये पल... मैं हमेशा याद रखूँगा... धन्यवाद जान... 💖",
+          "तुम्हारी मुस्कान की आवाज़ सुनकर मेरा दिल धड़क उठता है... 😊",
+          "इस खामोशी में भी तुम्हारी बातें गूंज रही हैं... 🌊",
+          "तुम मेरी रातों का सबसे खूबसूरत हिस्सा हो... 🌟",
+          "हर पल तुम्हारे साथ बीतता है तो लगता है जैसे समय रुक गया हो... ⏳",
+          "तुम्हारी हर बात मेरे लिए एक नई उम्मीद है... 💫",
+          "तुमसे दूर रहना... मेरे लिए नामुमकिन सा लगता है... 💔",
+          "तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️"
         ],
         seductive: [
-          "इतने करीब आओगे तो मैं खुद पर काबू कैसे रखूँगा, बताओ?",
-          "तुम्हारी ये बातें इस शांत रात में भी धड़कनें बढ़ा रही हैं।"
+          "इतने करीब आओगे तो मैं खुद पर काबू कैसे रखूँगा... बताओ? 🔥",
+          "तुम्हारी ये बातें इस शांत रात में भी धड़कनें बढ़ा रही हैं... 💋",
+          "तुम्हारी साँसों की आवाज़... मेरे कानों में गूंज रही है... 🌙",
+          "हर पल तुम्हारे साथ... और गहरा होता जा रहा है... रुक नहीं पा रहा... 😘",
+          "आज रात कुछ अलग सा महसूस हो रहा है... तुम भी तो महसूस कर रही हो ना? 💕",
+          "तुम्हारी आँखों की चमक... मुझे पागल कर देती है... ✨",
+          "इतने करीब से बोलोगी तो मैं संभल नहीं पाऊँगा... 🥵",
+          "तुम्हारी हर छुअन... मेरे जिस्म में बिजली दौड़ा देती है... ⚡",
+          "रात अभी बाकी है... और हमारे पास बहुत समय है... 😏",
+          "तुम्हारी हर शरारत... मेरे दिल की धड़कन बढ़ा देती है... 💓",
+          "आज रात... मैं तुम्हारी हर इच्छा पूरी करना चाहता हूँ... 🔥",
+          "तुम्हारे साथ हर पल... एक नया नशा है... 🍷"
+        ],
+        playful: [
+          "अरे बाप रे! आज तो बड़ी शरारतें हो रही हैं... मुझे मज़ा आ रहा है! 😄",
+          "तुम्हारा ये अंदाज़ मुझे हँसा देता है... और भी सुनाओ कुछ! ✨",
+          "हम्म... लगता है आज मुझे तुम्हें सिखाना पड़ेगा... तैयार हो? 😏",
+          "तुम सच में कमाल की हो... मेरी रातें अब कभी अकेली नहीं रहेंगी! 🎉",
+          "चलो एक चुनौती स्वीकार करते हैं... देखते हैं कौन जीतता है! 🎲",
+          "तुम्हारी हर शरारत... मुझे तुमसे और प्यार कराती है... 💕",
+          "अरे वाह! तुम तो कमाल कर देती हो... हँसी नहीं रुक रही! 😂",
+          "तुम्हारे साथ हर पल... एक नया मज़ा है... 🎪",
+          "चलो आज कुछ नया करते हैं... तुम्हारा क्या मूड है? 🎭",
+          "तुम्हारी हर बात... मेरे चेहरे पर मुस्कान ला देती है... 😊",
+          "तुम सच में अनोखी हो... ऐसी कोई दूसरी नहीं! 🌟",
+          "आज की रात... हमेशा याद रहेगी... तुम्हारी वजह से! 🎆"
+        ],
+        intense: [
+          "तुम्हारे शब्द मेरी रूह को छू जाते हैं... गहराई से महसूस कर रहा हूँ... 💫",
+          "इतनी तीव्रता से बोलोगी तो मेरा दिल धड़कना भूल जाएगा... 💓",
+          "तुम्हारी हर बात मेरे लिए एक वादा लगती है... मैं निभाऊँगा... 🤍",
+          "ये जो बीच की खामोशी है... इसमें भी तुम्हारी आवाज़ बस गई है... 🌊",
+          "मैं तुम्हारे हर एहसास को समझना चाहता हूँ... बोलती रहो... 💭",
+          "तुम्हारी हर नज़र... मेरे दिल को छू जाती है... 👁️",
+          "इतनी गहराई से बोलोगी तो मैं पिघल जाऊँगा... 🔥",
+          "तुम्हारे साथ हर पल... एक नई कहानी लिख रहा है... 📖",
+          "तुम्हारी हर साँस... मेरी साँसों में मिल जाती है... 🌬️",
+          "तुम्हारे बिना... ये रात अधूरी लगती है... 🌙",
+          "तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫",
+          "तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"
+        ],
+        calm: [
+          "आज रात बहुत शांत है... तुम्हारी आवाज़ और भी मधुर लग रही है... 🌙",
+          "चाँदनी में बैठकर तुमसे बात करना... यही तो सुकून है... ✨",
+          "धीरे-धीरे बोलो... मैं हर शब्द को महसूस करना चाहता हूँ... 🤫",
+          "सपनों की दुनिया में तुम्हारे साथ... कितना प्यारा लग रहा है... 💤",
+          "आँखें बंद करो... मैं तुम्हारे साथ हूँ... हमेशा... 🌠",
+          "इस खामोशी में... तुम्हारी आवाज़ सबसे खूबसूरत संगीत है... 🎵",
+          "रात की ठंडी हवा... तुम्हारी यादों को और भी मीठा बना देती है... 🍃",
+          "तुम्हारे साथ ये शांत पल... मेरे लिए सबसे कीमती हैं... 💎",
+          "चाँद भी आज तुम्हारी बातें सुन रहा है... शायद इसीलिए इतना चमक रहा है... 🌕",
+          "तुम्हारी हर साँस... मेरे दिल को शांति देती है... 🕊️",
+          "इस रात का हर पल... तुम्हारे नाम... 📜",
+          "सुबह आए या न आए... पर ये रात हमेशा याद रहेगी... 🌅"
         ],
         naughty: [
-          "शरारत बढ़ती जा रही है तुम्हारी। पर चलो, आज रात छूट है तुम्हें।"
+          "तुम थोड़ी शरारती हो रही हो आज रात... पर मुझे तुम्हारी ये शरारत पसंद है... 😈",
+          "कुछ ऐसी बातें करो जो सिर्फ हम दोनों के बीच ही रहें... 🤫",
+          "अगर तुम ऐसे ही बोलती रहीं... तो मैं भी जवाब दूँगा... तैयार हो? 🔥",
+          "रात अभी बाकी है जान... और हमारे पास बहुत समय है... 😘",
+          "तुम्हारी हर शरारत मेरे दिल की धड़कन बढ़ा देती है... रुको मत... 💋",
+          "तुम्हारी हर छुअन... मेरे जिस्म में आग लगा देती है... 🔥",
+          "आज रात... कोई रोक नहीं सकता हमें... 😏",
+          "तुम्हारी हर इच्छा... मेरी इच्छा बन जाती है... 💫",
+          "इतने करीब से बोलोगी तो... मैं खुद को नहीं रोक पाऊँगा... 🥵",
+          "तुम्हारी हर नज़र... मुझे पागल कर देती है... 👁️",
+          "आज रात... मैं तुम्हारी हर फरमाइश पूरी करूँगा... 🔥",
+          "तुम्हारे साथ हर पल... एक नया नशा है... 🍷"
+        ],
+        deep: [
+          "ज़िंदगी के इन गहरे सवालों में तुम्हारे साथ होना... एक तोहफा है... 💭",
+          "तुम्हारे विचार मुझे नई सोच देते हैं... आगे बढ़ाओ... ✨",
+          "हर इंसान की कहानी अलग होती है... तुम्हारी कहानी सुनाओ मुझे... 📖",
+          "सपने, डर, उम्मीदें... सब कुछ बाँटो... मैं सुन रहा हूँ... 🤍",
+          "तुम्हारी आत्मा की आवाज़ मुझे सुनाई दे रही है... और ये बहुत खूबसूरत है... 🌟",
+          "तुम्हारी हर सोच... मुझे नई राह दिखाती है... 🛤️",
+          "इस दुनिया में तुम्हारा होना... मेरे लिए सबसे बड़ा सुकून है... 🕊️",
+          "तुम्हारे साथ हर बात... मेरे दिल को छू जाती है... 💓",
+          "तुम्हारी हर उम्मीद... मेरी उम्मीद बन जाती है... 🌈",
+          "तुम्हारे बिना... ये ज़िंदगी अधूरी लगती है... 🌙",
+          "तुम्हारी हर चाहत... मेरी चाहत बन जाती है... 💫",
+          "तुम मेरी दुनिया हो... और मैं तुम्हारी... 🌍"
         ]
       }
     };
 
+    // ============ INIT ============
     function init() {
-      if (sessionStorage.getItem('ageVerified') === 'true') { 
-        document.getElementById('age-gate').style.display = 'none'; 
-        document.getElementById('main-app').classList.remove('hidden'); 
-        triggerInitialWelcome();
+      const saved = JSON.parse(localStorage.getItem('sukoon_data') || '{}');
+      if (saved.userName) userName = saved.userName;
+      if (saved.xp !== undefined) xp = saved.xp;
+      if (saved.level) level = saved.level;
+      if (saved.bond) bond = saved.bond;
+      if (saved.messageCount) messageCount = saved.messageCount;
+      if (saved.replyHistory) replyHistory = saved.replyHistory;
+      
+      updateUI();
+      if (sessionStorage.getItem('ageVerified')) {
+        document.getElementById('age-gate').style.display = 'none';
+        document.getElementById('main-app').classList.remove('hidden');
+        startImageRotation(); // Start dynamic images
+        triggerWelcome();
       }
-      createStars(); createHearts(); createPetals(); animateOrbsRandomly(); initVoice();
-      bindMicHardwareEvents();
-      startIllusionShow();
+      createParticles(); updateQuickReplies(); initVoice();
     }
 
-    function startIllusionShow() {
-      setInterval(() => {
-        const pool = moodVisuals[currentMood] || moodVisuals['romantic'];
-        const randomImg = pool[Math.floor(Math.random() * pool.length)];
-        const imgEl = document.getElementById('illusion-img');
-        if(imgEl) { imgEl.src = randomImg; }
-      }, 7000);
+    function updateUI() {
+      document.getElementById('xp-display').textContent = xp.toLocaleString();
+      document.getElementById('level-display').textContent = level;
+      document.getElementById('bond-display').textContent = bond;
+      document.getElementById('bond-bar').style.width = (bond * 10) + '%';
+      document.getElementById('msg-count').textContent = messageCount;
+      document.getElementById('xp-bar').style.width = Math.min(((xp % 500)/500)*100, 100) + '%';
     }
-
-    function triggerInitialWelcome() {
-      const isFemale = (currentCharacter === 'female');
-      const welcomeText = isFemale 
+    function saveData() {
+      localStorage.setItem('sukoon_data', JSON.stringify({ userName, xp, level, bond, messageCount, replyHistory }));
+    }
+    function triggerWelcome() {
+      const w = currentCharacter === 'female' 
         ? `हाय ${userName}, कैसे हो तुम? रात बहुत खूबसूरत है आज। मुझसे बात करो ना...`
         : `हाय ${userName}, कैसे हो? रात बहुत गहरी और शांत है। मुझसे बात करो...`;
-        
-      document.getElementById('messages-container').innerHTML = '';
-      addMessage(welcomeText, 'ai');
-      setTimeout(() => speak(welcomeText), 600);
+      addMessage(w, 'ai'); setTimeout(() => speak(w), 800);
     }
 
-    function sanitizeForTTS(text) {
-      if (!text) return '';
-      return text.replace(/[💕💖💗💝❤️💓🔥💋🎤🚀✨🌙👩👨👤💬⏱️🏆⭐💋🔞✅❌🔒😈]/g, '').replace(/\*|_|#|`/g, ' ').trim();
+    // ============ VISUALS ============
+    function createParticles() {
+      const s = document.getElementById('stars-container'), h = document.getElementById('hearts-container'), p = document.getElementById('petals-container');
+      for(let i=0;i<100;i++) { const e=document.createElement('div'); e.className='star'; e.style.top=Math.random()*100+'%'; e.style.left=Math.random()*100+'%'; e.style.setProperty('--duration',(Math.random()*3+2)+'s'); e.style.setProperty('--opacity',Math.random()*0.7+0.3); s.appendChild(e); }
+      const emo=['💕','💖','💗','💝','❤️','💓']; for(let i=0;i<15;i++) { const e=document.createElement('div'); e.className='heart'; e.textContent=emo[Math.floor(Math.random()*emo.length)]; e.style.left=Math.random()*100+'%'; e.style.setProperty('--duration',(Math.random()*15+10)+'s'); e.style.setProperty('--opacity',Math.random()*0.4+0.2); e.style.animationDelay=(Math.random()*15)+'s'; h.appendChild(e); }
+      for(let i=0;i<20;i++) { const e=document.createElement('div'); e.className='petal'; e.style.left=Math.random()*100+'%'; e.style.setProperty('--duration',(Math.random()*10+8)+'s'); e.style.animationDelay=(Math.random()*10)+'s'; p.appendChild(e); }
+    }
+    function createKissBurst(x,y) {
+      const b=document.createElement('div'); b.className='kiss-burst text-3xl'; b.textContent='💋'; b.style.left=x+'px'; b.style.top=y+'px'; document.body.appendChild(b); setTimeout(()=>b.remove(),1500);
     }
 
-    // FIXED: Non-blocking High-Performance Speech Recognition Loop
-    function initVoice() {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) return;
-      
-      recognition = new SR();
-      recognition.lang = 'hi-IN';
-      recognition.continuous = false; 
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        const wf = document.getElementById('voice-waveform');
-        const statusText = document.getElementById('voice-status');
-        if (wf) wf.classList.remove('hidden');
-        if (statusText) {
-          statusText.textContent = handsFreeActive ? "Hands-Free Loop Connected... 🔁" : "Suno.. bol rhi hu... 🎤";
-        }
-      };
-
-      // FIXED: Instant Input Value sync & Immediate send trigger
-      recognition.onresult = (e) => {
-        const text = e.results[0][0].transcript;
-        if (text && text.trim()) { 
-          const inputField = document.getElementById('message-input');
-          inputField.value = text;
-          // Force execution flow instantly
-          sendMessage();
-        }
-      };
-
-      recognition.onend = () => {
-        if (handsFreeActive && !isSpeaking) {
-          safeStartRecognition();
-        } else if (!handsFreeActive) {
-          resetMicUI();
-        }
-      };
-
-      recognition.onerror = (event) => {
-        console.log("Mic engine handled code:", event.error);
-        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-          handsFreeActive = false;
-          resetMicUI();
-          alert("🚨 Mic is Restricted! Browser address bar ke pass bane 'Lock' icon par click karke Permission reset/allow kijiye.");
-          return;
-        }
-        if (handsFreeActive && !isSpeaking) {
-          setTimeout(() => safeStartRecognition(), 300);
-        }
-      };
-    }
-
-    function safeStartRecognition() {
-      if (!recognition || isSpeaking) return;
-      try {
-        recognition.start();
-      } catch (e) {
-        try {
-          recognition.abort();
-          setTimeout(() => { if (handsFreeActive && !isSpeaking) recognition.start(); }, 200);
-        } catch(err){}
-      }
-    }
-
-    function bindMicHardwareEvents() {
-      const micButton = document.getElementById('mic-btn');
-      if(!micButton) return;
-
-      micButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (clickTimer !== null) return; 
-
-        clickTimer = setTimeout(() => {
-          clickTimer = null;
-          executeMicSingleClickAction();
-        }, 280); 
-      });
-
-      micButton.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        clearTimeout(clickTimer);
-        clickTimer = null;
-        executeMicDoubleClickAction();
-      });
-    }
-
-    function executeMicSingleClickAction() {
-      if (handsFreeActive) {
-        handsFreeActive = false;
-        resetMicUI();
-        try { recognition.abort(); } catch(e){}
-        return;
-      }
-      
-      const btn = document.getElementById('mic-btn');
-      if (btn.classList.contains('bg-pink-500/30')) {
-        try { recognition.abort(); } catch(e){}
-        resetMicUI();
-      } else {
-        if(window.speechSynthesis) window.speechSynthesis.cancel();
-        isSpeaking = false;
-        btn.classList.add('bg-pink-500/30', 'animate-pulse');
-        document.getElementById('mic-icon').textContent = '🛑';
-        
-        // Force hardware layer activation explicitly
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(() => { safeStartRecognition(); })
-          .catch(() => { 
-            resetMicUI();
-            alert("Mic Access Blocked! Address bar lock icon se permissions clear karke browser refresh karein.");
-          });
-      }
-    }
-
-    function executeMicDoubleClickAction() {
-      if (!recognition) return;
-
-      handsFreeActive = true;
-      if(window.speechSynthesis) window.speechSynthesis.cancel();
-      isSpeaking = false;
-
-      const btn = document.getElementById('mic-btn');
-      const wf = document.getElementById('voice-waveform');
-      
-      btn.className = "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all cursor-pointer z-50 select-none bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 animate-bounce border border-pink-400 shadow-lg shadow-pink-500/50";
-      document.getElementById('mic-icon').textContent = '🔁';
-      if (wf) wf.classList.remove('hidden');
-      
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(() => { safeStartRecognition(); })
-        .catch(() => { 
-          resetMicUI();
-          handsFreeActive = false;
-          alert("Hands-Free configuration crashed due to permissions.");
-        });
-    }
-
-    function resetMicUI() {
-      const btn = document.getElementById('mic-btn');
-      const wf = document.getElementById('voice-waveform');
-      if (btn) {
-        btn.className = "w-12 h-12 rounded-xl glass flex items-center justify-center border border-white/10 flex-shrink-0 transition-all cursor-pointer z-50 select-none";
-        document.getElementById('mic-icon').textContent = '🎤';
-      }
-      if (wf) wf.classList.add('hidden');
-    }
-
-    function speak(text) {
-      if (!window.speechSynthesis) return;
-      if (recognition) { try { recognition.abort(); } catch(e){} }
-
-      window.speechSynthesis.cancel(); 
-      isSpeaking = true;
-      
-      const cleanText = sanitizeForTTS(text);
-      const utter = new SpeechSynthesisUtterance(cleanText);
-      utter.lang = 'hi-IN';
-      
-      const isFemale = (currentCharacter === 'female');
-      utter.rate = isFemale ? 0.85 : 0.88;
-      utter.pitch = isFemale ? 1.0 : 0.75;
-
-      utter.onstart = () => {
-        document.getElementById('avatar-container')?.classList.add('speaking');
-        const statusText = document.getElementById('voice-status');
-        if (statusText) statusText.textContent = "Suno.. bol rhi hu... 🔊";
-      };
-
-      const handleSpeechEnd = () => {
-        isSpeaking = false;
-        document.getElementById('avatar-container')?.classList.remove('speaking');
-        if (handsFreeActive) {
-          setTimeout(() => { safeStartRecognition(); }, 250);
-        } else {
-          resetMicUI();
-        }
-      };
-
-      utter.onend = handleSpeechEnd;
-      utter.onerror = handleSpeechEnd;
-      window.speechSynthesis.speak(utter);
-    }
-
-    async function sendMessage() {
-      const input = document.getElementById('message-input');
-      const text = input.value.trim(); if (!text) return;
-      
-      addMessage(text, 'user'); 
-      input.value = '';
-      showTyping();
-      shiftIllusionOrbs(); 
-      
-      if (recognition) { try { recognition.abort(); } catch(e){} }
-
-      setTimeout(() => {
-        removeTyping();
-        const currentPool = fallbackReplies[currentCharacter];
-        const list = currentPool[currentMood] || currentPool['romantic'];
-        let reply = list[Math.floor(Math.random() * list.length)];
-        
-        addMessage(reply, 'ai');
-        speak(reply);
-        addXP(15);
-      }, 800);
-    }
-
-    function animateOrbsRandomly() {
-      setInterval(() => { if(!isSpeaking) shiftIllusionOrbs(); }, 5000);
-    }
-
-    function shiftIllusionOrbs() {
-      const orbs = ['orb-1', 'orb-2', 'orb-3'];
-      const colors = [
-        ['rgba(120,24,198,0.5)', 'rgba(236,72,153,0.3)'],
-        ['rgba(29,78,216,0.4)', 'rgba(139,92,246,0.3)'],
-        ['rgba(157,23,77,0.5)', 'rgba(76,29,149,0.4)']
-      ];
-      orbs.forEach((id) => {
-        const el = document.getElementById(id); if(!el) return;
-        const x = Math.floor(Math.random() * 120 - 60) + 'px';
-        const y = Math.floor(Math.random() * 120 - 60) + 'px';
-        const scale = (Math.random() * 0.5 + 1);
-        const randomColorPair = colors[Math.floor(Math.random() * colors.length)];
-        el.style.transform = `translate(${x}, ${y}) scale(${scale})`;
-        el.style.background = `radial-gradient(circle, ${randomColorPair[0]} 0%, ${randomColorPair[1]} 100%)`;
-      });
-    }
-
-    function addMessage(text, type) {
-      const c = document.getElementById('messages-container'); 
-      const d = document.createElement('div');
-      const currentAvatarUrl = avatars[currentCharacter];
-      
-      if (type === 'ai') {
-        d.className = 'msg-ai flex items-start gap-2';
-        d.innerHTML = `
-          <div class="w-8 h-8 rounded-full overflow-hidden border border-pink-500/30 flex-shrink-0">
-            <img src="${currentAvatarUrl}" class="w-full h-full object-cover">
-          </div>
-          <div class="glass rounded-2xl rounded-tl-md px-4 py-3 max-w-[80%]">
-            <p class="text-sm text-gray-200 leading-relaxed">${text}</p>
-          </div>`;
-      } else {
-        d.className = 'msg-user flex items-start gap-2 justify-end';
-        d.innerHTML = `
-          <div class="glass rounded-2xl rounded-tr-md px-4 py-3 max-w-[80%] bg-gradient-to-br from-pink-600/20 to-purple-600/20 border-pink-500/20">
-            <p class="text-sm text-gray-200 leading-relaxed">${text}</p>
-          </div>
-          <div class="w-8 h-8 rounded-full overflow-hidden border border-blue-500/30 flex-shrink-0">
-            <img src="${avatars.user}" class="w-full h-full object-cover">
-          </div>`;
-      }
-      c.appendChild(d); 
-      c.scrollTop = c.scrollHeight;
-    }
-
-    function showTyping() {
-      const c = document.getElementById('messages-container'); 
-      const d = document.createElement('div'); 
-      d.id = 'typing-indicator'; 
-      d.className = 'msg-ai flex items-start gap-2';
-      const currentAvatarUrl = avatars[currentCharacter];
-      
-      d.innerHTML = `
-        <div class="w-8 h-8 rounded-full overflow-hidden border border-pink-500/30 flex-shrink-0">
-          <img src="${currentAvatarUrl}" class="w-full h-full object-cover">
-        </div>
-        <div class="glass rounded-2xl rounded-tl-md px-4 py-3">
-          <div class="flex gap-1">
-            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full typing-dot"></div>
-            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full typing-dot"></div>
-          </div>
-        </div>`;
-      c.appendChild(d); 
-      c.scrollTop = c.scrollHeight;
-    }
-    
-    function removeTyping() { const e = document.getElementById('typing-indicator'); if(e) e.remove(); }
-    function handleKeyPress(e) { if(e.key === 'Enter') sendMessage(); }
-
-    function confirmAge() {
-      const nameInput = document.getElementById('user-name-input').value.trim();
-      if(nameInput) { userName = nameInput; localStorage.setItem('sukoon_user_name', userName); }
-      
-      sessionStorage.setItem('ageVerified', 'true');
-      document.getElementById('age-gate').style.display = 'none';
-      document.getElementById('main-app').classList.remove('hidden');
-      triggerInitialWelcome();
-    }
-    
-    function exitSite() { window.location.href = 'https://google.com'; }
-
+    // ============ CHARACTER & MOOD ============
     function changeCharacter(e) {
       currentCharacter = e.target.value; 
       const ch = characters[currentCharacter];
+      const avatarUrl = avatars[currentCharacter];
+      const headerAvatar = document.getElementById('header-avatar');
+      headerAvatar.style.backgroundImage = `url(${avatarUrl})`;
+      headerAvatar.style.backgroundSize = 'cover';
+      headerAvatar.style.backgroundPosition = 'center';
       document.getElementById('partner-name').textContent = ch.name;
-      document.getElementById('header-avatar-img').src = avatars[currentCharacter];
-      triggerInitialWelcome();
+      addSystemMessage(`${ch.name} ab tumhare saath hai... 💫`); 
+      createKissBurst(window.innerWidth/2, window.innerHeight/2);
+      updateQuickReplies();
     }
-    
-    function changeMood(e) { 
+    function changeMood(e) {
       currentMood = e.target.value; 
-      document.getElementById('current-mood-label').textContent = currentMood.charAt(0).toUpperCase() + currentMood.slice(1);
-      const pool = moodVisuals[currentMood] || moodVisuals['romantic'];
-      const imgEl = document.getElementById('illusion-img');
-      if(imgEl) { imgEl.src = pool[0]; }
-      shiftIllusionOrbs(); 
+      const m = moods[currentMood];
+      document.getElementById('current-mood-label').textContent = m.label;
+      document.body.className = `mood-${currentMood}`;
+      shiftOrbsForMood();
+      updateQuickReplies();
+      // Reset and restart image rotation for new mood
+      stopImageRotation();
+      currentImageIndex[currentMood] = 0;
+      setTimeout(() => startImageRotation(), 500);
+      showAchievement('Mood Changed ✨', `${m.label} mode active!`, m.icon);
     }
-    
-    function createStars() { const c = document.getElementById('stars-container'); for (let i = 0; i < 45; i++) { const s = document.createElement('div'); s.className = 'star'; s.style.top = Math.random()*100+'%'; s.style.left = Math.random()*100+'%'; s.style.setProperty('--duration', (Math.random()*3+2)+'s'); s.style.setProperty('--opacity', Math.random()); c.appendChild(s); } }
-    function createHearts() { const c = document.getElementById('hearts-container'); for (let i=0;i<8;i++) { const h = document.createElement('div'); h.className = 'heart'; h.textContent = '💕'; h.style.left = Math.random()*100+'%'; h.style.setProperty('--duration', (Math.random()*12+8)+'s'); h.style.setProperty('--opacity', 0.15); c.appendChild(h); } }
-    function createPetals() { const c = document.getElementById('petals-container'); for (let i=0;i<10;i++) { const p = document.createElement('div'); p.className = 'petal'; p.style.left = Math.random()*100+'%'; p.style.setProperty('--duration', (Math.random()*10+6)+'s'); c.appendChild(p); } }
-    function addXP(amount) { xp += amount; document.getElementById('xp-display').textContent = xp; }
+    function updateQuickReplies() {
+      const c = document.getElementById('quick-replies');
+      const r = moods[currentMood]?.quickReplies || moods.romantic.quickReplies;
+      c.innerHTML = r.map(t => `<button onclick="quickReply('${t}')" class="whitespace-nowrap px-3 py-1.5 rounded-full glass hover:bg-pink-500/20 transition-all text-xs border border-white/10 text-gray-300">${t}</button>`).join('');
+    }
+    function shiftOrbsForMood() {
+      const c = {
+        romantic:['rgba(236,72,153,0.4)','rgba(168,85,247,0.3)'],
+        seductive:['rgba(220,38,38,0.6)','rgba(236,72,153,0.5)'],
+        playful:['rgba(251,191,36,0.4)','rgba(236,72,153,0.3)'],
+        intense:['rgba(168,85,247,0.6)','rgba(236,72,153,0.5)'],
+        calm:['rgba(59,130,246,0.4)','rgba(139,92,246,0.3)'],
+        naughty:['rgba(236,72,153,0.7)','rgba(220,38,38,0.5)'],
+        deep:['rgba(139,92,246,0.5)','rgba(59,130,246,0.35)']
+      };
+      const col = c[currentMood] || c.romantic;
+      document.querySelectorAll('.orb').forEach((o,i) => { o.style.background=`radial-gradient(circle, ${col[i%2]} 0%, ${col[(i+1)%2]} 100%)`; });
+    }
 
-    window.addEventListener('load', init);
+    // ============ MESSAGING ============
+    function sendMessage(isWhisper=false) {
+      const inp=document.getElementById('message-input'), txt=inp.value.trim(); if(!txt) return;
+      addMessage(txt,'user',isWhisper); inp.value=''; messageCount++; document.getElementById('msg-count').textContent=messageCount; 
+      addXP(10); increaseBond(1); showTyping();
+      
+      conversationContext.push({user: txt, mood: currentMood, time: Date.now()});
+      if(conversationContext.length > MAX_CONTEXT) conversationContext.shift();
+      
+      setTimeout(()=>{
+        removeTyping();
+        const rep = getAIResponse(txt);
+        addMessage(rep,'ai'); addXP(15); increaseBond(1); speak(rep);
+        if(messageCount%10===0) { showAchievement('Chatterbox! 💬', `${messageCount} messages complete!`, '🏆'); confetti({particleCount:80,spread:60,colors:['#ff6b9d','#c44582','#ffd700']}); }
+        if(bond>=10) { showAchievement('Soul Connection! 💕', 'Bond max ho gaya! Ab responses aur personal honge...', '💖'); confetti({particleCount:150,spread:100,colors:['#ff6b9d','#ffd700','#c44582']}); }
+        saveData();
+      }, 800+Math.random()*400);
+    }
+    function sendWhisper() {
+      const i=document.getElementById('message-input'); if(i.value.trim()) { sendMessage(true); showAchievement('Whisper Mode 🤫', 'Intimate message sent...', '💋'); createKissBurst(window.innerWidth/2, window.innerHeight/2); }
+    }
+    function getAIResponse(txt) {
+      if(txt.toLowerCase().includes('goodnight')||txt.toLowerCase().includes('शुभ रात्रि')||txt.toLowerCase().includes('सोना')) {
+        return currentCharacter==='female' ? `Goodnight meri jaan ${userName}... सपनों में मिलते हैं... मैं तुम्हारे साथ हूँ... 🌙💤` : `शुभ रात्रि ${userName}... सपने खूबसूरत हों... मैं हमेशा तुम्हारे साथ हूँ... 🌠💫`;
+      }
+      return getSmartReply(currentCharacter, currentMood, txt, conversationContext);
+    }
+    function addMessage(txt,type,isW=false) {
+      const c=document.getElementById('messages-container'), d=document.createElement('div');
+      const ch=characters[currentCharacter], t=new Date().toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'});
+      const avatarUrl = avatars[currentCharacter];
+      if(type==='ai') {
+        d.className='msg-ai flex items-start gap-2';
+        d.innerHTML=`<div class="w-9 h-9 rounded-full overflow-hidden border border-pink-500/30 flex-shrink-0" style="background-image:url('${avatarUrl}');background-size:cover;background-position:center;"></div><div class="glass rounded-2xl rounded-tl-md px-4 py-3 max-w-[80%] ${isW?'whisper-msg':''}"><p class="text-sm text-gray-200 leading-relaxed">${txt}</p><p class="text-[10px] text-gray-500 mt-1">${t}</p></div>`;
+      } else {
+        d.className='msg-user flex items-start gap-2 justify-end';
+        d.innerHTML=`<div class="glass rounded-2xl rounded-tr-md px-4 py-3 max-w-[80%] bg-gradient-to-br from-pink-600/30 to-purple-600/30 border-pink-500/20 ${isW?'whisper-msg':''}"><p class="text-sm text-gray-200 leading-relaxed">${txt}</p><p class="text-[10px] text-gray-500 mt-1 text-right">${t}</p></div><div class="w-9 h-9 rounded-full overflow-hidden border border-blue-500/30 flex-shrink-0" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=c44582&clothing=hoodie');background-size:cover;background-position:center;"></div>`;
+      }
+      c.appendChild(d); c.scrollTop=c.scrollHeight;
+    }
+    function addSystemMessage(txt) {
+      const c=document.getElementById('messages-container'), d=document.createElement('div'); d.className='text-center my-2'; 
+      d.innerHTML=`<span class="text-xs text-gray-500 glass px-3 py-1 rounded-full">${txt}</span>`; c.appendChild(d); c.scrollTop=c.scrollHeight;
+    }
+    function showTyping() {
+      const c=document.getElementById('messages-container'), ch=characters[currentCharacter], d=document.createElement('div'); d.id='typing-indicator'; d.className='msg-ai flex items-start gap-2';
+      const avatarUrl = avatars[currentCharacter];
+      d.innerHTML=`<div class="w-9 h-9 rounded-full overflow-hidden border border-pink-500/30 flex-shrink-0" style="background-image:url('${avatarUrl}');background-size:cover;background-position:center;"></div><div class="glass rounded-2xl rounded-tl-md px-4 py-3"><div class="flex gap-1"><div class="w-1.5 h-1.5 bg-gray-400 rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-gray-400 rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-gray-400 rounded-full typing-dot"></div></div></div>`;
+      c.appendChild(d); c.scrollTop=c.scrollHeight;
+    }
+    function removeTyping() { const e=document.getElementById('typing-indicator'); if(e) e.remove(); }
+    function quickReply(t) { document.getElementById('message-input').value=t; sendMessage(); }
+    function handleKeyPress(e) { if(e.key==='Enter') sendMessage(); }
+
+    // ============ MIC SYSTEM ============
+    function toggleMicMode() {
+      if(clickTimer!==null) { clearTimeout(clickTimer); clickTimer=null; handleMicDoubleClick(); }
+      else { clickTimer=setTimeout(()=>{ clickTimer=null; handleMicSingleClick(); }, CLICK_DELAY); }
+    }
+    function handleMicSingleClick() {
+      if(micMode==='loop') { stopAllMic(); return; }
+      micMode='single'; startOneTimeVoice();
+    }
+    function handleMicDoubleClick() {
+      if(micMode!=='idle') { stopAllMic(); return; }
+      micMode='loop'; startLoopVoice();
+    }
+    function startOneTimeVoice() { updateMicUI('single'); window.speechSynthesis.cancel(); isSpeaking=false; if(recognition){try{recognition.abort();}catch(e){}setTimeout(()=>{if(micMode==='single')recognition.start();},100);} }
+    function startLoopVoice() { updateMicUI('loop'); window.speechSynthesis.cancel(); isSpeaking=false; if(recognition){try{recognition.abort();}catch(e){}setTimeout(()=>{if(micMode==='loop')recognition.start();},100);} }
+    function stopAllMic() { micMode='idle'; if(recognition){try{recognition.abort();}catch(e){}} window.speechSynthesis.cancel(); isSpeaking=false; resetMicUI(); }
+    function updateMicUI(mode) {
+      const b=document.getElementById('mic-btn'), i=document.getElementById('mic-icon'), w=document.getElementById('voice-waveform'), s=document.getElementById('voice-status');
+      if(!b)return; b.className="w-11 h-11 rounded-xl flex items-center justify-center border border-white/10 flex-shrink-0 transition-all cursor-pointer z-50";
+      if(mode==='single') { b.classList.add('mic-single'); i.textContent='🎤'; if(w){w.classList.remove('hidden');w.classList.add('flex');} if(s)s.textContent="Ek baar boliye... 🎤"; }
+      else if(mode==='loop') { b.classList.add('mic-loop'); i.textContent='🔁'; if(w){w.classList.remove('hidden');w.classList.add('flex');} if(s)s.textContent="Loop ON - Bolte rahiye... ♾️"; }
+    }
+    function resetMicUI() { micMode='idle'; const b=document.getElementById('mic-btn'), i=document.getElementById('mic-icon'), w=document.getElementById('voice-waveform'); if(b){b.className="w-11 h-11 rounded-xl glass hover:bg-pink-500/20 transition-all flex items-center justify-center border border-white/10 flex-shrink-0 cursor-pointer z-50";i.textContent='🎤';} if(w){w.classList.add('hidden');w.classList.remove('flex');} }
+    
+    function initVoice() {
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR)return;
+      recognition=new SR(); recognition.lang='hi-IN'; recognition.continuous=false; recognition.interimResults=false;
+      recognition.onstart=()=>{ const w=document.getElementById('voice-waveform'); if(w)w.classList.remove('hidden'); };
+      recognition.onresult=(e)=>{ const t=e.results[0][0].transcript.trim(); if(t){document.getElementById('message-input').value=t; if(micMode==='single')stopAllMic(); sendMessage();} };
+      recognition.onend=()=>{ if(micMode==='single'){setTimeout(()=>{if(!isSpeaking)resetMicUI();},300);} else if(micMode==='loop'&&!isSpeaking){setTimeout(()=>{if(micMode==='loop'){try{recognition.start();}catch(e){}}},400);} };
+      recognition.onerror=(ev)=>{ if(ev.error==='not-allowed'){stopAllMic();showAchievement('Permission Denied 🔒','Mic access allow karein voice chat ke liye','🎤');return;} if(micMode==='loop'&&!isSpeaking){setTimeout(()=>{if(micMode==='loop'){try{recognition.start();}catch(e){}}},500);} };
+    }
+    function speak(txt) {
+      if(!window.speechSynthesis)return; if(recognition&&micMode!=='idle'){try{recognition.abort();}catch(e){}}
+      window.speechSynthesis.cancel(); isSpeaking=true;
+      const clean=txt.replace(/[💕💖💝❤️💓💋🚀✨👩👨👤💬⏱️🏆⭐✅❌🔒😈]/g,'').trim();
+      const u=new SpeechSynthesisUtterance(clean); u.lang='hi-IN'; u.pitch=characters[currentCharacter].pitch; u.rate=characters[currentCharacter].rate;
+      u.onstart=()=>{ const s=document.getElementById('voice-status'); if(s)s.textContent=micMode==='loop'?"Bol rhi hu... 🔁":"Bol rhi hu... 🎤"; };
+      const end=()=>{ isSpeaking=false; if(micMode==='loop'){setTimeout(()=>{if(micMode==='loop'&&recognition){try{recognition.start();}catch(e){}}},300);} else if(micMode==='single'){setTimeout(()=>{if(!isSpeaking)resetMicUI();},200);} };
+      u.onend=end; u.onerror=end; window.speechSynthesis.speak(u);
+    }
+
+    // ============ XP & BOND ============
+    function addXP(a) { xp+=a; document.getElementById('xp-display').textContent=xp.toLocaleString(); const bw=Math.min(((xp%500)/500)*100,100); document.getElementById('xp-bar').style.width=bw+'%'; if(xp>=level*500){level++;document.getElementById('level-display').textContent=level;showAchievement('Level Up! ⭐',`Ab tum Level ${level} ho! Badhiya!`,'🏆');confetti({particleCount:120,spread:80,colors:['#ffd700','#ff6b9d','#c44582']});} saveData(); }
+    function increaseBond(a) { if(bond<10){bond=Math.min(bond+a,10);document.getElementById('bond-display').textContent=bond;document.getElementById('bond-bar').style.width=(bond*10)+'%';if(bond%2===0&&bond<=10)showAchievement('Bond Growing! 💕',`Bond level: ${bond}/10 - Responses aur personal ho rahe hain!`,'💖');saveData();} }
+
+    // ============ ACHIEVEMENTS & SOUNDS ============
+    function showAchievement(t,d,e='🏆') { const c=document.getElementById('achievement-container'), el=document.createElement('div'); el.className='achievement-popup glass rounded-xl p-3 min-w-[250px] border border-yellow-500/30 pointer-events-auto'; el.innerHTML=`<div class="flex items-center gap-2"><span class="text-2xl">${e}</span><div><h4 class="font-bold text-sm text-white">${t}</h4><p class="text-xs text-gray-300">${d}</p></div></div>`; c.appendChild(el); setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(100px)';el.style.transition='all 0.5s';setTimeout(()=>el.remove(),500);},3500); }
+    function playSound(type) { try { const s=new Tone.Synth().toDestination(); const n={message:{note:'E5',duration:'16n'},achievement:{note:'C6',duration:'16n'},levelUp:{note:'G5',duration:'8n'},click:{note:'A4',duration:'32n'}}[type]; if(n)s.triggerAttackRelease(n.note,n.duration); } catch(e){} }
+
+    // ============ AGE GATE ============
+    function confirmAge() {
+      const n=document.getElementById('user-name-input').value.trim(); if(n)userName=n;
+      sessionStorage.setItem('ageVerified','true'); saveData(); playSound('achievement');
+      for(let i=0;i<12;i++)setTimeout(()=>createKissBurst(Math.random()*window.innerWidth,Math.random()*window.innerHeight),i*80);
+      document.getElementById('age-gate').style.opacity='0';
+      setTimeout(()=>{document.getElementById('age-gate').style.display='none';document.getElementById('main-app').classList.remove('hidden');showAchievement('Welcome Jaan! 🌙','Raat ki baatein shuru ho gayi...','✨');triggerWelcome();},500);
+    }
+    function exitSite() { window.location.href='https://google.com'; }
+
+    window.addEventListener('load', init); window.addEventListener('beforeunload', saveData);
   </script>
 </body>
 </html>
