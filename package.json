@@ -1,6 +1,7 @@
 {
   "name": "sukuun-ai",
   "version": "1.0.0",
+  "description": "Romantic AI Companion - Hinglish Night Mode",
   "private": true,
   "scripts": {
     "dev": "vercel dev",
